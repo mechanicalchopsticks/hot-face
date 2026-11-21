@@ -6,12 +6,17 @@ Write all code in English throughout this repository, regardless of the language
 
 Use the intended locale for user-facing text and preserve user-entered content in its original language.
 
-## Response Style & Expansion Protocol
+## Engineering practices
 
-1. Be extremely succinct, direct, and scannable. Avoid conversational filler or redundant preambles.
-2. When a topic or step has deeper context, technical details, or background information available, embed a visual signal or explicit note to show it can be expanded.
-3. Use the format "[▶ Expand: Topic Name]" or appended text like "(More details available upon request)" at the end of sections that contain hidden complexity.
-4. Only unpack those details if the user explicitly asks to "expand," "tell me more," or deep-dive into that specific flagged section.
+1. Keep working conventions here, product behavior in OpenSpec, and the reason for a non-obvious implementation choice beside the code it explains.
+2. Before changing an API, inspect its callers and tests across TrainingKit, the app, and its extensions. Keep shared behavior in the module that owns it.
+3. Test observable behavior through the entry point callers use. For a bug fix, reproduce the failure first when practical. Use an injected clock for timing and reopen a disk store when testing recovery.
+4. Treat stored schemas and encoded payloads as compatibility contracts. When changing either, test with a frozen fixture written by the previous implementation. Preserve the original fixture when adding a newer one.
+5. Keep each change scoped to its task. Run `swift test --package-path TrainingKit` with Xcode selected for package changes. Report the behavior verified and the environment used (macOS, simulator, or physical iPhone).
+
+## Response style
+
+Keep replies succinct, direct, and easy to scan. Flag deeper context with `[▶ Expand: Topic Name]` or “More details available upon request”. Expand only when asked.
 
 ## Sosumi Skill
 
