@@ -14,9 +14,55 @@ La app SHALL permitir crear y editar gimnasios y seleccionar uno activo. Todo ca
 ### Requirement: Equipamiento disponible
 La app SHALL representar mancuernas, barra con discos, barras fijas, máquinas selectoras, máquinas de discos, peso corporal, bandas y cardio. Las cargas disponibles SHALL pertenecer al equipamiento del gimnasio seleccionado.
 
-#### Scenario: Combinaciones de discos
-- **WHEN** se configura el inventario de discos y la carga simétrica por lado
-- **THEN** los pesos posibles respetan las cantidades de discos disponibles para ambos lados
+#### Scenario: Seleccionar equipo
+- **WHEN** se elige una barra con discos o una máquina de discos en dos ejercicios del mismo gimnasio
+- **THEN** ambos consultan los mismos tamaños de disco y cada ejercicio conserva su propia carga habitual
+
+### Requirement: Inventario inicial editable por gimnasio
+Cada gimnasio nuevo SHALL comenzar con inventarios editables de discos, mancuernas individuales y barras fijas. El usuario SHALL poder añadir, editar y quitar pesos en Ajustes del gimnasio. Cada ejercicio SHALL poder elegir del inventario correspondiente a su equipo. Cada entrada SHALL conservar su unidad original.
+
+#### Scenario: Crear un gimnasio
+- **WHEN** el usuario crea un gimnasio
+- **THEN** sus inventarios contienen estos pesos iniciales
+
+| Inventario | Pesos iniciales |
+|---|---|
+| Discos | 2,5 · 5 · 10 · 25 · 35 · 45 lb |
+| Mancuernas individuales en lb | 2,5 · 5 · 10 · 15 · 20 · 25 · 30 · 35 · 40 · 50 · 60 · 70 · 80 · 90 · 100 |
+| Mancuernas individuales en kg | 5 · 7,5 · 10 · 12,5 |
+| Barras fijas (barra Z), peso total en kg | 10 · 15 · 20 · 25 · 30 · 35 · 40 · 50 |
+
+#### Scenario: Compartir una edición
+- **WHEN** se añade una mancuerna de 22,5 lb y se quitan los discos de 2,5 y 5 lb de un gimnasio
+- **THEN** todos sus ejercicios de mancuernas ofrecen 22,5 lb y sus barras y máquinas de discos calculan con los tamaños restantes
+- **AND** el inventario de otro gimnasio conserva sus propios valores
+
+#### Scenario: Elegir una mancuerna o una barra fija
+- **WHEN** se configura un ejercicio con el inventario inicial
+- **THEN** para mancuernas puede elegirse tanto una pieza de 10 lb como una de 10 kg, y para barra fija puede elegirse una barra de 10 kg por su peso total
+
+### Requirement: Cargas alcanzables con discos
+El selector de carga y las sugerencias de progresión SHALL usar las sumas simétricas alcanzables con los tamaños de disco del gimnasio. Cada tamaño se registra una vez y puede repetirse en la suma. El usuario elige la combinación física que cabe. El máximo inclusivo SHALL ser 500 lb añadidas entre ambos lados, sujeto al máximo opcional de carga añadida por lado del equipo.
+
+#### Scenario: Configurar el peso propio de una barra
+- **WHEN** el usuario añade una barra con discos
+- **THEN** su peso propio comienza en 45 lb y se puede editar independientemente de los límites de carga añadida
+
+#### Scenario: Peso alcanzable frente a peso imposible
+- **WHEN** se usa el inventario inicial en una barra o máquina de discos con capacidad para al menos 30 lb añadidas
+- **THEN** 30 lb añadidas (10 + 5 lb por lado) están disponibles para el selector y la progresión, y ambos descartan 31 lb añadidas por ser inalcanzables
+
+#### Scenario: Límite del equipo y peso propio
+- **WHEN** una barra de 45 lb admite hasta 90 lb añadidas por lado
+- **THEN** admite dos discos de 45 lb por lado, equivalentes a 180 lb añadidas y 225 lb incluyendo la barra, y descarta cualquier carga añadida superior a 180 lb
+- **AND** con el inventario inicial y sin un máximo específico, admite 500 lb añadidas (545 lb incluyendo la barra) y descarta 505 lb añadidas
+
+### Requirement: Máquinas selectoras en pasos de 5 kg
+Para una máquina selectora con incrementos de 5 kg, la app SHALL ofrecer las 30 cargas desde 5 hasta 150 kg inclusive, en pasos de 5 kg.
+
+#### Scenario: Elegir una carga de la máquina selectora
+- **WHEN** se elige esta máquina para un ejercicio
+- **THEN** el selector incluye 5, 10 y 150 kg y excluye 0, 7,5 y 155 kg, independientemente del inventario de discos
 
 ### Requirement: Representación de carga por ejercicio
 La app SHALL guardar por ejercicio la unidad kg/lb y su representación: por mancuerna o total combinado, por lado o total añadido y, cuando se conozca, total incluyendo barra/equipo. Cambiar la representación SHALL conservar la carga física y el saldo.

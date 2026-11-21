@@ -19,16 +19,20 @@
 
 ## 3. Gimnasios, equipos y primera rutina
 
+Continuación de 3.1: comenzar por 3.11 (modelo y migración) y 3.12 (Ajustes). Usar el catálogo resultante en 3.2 y 3.3 antes de integrar el selector en 3.5.
+
 - [x] 3.1 Implementar perfiles de gimnasio y equipo con cargas disponibles; verificar creación/edición y selección independiente por gimnasio.
-- [ ] 3.2 Implementar carga decimal, unidad y representación por ejercicio; probar ida/vuelta por unidad/total/por lado sin cambio físico ni de saldo, incluyendo una sola mancuerna.
-- [ ] 3.3 Calcular combinaciones de discos disponibles; probar inventario limitado, simetría y exclusión de barra del porcentaje.
+- [ ] 3.2 Implementar la selección de mancuernas individuales y barras fijas del gimnasio, y los 30 valores de máquinas selectoras de paso de 5 kg (5–150 kg). Probar 10 lb y 10 kg en el mismo inventario, una y dos mancuernas, peso total de barra fija y conversiones de ida y vuelta por unidad/total/por lado que conserven carga física y saldo.
+- [ ] 3.3 Calcular las cargas simétricas alcanzables con los tamaños de disco compartidos y repetibles. Probar 30 frente a 31 lb añadidas, retirar tamaños pequeños, admitir 500 y descartar 505 lb, y aplicar un máximo inferior por lado específico de una máquina. Excluir el peso propio de los límites y del porcentaje de progresión.
 - [ ] 3.4 Implementar estados de carga sin definir/estimada/confirmada; verificar que usar una estimación no la confirma y que cero no equivale a ausente.
-- [ ] 3.5 Crear editor manual de rutinas, días, ejercicios, variantes, segmentos y descansos; ingresar una rutina de prueba completa con tiempo, repeticiones por lado y 7+7+7.
+- [ ] 3.5 Crear el editor manual de rutinas, días, ejercicios, variantes, segmentos y descansos con el selector de carga según gimnasio y equipo. Ingresar una rutina con tiempo, repeticiones por lado y 7+7+7. Verificar que dos ejercicios consultan el mismo inventario y guardan cargas habituales independientes.
 - [ ] 3.6 Implementar activación, copia y archivo; probar cambio y regreso de gimnasio con rutina nueva, saldos cero e historial anterior conservado.
 - [ ] 3.7 Implementar ciclos y orden temporal/habitual de días; probar omisiones, fechas distintas, cierre de ciclo y disponibilidad en el siguiente.
-- [ ] 3.8 Documentar el flujo de primera rutina y carga inicial; verificarlo sin importar Markdown.
+- [ ] 3.8 Documentar y verificar el flujo desde los inventarios iniciales editables del gimnasio hasta la elección de carga por ejercicio en la primera rutina, sin importar Markdown.
 - [ ] 3.9 Consultar localmente la última carga real por gimnasio y nombre. Probar con varias rutinas archivadas, una sesión parcial, una omisión posterior, una carga cero y un registro más reciente de otro gimnasio.
 - [ ] 3.10 Integrar la sugerencia en el editor de rutinas nuevas. Verificar la comparación de 4 × (7+7+7) frente a 3 × 8, fecha, carga, unidad, estación e indicaciones disponibles, sin mostrar el gimnasio. Probar confirmar, editar, dejar sin definir y conservar una carga copiada.
+- [ ] 3.11 Persistir los tres inventarios compartidos por gimnasio, con unidad por entrada y valores iniciales de gym-equipment. Migrar catálogos de 3.1. Reabrir un almacén congelado de V3 con dos equipos que comparten tamaños y comprobar deduplicación, unidades, pesos propios, selección de gimnasio e historial. Conservar las fixtures anteriores.
+- [ ] 3.12 Adaptar Ajustes para editar los tres inventarios una vez por gimnasio, el peso propio de la barra (45 lb iniciales) y el máximo opcional por lado de barras y máquinas de discos. Verificar en español e inglés la edición de unidades mixtas, que los pesos retirados siguen ausentes al reabrir y que otro gimnasio conserva sus valores.
 
 ## 4. Entrenamiento básico de principio a fin
 
@@ -54,7 +58,7 @@
 
 - [ ] 6.1 Implementar saldo saturado y valoración opcional de ejercicios completos/parciales; probar cancelación, límites, ausencia de valoración y ajustes temporales.
 - [ ] 6.2 Implementar reinicios por cambios habituales y sustituciones; verificar que notas, orden y representación de carga no reinician.
-- [ ] 6.3 Implementar sugerencias de peso con umbral inclusivo 10 %, carga cero e inventario limitado; probar 50→52,5 y 50→55 conservando repeticiones.
+- [ ] 6.3 Implementar sugerencias de peso desde las mismas cargas disponibles que ofrece el editor según el gimnasio y el equipo. Probar el umbral inclusivo del 10 %, carga cero, inventario limitado y 50→52,5 y 50→55 conservando repeticiones. Verificar que el motor descarta cargas de discos inalcanzables o superiores al límite del equipo.
 - [ ] 6.4 Implementar puente de repeticiones separado del saldo; probar 35×10→35×12→45×10 y retorno a 12 tras puente a 15.
 - [ ] 6.5 Implementar escalones de subida/bajada, caso 15 sin puente y límites sin carga mayor/menor; probar 9→10/8, mínimo 6 y ajuste manual en tiempo/combinados.
 - [ ] 6.6 Revisar con el usuario la política propuesta de invalidación del puente al editar una sugerencia; documentar la decisión y cubrirla con pruebas antes de codificar ese caso.

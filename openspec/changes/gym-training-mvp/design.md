@@ -32,7 +32,8 @@ Entidades principales:
 
 | Entidad | Datos relevantes |
 |---|---|
-| Gimnasio/equipo | Identidad, estación, tipo, cargas disponibles, barra y discos con cantidades |
+| Gimnasio | Identidad e inventario compartido de mancuernas individuales, tamaños de disco y barras fijas. Cada peso incluye su unidad |
+| Equipo | Identidad, estación, tipo, peso propio y máximo opcional de carga añadida por lado para barras y máquinas de discos |
 | Rutina/revisión | Gimnasio, estado activa/archivada, días ordenados, configuración habitual |
 | Ejercicio prescrito | Nombre, variantes, equipo, series, segmentos de repeticiones/tiempo, lateralidad, descansos |
 | Ciclo/día | Referencia a rutina, orden efectivo, pendiente/completado/omitido |
@@ -52,7 +53,11 @@ Al crear una rutina manual, copiada o importada, el editor consulta el historial
 
 El editor muestra la fecha y la prescripción de aquella sesión junto al ejercicio nuevo. Conserva los segmentos de repeticiones, la estación y las indicaciones disponibles y omite el nombre del gimnasio. La sugerencia es opcional y editable. Solo la confirmación escribe el valor elegido como carga inicial. En una copia, la carga copiada se puede conservar o sustituir explícitamente. Sin carga inicial ni coincidencia, el campo queda sin definir. El saldo de la nueva rutina empieza en cero.
 
-Representar valores decimales con precisión estable y unidades explícitas. Conservar la unidad fuente y convertir solo para operaciones o visualización. Guardar número de implementos y referencia por lado/unidad/total; no asumir dos mancuernas en un ejercicio unilateral. Para discos, generar combinaciones factibles respetando inventario y simetría. Excluir barra/equipo del porcentaje de progresión por lado.
+Al crear el gimnasio, inicializar una sola vez los tres inventarios editables definidos en gym-equipment. Ajustes edita esos valores y cada ejercicio consulta el inventario de su gimnasio según el equipo. Guardar cada peso con precisión decimal y su unidad de origen para que puedan coexistir mancuernas en kg y lb. Al guardar la prescripción, conservar el peso elegido, su representación y el número de implementos. Así, una mancuerna usada por ambos lados sigue contando como una pieza.
+
+El editor y la progresión consultan las mismas cargas disponibles. Para barras fijas se usa el peso total de cada pieza. Para máquinas selectoras de paso de 5 kg se generan 5, 10, …, 150 kg. Para barras y máquinas de discos, calcular las sumas alcanzables por lado permitiendo repetir tamaños, y duplicarlas para obtener los totales añadidos. Detener el cálculo en el menor de 250 lb por lado y el límite configurado del equipo, comparados en la misma unidad. El ajuste expresa un límite práctico de peso. La elección de discos que caben físicamente corresponde al usuario. Sumar el peso propio únicamente para la vista que incluye el equipo (45 lb iniciales editables para una barra con discos). La progresión por lado usa solo el peso añadido.
+
+Al migrar los datos de 3.1, reunir por gimnasio y tipo las mancuernas, las barras fijas y los tamaños de disco ya registrados con sus unidades. Un tamaño repetido en varios equipos genera una entrada compartida. Usar los pesos de las entradas de discos para obtener sus tamaños y conservar por separado las cargas de equipo preexistentes cuyo significado sea distinto. Preservar los pesos propios personalizados, las referencias al equipo y las instantáneas históricas. Aplicar los valores iniciales de un gimnasio nuevo una sola vez para que las ediciones sobrevivan a la reapertura.
 
 El motor recibe configuración habitual, saldo, cargas disponibles y antecedente del puente. Devuelve sugerencia estructurada y motivo localizable, o invitación a ajuste manual; nunca aplica cambios directamente.
 
