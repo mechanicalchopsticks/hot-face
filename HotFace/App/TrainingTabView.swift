@@ -25,11 +25,7 @@ struct TrainingTabView: View {
                     message: "Your finished workouts will appear here.")
             }
             Tab("Settings", systemImage: "gearshape") {
-                EmptySection(
-                    "Settings",
-                    heading: "No gym configured",
-                    systemImage: "gearshape",
-                    message: "Your gym and data settings will appear here.")
+                GymSettingsView()
             }
         }
     }

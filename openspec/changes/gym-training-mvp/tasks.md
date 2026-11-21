@@ -19,7 +19,7 @@
 
 ## 3. Gimnasios, equipos y primera rutina
 
-- [ ] 3.1 Implementar perfiles de gimnasio y equipo con cargas disponibles; verificar creación/edición y selección independiente por gimnasio.
+- [x] 3.1 Implementar perfiles de gimnasio y equipo con cargas disponibles; verificar creación/edición y selección independiente por gimnasio.
 - [ ] 3.2 Implementar carga decimal, unidad y representación por ejercicio; probar ida/vuelta por unidad/total/por lado sin cambio físico ni de saldo, incluyendo una sola mancuerna.
 - [ ] 3.3 Calcular combinaciones de discos disponibles; probar inventario limitado, simetría y exclusión de barra del porcentaje.
 - [ ] 3.4 Implementar estados de carga sin definir/estimada/confirmada; verificar que usar una estimación no la confirma y que cero no equivale a ausente.

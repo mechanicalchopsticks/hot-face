@@ -1,12 +1,13 @@
 import Foundation
 
 public struct EquipmentDescription: Identifiable, Codable, Equatable, Sendable {
-    public enum Kind: String, Codable, Sendable {
+    public enum Kind: String, Codable, CaseIterable, Sendable {
         case dumbbell, barbell, fixedBar, selectorizedMachine, plateLoadedMachine, bodyweight, band, cardio
     }
 
     public let id: UUID
     public var name: String
+    public var station: String?
     public var kind: Kind
     public var unit: ExerciseLoad.Unit
     public var availableLoads: [Decimal] = []

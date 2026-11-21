@@ -1,0 +1,19 @@
+[
+  {
+    "availableLoads" : [
+      0,
+      12.5
+    ],
+    "baseWeight" : 20,
+    "id" : "00000000-0000-4000-8000-000000000010",
+    "kind" : "barbell",
+    "name" : "Barra olímpica",
+    "plates" : [
+      {
+        "count" : 4,
+        "weight" : 2.5
+      }
+    ],
+    "unit" : "kg"
+  }
+]
