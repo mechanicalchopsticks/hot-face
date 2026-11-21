@@ -2,12 +2,16 @@ import Foundation
 import SwiftData
 
 public struct CoordinatedModelStore {
-    private let model: any PersistentModel.Type
+    private let schema: Schema
     private let storeURL: URL
     private let lockURL: URL
 
     public init(model: any PersistentModel.Type, storeURL: URL, lockURL: URL) {
-        self.model = model
+        self.init(schema: Schema([model]), storeURL: storeURL, lockURL: lockURL)
+    }
+
+    public init(schema: Schema, storeURL: URL, lockURL: URL) {
+        self.schema = schema
         self.storeURL = storeURL
         self.lockURL = lockURL
     }
@@ -19,8 +23,8 @@ public struct CoordinatedModelStore {
         var coordinationError: NSError?
         NSFileCoordinator().coordinate(writingItemAt: lockURL, options: [], error: &coordinationError) { _ in
             result = Result {
-                let configuration = ModelConfiguration(url: storeURL, cloudKitDatabase: .none)
-                let container = try ModelContainer(for: model, configurations: configuration)
+                let configuration = ModelConfiguration(schema: schema, url: storeURL, cloudKitDatabase: .none)
+                let container = try ModelContainer(for: schema, configurations: [configuration])
                 return try operation(ModelContext(container))
             }
         }

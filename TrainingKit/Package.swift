@@ -11,9 +11,10 @@ let package = Package(
     ],
     targets: [
         .target(name: "TrainingDomain"),
-        .target(name: "TrainingRepositories"),
+        .target(name: "TrainingRepositories", dependencies: ["TrainingDomain"]),
         .target(name: "TrainingAdapters", dependencies: ["TrainingDomain"]),
         .target(name: "TrainingInterface", dependencies: ["TrainingDomain"]),
         .testTarget(name: "TrainingDomainTests", dependencies: ["TrainingDomain"]),
+        .testTarget(name: "TrainingRepositoryTests", dependencies: ["TrainingRepositories", "TrainingDomain"]),
     ]
 )
