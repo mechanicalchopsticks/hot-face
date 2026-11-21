@@ -50,40 +50,46 @@ private struct SessionWriter {
         }
 
         switch action {
-        case let .start(routineID, gymID, dayID, cycleID):
+        case .start(let routineID, let gymID, let dayID, let cycleID):
             if let existing {
                 let plan = try existing.prescription
                 guard plan.routineID == routineID, plan.gymID == gymID, plan.day.id == dayID,
-                      existing.cycleID == cycleID else { throw SessionCommandError.conflictingIdentifier }
+                    existing.cycleID == cycleID
+                else { throw SessionCommandError.conflictingIdentifier }
                 return .alreadyApplied
             }
             try start(routineID: routineID, gymID: gymID, dayID: dayID, cycleID: cycleID, at: date)
-        case let .completeSet(id, number, performance):
+        case .completeSet(let id, let number, let performance):
             let session = try openSession()
             let target = try session.exercise(id)
             guard number > 0, number <= target.sets else { throw SessionCommandError.invalidSetNumber }
-            let sets = FetchDescriptor<V1.PerformedSet>(predicate: #Predicate {
-                $0.sessionID == sessionID && $0.exerciseID == id && $0.number == number
-            })
+            let sets = FetchDescriptor<V1.PerformedSet>(
+                predicate: #Predicate {
+                    $0.sessionID == sessionID && $0.exerciseID == id && $0.number == number
+                })
             if let set = try context.fetch(sets).first {
                 guard try set.performance == performance else { throw SessionCommandError.conflictingSet }
                 return .alreadyApplied
             }
             guard !session.skippedExerciseIDs.contains(id) else { throw SessionCommandError.skippedExercise }
-            context.insert(try V1.PerformedSet(sessionID: sessionID, exerciseID: id, number: number,
-                                               performedAt: date, performance: performance))
-        case let .rate(id, effort):
+            context.insert(
+                try V1.PerformedSet(
+                    sessionID: sessionID, exerciseID: id, number: number,
+                    performedAt: date, performance: performance))
+        case .rate(let id, let effort):
             let session = try openSession()
             _ = try session.exercise(id)
-            let ratings = FetchDescriptor<V1.Rating>(predicate: #Predicate { $0.sessionID == sessionID && $0.exerciseID == id })
+            let ratings = FetchDescriptor<V1.Rating>(
+                predicate: #Predicate { $0.sessionID == sessionID && $0.exerciseID == id })
             if let rating = try context.fetch(ratings).first {
                 guard rating.effort == effort else { throw SessionCommandError.conflictingRating }
                 return .alreadyApplied
             }
-            let sets = FetchDescriptor<V1.PerformedSet>(predicate: #Predicate { $0.sessionID == sessionID && $0.exerciseID == id })
+            let sets = FetchDescriptor<V1.PerformedSet>(
+                predicate: #Predicate { $0.sessionID == sessionID && $0.exerciseID == id })
             guard try context.fetchCount(sets) > 0 else { throw SessionCommandError.exerciseNotStarted }
             context.insert(V1.Rating(sessionID: sessionID, exerciseID: id, effort: effort, date: date))
-        case let .skip(id):
+        case .skip(let id):
             let session = try openSession()
             _ = try session.exercise(id)
             guard !session.skippedExerciseIDs.contains(id) else { return .alreadyApplied }
@@ -92,7 +98,8 @@ private struct SessionWriter {
             guard let session = existing else { throw SessionCommandError.sessionNotFound }
             guard session.finishedAt == nil else { return .alreadyApplied }
             let plan = try session.prescription
-            let sets = try context.fetch(FetchDescriptor<V1.PerformedSet>(predicate: #Predicate { $0.sessionID == sessionID }))
+            let sets = try context.fetch(
+                FetchDescriptor<V1.PerformedSet>(predicate: #Predicate { $0.sessionID == sessionID }))
             let byExercise = Dictionary(grouping: sets, by: \.exerciseID)
             let partial = plan.day.exercises.contains { (byExercise[$0.id]?.count ?? 0) < $0.sets }
             if let cycleID = session.cycleID {
@@ -115,9 +122,11 @@ private struct SessionWriter {
         let cycle = try cycleID.map(cycle(with:))
         if let cycle {
             guard cycle.orderedDayIDs.contains(dayID), !cycle.completedDayIDs.contains(dayID),
-                  !cycle.skippedDayIDs.contains(dayID) else { throw SessionCommandError.dayUnavailable }
+                !cycle.skippedDayIDs.contains(dayID)
+            else { throw SessionCommandError.dayUnavailable }
         }
-        context.insert(try V1.Session(id: sessionID, routine: routine, gym: gym, dayID: dayID, cycle: cycle, startedAt: date))
+        context.insert(
+            try V1.Session(id: sessionID, routine: routine, gym: gym, dayID: dayID, cycle: cycle, startedAt: date))
     }
 
     private func cycle(with id: UUID) throws -> V1.Cycle {
@@ -127,8 +136,8 @@ private struct SessionWriter {
     }
 }
 
-private extension V1.Session {
-    func exercise(_ id: UUID) throws -> ExercisePrescription {
+extension V1.Session {
+    fileprivate func exercise(_ id: UUID) throws -> ExercisePrescription {
         guard let exercise = try prescription.day.exercises.first(where: { $0.id == id }) else {
             throw SessionCommandError.unknownExercise
         }

@@ -26,7 +26,10 @@ struct StorageTrial {
     static let commandNotification = "ejemplo.entrenamiento.prueba.storage-trial"
 
     static func trialsDirectory() throws -> URL {
-        guard let group = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.ejemplo.entrenamiento.prueba") else {
+        guard
+            let group = FileManager.default.containerURL(
+                forSecurityApplicationGroupIdentifier: "group.ejemplo.entrenamiento.prueba")
+        else {
             throw CocoaError(.fileNoSuchFile)
         }
         return group.appendingPathComponent("Library/Application Support/StorageTrials")
@@ -53,7 +56,8 @@ struct StorageTrial {
             try wait(for: "\(writer.other.rawValue)-\(round).ready")
             inserted.append(try store.complete(number, writer: writer.rawValue))
         }
-        let receipt = Receipt(writer: writer, bundle: Bundle.main.bundleIdentifier ?? "", pid: getpid(), inserted: inserted)
+        let receipt = Receipt(
+            writer: writer, bundle: Bundle.main.bundleIdentifier ?? "", pid: getpid(), inserted: inserted)
         try JSONEncoder().encode(receipt).write(to: file("\(writer.rawValue).json"), options: .atomic)
     }
 
@@ -61,7 +65,9 @@ struct StorageTrial {
         let deadline = ProcessInfo.processInfo.systemUptime + 20
         while !FileManager.default.fileExists(atPath: file(name).path) {
             guard ProcessInfo.processInfo.systemUptime < deadline else {
-                throw NSError(domain: "StorageTrial", code: 1, userInfo: [NSLocalizedDescriptionKey: "Timed out waiting for \(name)"])
+                throw NSError(
+                    domain: "StorageTrial", code: 1,
+                    userInfo: [NSLocalizedDescriptionKey: "Timed out waiting for \(name)"])
             }
             Thread.sleep(forTimeInterval: 0.01)
         }
@@ -71,14 +77,16 @@ struct StorageTrial {
         let receipts = try [Writer.app, .widget].map { writer in
             try JSONDecoder().decode(Receipt.self, from: Data(contentsOf: file("\(writer.rawValue).json")))
         }
-        let app = receipts[0], widget = receipts[1]
+        let app = receipts[0]
+        let widget = receipts[1]
         let rows = try store.completed()
         guard app.writer == .app, widget.writer == .widget, app.pid != widget.pid,
-              app.bundle == "ejemplo.entrenamiento.prueba", widget.bundle == app.bundle + ".actividad",
-              app.inserted.count == 2, widget.inserted.count == 2,
-              app.inserted[0] != widget.inserted[0], app.inserted[1], widget.inserted[1],
-              rows.map(\.0) == [1, 2, 3],
-              rows.map(\.1) == [app.inserted[0] ? "app" : "widget", "app", "widget"] else {
+            app.bundle == "ejemplo.entrenamiento.prueba", widget.bundle == app.bundle + ".actividad",
+            app.inserted.count == 2, widget.inserted.count == 2,
+            app.inserted[0] != widget.inserted[0], app.inserted[1], widget.inserted[1],
+            rows.map(\.0) == [1, 2, 3],
+            rows.map(\.1) == [app.inserted[0] ? "app" : "widget", "app", "widget"]
+        else {
             throw CocoaError(.fileReadCorruptFile)
         }
         if replay {
@@ -88,6 +96,7 @@ struct StorageTrial {
             }
             guard try store.completed().elementsEqual(rows, by: ==) else { throw CocoaError(.fileReadCorruptFile) }
         }
-        return "app=\(app.pid) \(app.inserted), widget=\(widget.pid) \(widget.inserted), reader=\(getpid()), sets=\(rows), replay=\(replay)"
+        return
+            "app=\(app.pid) \(app.inserted), widget=\(widget.pid) \(widget.inserted), reader=\(getpid()), sets=\(rows), replay=\(replay)"
     }
 }

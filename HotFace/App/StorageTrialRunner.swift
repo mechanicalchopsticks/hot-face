@@ -7,7 +7,8 @@ enum StorageTrialRunner {
     static func runIfRequested() async {
         let arguments = ProcessInfo.processInfo.arguments
         guard let mode = arguments.firstIndex(where: { ["-storage-trial", "-recover-storage-trial"].contains($0) }),
-              arguments.indices.contains(mode + 1), let id = UUID(uuidString: arguments[mode + 1]) else { return }
+            arguments.indices.contains(mode + 1), let id = UUID(uuidString: arguments[mode + 1])
+        else { return }
         let replay = arguments[mode] == "-recover-storage-trial"
         var activity: Activity<StorageTrialAttributes>?
         let result: String
@@ -19,9 +20,11 @@ enum StorageTrialRunner {
                 try Data().write(to: marker, options: .withoutOverwriting)
                 try Data(id.uuidString.utf8).write(to: StorageTrial.pendingCommand(), options: .atomic)
                 writer = Task.detached { try trial.submit(.app) }
-                activity = try Activity.request(attributes: StorageTrialAttributes(trialID: id),
-                                                content: ActivityContent(state: .init(), staleDate: nil))
-                CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(),
+                activity = try Activity.request(
+                    attributes: StorageTrialAttributes(trialID: id),
+                    content: ActivityContent(state: .init(), staleDate: nil))
+                CFNotificationCenterPostNotification(
+                    CFNotificationCenterGetDarwinNotifyCenter(),
                     CFNotificationName(StorageTrial.commandNotification as CFString), nil, nil, true)
             }
             try await writer?.value
@@ -35,7 +38,8 @@ enum StorageTrialRunner {
             result = "FAIL " + String(describing: error)
         }
         if !replay, let command = try? StorageTrial.pendingCommand(),
-           (try? String(contentsOf: command, encoding: .utf8)) == id.uuidString {
+            (try? String(contentsOf: command, encoding: .utf8)) == id.uuidString
+        {
             try? FileManager.default.removeItem(at: command)
         }
         await activity?.end(nil, dismissalPolicy: .immediate)

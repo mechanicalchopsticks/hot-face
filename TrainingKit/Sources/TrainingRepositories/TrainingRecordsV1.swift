@@ -12,8 +12,10 @@ extension TrainingSchemaV1 {
         public private(set) var performedAt: Date
         private var performanceData: Data
 
-        public init(sessionID: UUID, exerciseID: UUID, number: Int, performedAt: Date,
-                    performance: SetPerformance) throws {
+        public init(
+            sessionID: UUID, exerciseID: UUID, number: Int, performedAt: Date,
+            performance: SetPerformance
+        ) throws {
             self.id = UUID()
             self.sessionID = sessionID
             self.exerciseID = exerciseID
@@ -69,8 +71,10 @@ extension TrainingSchemaV1 {
         private var previousData: Data
         private var updatedData: Data
 
-        public init(routineID: UUID, date: Date, origin: String,
-                    previous: ExercisePrescription, updated: ExercisePrescription) throws {
+        public init(
+            routineID: UUID, date: Date, origin: String,
+            previous: ExercisePrescription, updated: ExercisePrescription
+        ) throws {
             self.id = UUID()
             self.routineID = routineID
             self.date = date

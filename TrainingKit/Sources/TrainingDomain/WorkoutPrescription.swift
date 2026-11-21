@@ -72,8 +72,10 @@ public struct RoutinePlan: Codable, Equatable, Sendable {
     public var restBetweenSets: TimeInterval
     public var restBetweenExercises: TimeInterval
 
-    public init(name: String, days: [RoutineDay], restBetweenSets: TimeInterval = 105,
-                restBetweenExercises: TimeInterval = 135) {
+    public init(
+        name: String, days: [RoutineDay], restBetweenSets: TimeInterval = 105,
+        restBetweenExercises: TimeInterval = 135
+    ) {
         self.name = name
         self.days = days
         self.restBetweenSets = restBetweenSets

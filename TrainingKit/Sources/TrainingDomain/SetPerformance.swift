@@ -10,8 +10,10 @@ public struct SetPerformance: Codable, Equatable, Sendable {
     public var perSide: Bool
     public var isPartial: Bool
 
-    public init(segments: [ExerciseSegment], load: ExerciseLoad? = nil, perSide: Bool = false,
-                isPartial: Bool = false) {
+    public init(
+        segments: [ExerciseSegment], load: ExerciseLoad? = nil, perSide: Bool = false,
+        isPartial: Bool = false
+    ) {
         self.segments = segments
         self.load = load
         self.perSide = perSide

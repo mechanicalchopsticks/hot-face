@@ -1,7 +1,7 @@
 import ActivityKit
+import SwiftUI
 import TrainingDomain
 import TrainingInterface
-import SwiftUI
 import WidgetKit
 
 struct WorkoutControls: View {
@@ -47,7 +47,8 @@ struct WorkoutControls: View {
         if let onAction {
             Button(label) { onAction(action, number) }
         } else {
-            Button(intent: WorkoutIntent(action, activityID: activityID, revision: workout.revision, setNumber: number)) {
+            Button(intent: WorkoutIntent(action, activityID: activityID, revision: workout.revision, setNumber: number))
+            {
                 Text(label)
             }
         }

@@ -1,6 +1,6 @@
 import ActivityKit
-import TrainingDomain
 import SwiftUI
+import TrainingDomain
 import WidgetKit
 
 @main
@@ -32,7 +32,9 @@ struct WorkoutSetWidget: Widget {
             } compactLeading: {
                 Image(systemName: "dumbbell")
             } compactTrailing: {
-                Text("\(context.state.workout.currentSet(at: context.state.presentationDate(isStale: context.isStale, now: .now)))")
+                Text(
+                    "\(context.state.workout.currentSet(at: context.state.presentationDate(isStale: context.isStale, now: .now)))"
+                )
             } minimal: {
                 Image(systemName: "dumbbell")
             }

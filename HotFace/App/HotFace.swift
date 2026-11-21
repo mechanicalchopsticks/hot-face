@@ -1,7 +1,7 @@
 import ActivityKit
-import TrainingDomain
 import AlarmKit
 import SwiftUI
+import TrainingDomain
 
 @main
 struct HotFace: App {
@@ -30,7 +30,8 @@ private struct ProbeView: View {
                     WorkoutControls(activityID: activity.id, workout: workout) { action, number in
                         let revision = workout.revision
                         run {
-                            try await WorkoutController.shared.apply(action, id: activity.id, revision: revision, setNumber: number)
+                            try await WorkoutController.shared.apply(
+                                action, id: activity.id, revision: revision, setNumber: number)
                         }
                     }
                     Button("End activity") { run { try await WorkoutController.shared.finish(activity) } }
@@ -82,8 +83,7 @@ private struct ProbeView: View {
         performingAction = true
         notice = nil
         Task { @MainActor in
-            do { try await operation() }
-            catch { notice = error.localizedDescription }
+            do { try await operation() } catch { notice = error.localizedDescription }
             refresh()
             performingAction = false
         }

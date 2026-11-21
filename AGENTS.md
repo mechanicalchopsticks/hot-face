@@ -16,6 +16,8 @@ Use the intended locale for user-facing text and preserve user-entered content i
 
 When creating a commit or drafting its message, use the [Git commit skill](.agents/skills/git-commit/SKILL.md).
 
+Format edited Swift files with `xcrun swift-format format --in-place <files>`. Run the CI check from the repository root with `git ls-files -z -- '*.swift' | xargs -0 xcrun swift-format lint --strict`.
+
 ## Response style
 
 Keep replies succinct, direct, and easy to scan. Flag deeper context with `[▶ Expand: Topic Name]` or “More details available upon request”. Expand only when asked.

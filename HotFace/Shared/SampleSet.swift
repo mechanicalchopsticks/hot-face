@@ -1,6 +1,6 @@
 import ActivityKit
-import TrainingDomain
 import Foundation
+import TrainingDomain
 
 struct SampleSet: ActivityAttributes {
     struct ContentState: Codable, Hashable {

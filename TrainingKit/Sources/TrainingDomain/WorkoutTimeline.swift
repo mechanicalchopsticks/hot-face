@@ -45,8 +45,9 @@ public struct WorkoutTimeline: Codable, Hashable, Sendable {
     ) -> Self? {
         let now = clock.now
         guard revision == expectedRevision, currentSet(at: now) == expectedSet,
-              exerciseDuration.isFinite, exerciseDuration > 0,
-              restDuration.isFinite, restDuration >= 0 else { return nil }
+            exerciseDuration.isFinite, exerciseDuration > 0,
+            restDuration.isFinite, restDuration >= 0
+        else { return nil }
         let phase = phase(at: now)
         var next = Self(setNumber: expectedSet)
         next.revision = revision + 1

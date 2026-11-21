@@ -43,8 +43,8 @@ private struct FixedClock: WorkoutClock {
     let now: Date
 }
 
-private extension WorkoutTimeline {
-    func applying(_ action: WorkoutAction, at date: Date) -> Self? {
+extension WorkoutTimeline {
+    fileprivate func applying(_ action: WorkoutAction, at date: Date) -> Self? {
         applying(
             action, expectedRevision: revision, expectedSet: currentSet(at: date),
             exerciseDuration: 20, restDuration: 15, clock: FixedClock(now: date)

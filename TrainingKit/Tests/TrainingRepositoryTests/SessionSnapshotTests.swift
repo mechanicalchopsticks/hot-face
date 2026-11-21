@@ -20,7 +20,8 @@ struct SessionSnapshotTests {
 
             let equipment = EquipmentDescription(name: "Barra olímpica", kind: .barbell, unit: .kg)
             let weight = ExerciseLoad(amount: 12.5, unit: .kg, representation: .perSide, implementCount: 2)
-            var first = ExercisePrescription(name: "Curl 21", sets: 4, segments: Array(repeating: .repetitions(7), count: 3))
+            var first = ExercisePrescription(
+                name: "Curl 21", sets: 4, segments: Array(repeating: .repetitions(7), count: 3))
             first.load = .estimated(weight)
             first.equipmentID = equipment.id
             first.station = "MAQ 7"
@@ -29,8 +30,9 @@ struct SessionSnapshotTests {
             let day = RoutineDay(name: "Día A", exercises: [first, second])
             let otherDay = RoutineDay(name: "Día B", exercises: [])
             let original = RoutinePlan(name: "Fuerza", days: [otherDay, day])
-            let actual = SetPerformance(segments: [.repetitions(7), .repetitions(7), .repetitions(5)],
-                                        load: weight, isPartial: true)
+            let actual = SetPerformance(
+                segments: [.repetitions(7), .repetitions(7), .repetitions(5)],
+                load: weight, isPartial: true)
             let start = Date(timeIntervalSince1970: 1000)
             let end = start.addingTimeInterval(300)
 
@@ -50,8 +52,10 @@ struct SessionSnapshotTests {
             try reopen().withContext { context in
                 let session = try #require(context.fetch(FetchDescriptor<V1.Session>()).first)
                 #expect(session.finishedAt == nil)
-                context.insert(try V1.PerformedSet(sessionID: session.id, exerciseID: first.id, number: 1,
-                                                   performedAt: end, performance: actual))
+                context.insert(
+                    try V1.PerformedSet(
+                        sessionID: session.id, exerciseID: first.id, number: 1,
+                        performedAt: end, performance: actual))
                 context.insert(V1.Rating(sessionID: session.id, exerciseID: first.id, effort: .hard, date: end))
                 session.skippedExerciseIDs = [second.id]
                 session.finish(at: end, partial: true)
@@ -109,8 +113,9 @@ struct SessionSnapshotTests {
             let routineID = UUID()
             let date = Date(timeIntervalSince1970: 1300)
             try CoordinatedModelStore(trainingDirectory: directory).withContext { context in
-                let change = try V1.PrescriptionChange(routineID: routineID, date: date, origin: "suggestion",
-                                                       previous: previous, updated: updated)
+                let change = try V1.PrescriptionChange(
+                    routineID: routineID, date: date, origin: "suggestion",
+                    previous: previous, updated: updated)
                 let progression = V1.Progression(exerciseID: updated.id)
                 progression.returnRepetitions = 10
                 context.insert(change)

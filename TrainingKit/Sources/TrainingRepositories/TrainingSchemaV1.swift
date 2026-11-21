@@ -6,8 +6,10 @@ import TrainingDomain
 public enum TrainingSchemaV1: VersionedSchema {
     public static let versionIdentifier = Schema.Version(1, 0, 0)
     public static var models: [any PersistentModel.Type] {
-        [Gym.self, Routine.self, Cycle.self, Session.self, PerformedSet.self,
-         Rating.self, Progression.self, PrescriptionChange.self, Note.self]
+        [
+            Gym.self, Routine.self, Cycle.self, Session.self, PerformedSet.self,
+            Rating.self, Progression.self, PrescriptionChange.self, Note.self,
+        ]
     }
 
     @Model
@@ -85,7 +87,9 @@ public enum TrainingSchemaV1: VersionedSchema {
         public var skippedExerciseIDs: [UUID]
         private var prescriptionData: Data
 
-        public init(id: UUID = UUID(), routine: Routine, gym: Gym, dayID: UUID, cycle: Cycle? = nil, startedAt: Date) throws {
+        public init(id: UUID = UUID(), routine: Routine, gym: Gym, dayID: UUID, cycle: Cycle? = nil, startedAt: Date)
+            throws
+        {
             guard routine.gymID == gym.id else { throw SessionCreationError.mismatchedGym }
             if let cycle, cycle.routineID != routine.id { throw SessionCreationError.mismatchedCycle }
             let plan = try routine.plan

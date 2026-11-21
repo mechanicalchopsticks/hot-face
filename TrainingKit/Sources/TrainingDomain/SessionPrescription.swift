@@ -42,8 +42,10 @@ public struct SessionPrescription: Codable, Equatable, Sendable {
     public let restBetweenSets: TimeInterval
     public let restBetweenExercises: TimeInterval
 
-    public init(gymID: UUID, gymName: String, routineID: UUID, routineRevision: Int,
-                plan: RoutinePlan, day: RoutineDay, equipment: [EquipmentDescription]) {
+    public init(
+        gymID: UUID, gymName: String, routineID: UUID, routineRevision: Int,
+        plan: RoutinePlan, day: RoutineDay, equipment: [EquipmentDescription]
+    ) {
         self.gymID = gymID
         self.gymName = gymName
         self.routineID = routineID

@@ -22,15 +22,21 @@ extension HoldCue {
     }
 }
 
-final class HoldAudioDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate, AVAudioPlayerDelegate {
+final class HoldAudioDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate, AVAudioPlayerDelegate
+{
     private var player: AVAudioPlayer?
 
-    func application(_ application: UIApplication, didFinishLaunchingWithOptions options: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
+    func application(
+        _ application: UIApplication,
+        didFinishLaunchingWithOptions options: [UIApplication.LaunchOptionsKey: Any]? = nil
+    ) -> Bool {
         UNUserNotificationCenter.current().delegate = self
         return true
     }
 
-    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification) async -> UNNotificationPresentationOptions {
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification) async
+        -> UNNotificationPresentationOptions
+    {
         guard let cue = HoldCue(rawValue: notification.request.content.userInfo["holdCue"] as? String ?? "") else {
             return [.banner, .sound]
         }
@@ -129,14 +135,17 @@ struct HoldAudioProbe: View {
                             } else {
                                 _ = try await center.requestAuthorization(options: [.alert, .sound])
                                 let settings = await center.notificationSettings()
-                                guard settings.authorizationStatus == .authorized, settings.soundSetting == .enabled else {
-                                    errorMessage = String(localized: "Allow notifications and sounds in Settings to run the audio test.")
+                                guard settings.authorizationStatus == .authorized, settings.soundSetting == .enabled
+                                else {
+                                    errorMessage = String(
+                                        localized: "Allow notifications and sounds in Settings to run the audio test.")
                                     return
                                 }
                             }
                             activeAlarms = useAlarms
-                            let first = HoldTrial(set: 1, startsAutomatically: automatic, pauseDuration: Double(pause),
-                                                  holdDuration: longHold ? 90 : 6, now: .now)
+                            let first = HoldTrial(
+                                set: 1, startsAutomatically: automatic, pauseDuration: Double(pause),
+                                holdDuration: longHold ? 90 : 6, now: .now)
                             try await install(first)
                         } catch { errorMessage = error.localizedDescription }
                     }
@@ -154,8 +163,7 @@ struct HoldAudioProbe: View {
         scheduling = true
         Task { @MainActor in
             defer { scheduling = false }
-            do { try await install(next) }
-            catch { errorMessage = error.localizedDescription }
+            do { try await install(next) } catch { errorMessage = error.localizedDescription }
         }
     }
 
@@ -167,8 +175,9 @@ struct HoldAudioProbe: View {
                 let ids = trial.events.map { _ in UUID() }
                 alarmIDs = try JSONEncoder().encode(ids)
                 for (event, id) in zip(trial.events, ids) {
-                    _ = try await WorkoutController.shared.schedule(at: event.date, title: event.cue.title,
-                                                                    id: id, sound: .named(event.cue.soundFile))
+                    _ = try await WorkoutController.shared.schedule(
+                        at: event.date, title: event.cue.title,
+                        id: id, sound: .named(event.cue.soundFile))
                 }
             } else {
                 for event in trial.events {
@@ -190,7 +199,8 @@ struct HoldAudioProbe: View {
         content.body = String(localized: "Set \(set)")
         content.sound = UNNotificationSound(named: .init(rawValue: event.cue.soundFile))
         content.userInfo = ["holdCue": event.cue.rawValue]
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: max(0.1, event.date.timeIntervalSinceNow), repeats: false)
+        let trigger = UNTimeIntervalNotificationTrigger(
+            timeInterval: max(0.1, event.date.timeIntervalSinceNow), repeats: false)
         try await center.add(.init(identifier: event.cue.notificationID, content: content, trigger: trigger))
     }
 

@@ -24,9 +24,10 @@ private struct Fixture {
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         let day = RoutineDay(name: "A", exercises: [exercise])
         // Seed a real V1 store, as it would exist before installing the command-capable repository.
-        let oldStore = CoordinatedModelStore(schema: Schema(versionedSchema: V1.self),
-                                             storeURL: directory.appendingPathComponent("training.store"),
-                                             lockURL: directory.appendingPathComponent("training.lock"))
+        let oldStore = CoordinatedModelStore(
+            schema: Schema(versionedSchema: V1.self),
+            storeURL: directory.appendingPathComponent("training.store"),
+            lockURL: directory.appendingPathComponent("training.lock"))
         let sessionID = self.sessionID
         let exercise = self.exercise
         let performance = self.performance
@@ -38,11 +39,14 @@ private struct Fixture {
             context.insert(routine)
             context.insert(cycle)
             if withExistingSet {
-                let session = try V1.Session(id: sessionID, routine: routine, gym: gym, dayID: day.id,
-                                             cycle: cycle, startedAt: FixedClock(10).now)
+                let session = try V1.Session(
+                    id: sessionID, routine: routine, gym: gym, dayID: day.id,
+                    cycle: cycle, startedAt: FixedClock(10).now)
                 context.insert(session)
-                context.insert(try V1.PerformedSet(sessionID: sessionID, exerciseID: exercise.id, number: 1,
-                                                   performedAt: FixedClock(20).now, performance: performance))
+                context.insert(
+                    try V1.PerformedSet(
+                        sessionID: sessionID, exerciseID: exercise.id, number: 1,
+                        performedAt: FixedClock(20).now, performance: performance))
             }
             try context.save()
             return SessionCommand.Action.start(routineID: routine.id, gymID: gym.id, dayID: day.id, cycleID: cycle.id)
@@ -70,8 +74,10 @@ struct SessionCommandTests {
     @Test func replaysAStoredV2ReceiptAfterSessionClosure() throws {
         // Captured once from the V2 writer after starting, completing one set, and finishing.
         // A closed session accepts this set command only if its original receipt is readable.
-        let fixture = try #require(Bundle.module.url(forResource: "closed-session-v2", withExtension: "store",
-                                                     subdirectory: "Fixtures"))
+        let fixture = try #require(
+            Bundle.module.url(
+                forResource: "closed-session-v2", withExtension: "store",
+                subdirectory: "Fixtures"))
         let files = FileManager.default
         let directory = files.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try files.createDirectory(at: directory, withIntermediateDirectories: true)
@@ -187,7 +193,8 @@ struct SessionCommandTests {
 
         let collision = SessionCommand(id: first.id, sessionID: f.sessionID, action: .finish)
         #expect(throws: SessionCommandError.conflictingIdentifier) { try f.store.apply(collision, clock: clock) }
-        let changed = f.command(.completeSet(exerciseID: f.exercise.id, number: 1, performance: SetPerformance(segments: [])))
+        let changed = f.command(
+            .completeSet(exerciseID: f.exercise.id, number: 1, performance: SetPerformance(segments: [])))
         #expect(throws: SessionCommandError.conflictingSet) { try f.store.apply(changed, clock: clock) }
 
         try f.applyAndRetry(f.command(.finish), at: 200)

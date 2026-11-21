@@ -18,8 +18,10 @@ struct HoldTrial: Codable {
     let holdDuration: TimeInterval
     let events: [HoldEvent]
 
-    init(set: Int, startsAutomatically: Bool, pauseDuration: TimeInterval,
-         holdDuration: TimeInterval, now: Date, lastHoldOnly: Bool = false) {
+    init(
+        set: Int, startsAutomatically: Bool, pauseDuration: TimeInterval,
+        holdDuration: TimeInterval, now: Date, lastHoldOnly: Bool = false
+    ) {
         self.set = set
         self.startsAutomatically = startsAutomatically
         self.pauseDuration = pauseDuration
@@ -49,11 +51,13 @@ struct HoldTrial: Codable {
         guard let last = events.last, now >= last.date else { return nil }
         switch last.cue {
         case .holdPause where now >= last.date.addingTimeInterval(pauseDuration):
-            return Self(set: set, startsAutomatically: startsAutomatically, pauseDuration: pauseDuration,
-                        holdDuration: holdDuration, now: now, lastHoldOnly: true)
+            return Self(
+                set: set, startsAutomatically: startsAutomatically, pauseDuration: pauseDuration,
+                holdDuration: holdDuration, now: now, lastHoldOnly: true)
         case .restComplete:
-            return Self(set: 2, startsAutomatically: startsAutomatically, pauseDuration: pauseDuration,
-                        holdDuration: holdDuration, now: now)
+            return Self(
+                set: 2, startsAutomatically: startsAutomatically, pauseDuration: pauseDuration,
+                holdDuration: holdDuration, now: now)
         default:
             return nil
         }

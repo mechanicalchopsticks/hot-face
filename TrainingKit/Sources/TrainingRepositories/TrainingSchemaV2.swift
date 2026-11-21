@@ -4,9 +4,10 @@ import TrainingDomain
 
 extension CoordinatedModelStore {
     public init(trainingDirectory: URL) {
-        self.init(schema: Schema(versionedSchema: TrainingSchemaV2.self),
-                  storeURL: trainingDirectory.appendingPathComponent("training.store"),
-                  lockURL: trainingDirectory.appendingPathComponent("training.lock"))
+        self.init(
+            schema: Schema(versionedSchema: TrainingSchemaV2.self),
+            storeURL: trainingDirectory.appendingPathComponent("training.store"),
+            lockURL: trainingDirectory.appendingPathComponent("training.lock"))
     }
 }
 

@@ -1,9 +1,9 @@
 import ActivityKit
-import TrainingAdapters
-import TrainingDomain
 import AlarmKit
 import AppIntents
 import SwiftUI
+import TrainingAdapters
+import TrainingDomain
 
 struct WorkoutIntent: LiveActivityIntent {
     static var title: LocalizedStringResource = "Control sample set"
@@ -24,7 +24,8 @@ struct WorkoutIntent: LiveActivityIntent {
 
     func perform() async throws -> some IntentResult {
         if let action = WorkoutAction(rawValue: command) {
-            let preparation = try await WorkoutController.shared.apply(action, id: activityID, revision: revision, setNumber: setNumber)
+            let preparation = try await WorkoutController.shared.apply(
+                action, id: activityID, revision: revision, setNumber: setNumber)
             // Deliver the exercise snapshot before this Lock Screen interaction finishes.
             await preparation?.value
         }
@@ -90,10 +91,12 @@ final class WorkoutController {
         guard !busy else { throw ProbeError.actionInProgress }
         guard let activity = Activity<SampleSet>.activities.first(where: { $0.id == id }) else { return nil }
         let previous = activity.content.state
-        guard let next = previous.workout.applying(
-            action, expectedRevision: revision, expectedSet: setNumber,
-            exerciseDuration: 20, restDuration: 15, clock: clock
-        ) else { return nil }
+        guard
+            let next = previous.workout.applying(
+                action, expectedRevision: revision, expectedSet: setNumber,
+                exerciseDuration: 20, restDuration: 15, clock: clock
+            )
+        else { return nil }
         guard manager.authorizationState == .authorized else { throw ProbeError.alarmPermission }
         busy = true
         defer { busy = false }
@@ -127,7 +130,9 @@ final class WorkoutController {
     }
 
     @discardableResult
-    private func scheduleNextUpdate(for activity: Activity<SampleSet>, content: SampleSet.ContentState, at boundary: Date?) -> Task<Void, Never>? {
+    private func scheduleNextUpdate(
+        for activity: Activity<SampleSet>, content: SampleSet.ContentState, at boundary: Date?
+    ) -> Task<Void, Never>? {
         guard let boundary else {
             phaseUpdates = nil
             return nil
@@ -142,7 +147,9 @@ final class WorkoutController {
             } catch { return }
             // All accepted actions replace this task. ActivityKit's readable snapshot may
             // still reflect the previous revision immediately after a pause and resume.
-            guard !Task.isCancelled, activity.activityState == .active || activity.activityState == .stale else { return }
+            guard !Task.isCancelled, activity.activityState == .active || activity.activityState == .stale else {
+                return
+            }
             let next = await publish(content, for: activity)
             guard !Task.isCancelled else { return }
             scheduleNextUpdate(for: activity, content: content, at: next)
@@ -166,16 +173,20 @@ final class WorkoutController {
         }
     }
 
-    func schedule(at date: Date, title: LocalizedStringResource, id: UUID = UUID(),
-                  sound: AlertConfiguration.AlertSound = .default) async throws -> UUID {
+    func schedule(
+        at date: Date, title: LocalizedStringResource, id: UUID = UUID(),
+        sound: AlertConfiguration.AlertSound = .default
+    ) async throws -> UUID {
         let alert: AlarmPresentation.Alert
         if #available(iOS 26.1, *) {
             alert = AlarmPresentation.Alert(title: title)
         } else {
-            alert = AlarmPresentation.Alert(title: title, stopButton: AlarmButton(text: "Stop", textColor: .white, systemImageName: "stop.fill"))
+            alert = AlarmPresentation.Alert(
+                title: title, stopButton: AlarmButton(text: "Stop", textColor: .white, systemImageName: "stop.fill"))
         }
         let attributes = AlarmAttributes<WorkoutAlarmMetadata>(presentation: .init(alert: alert), tintColor: .orange)
-        let alarm = try await manager.schedule(id: id, configuration: .alarm(schedule: .fixed(date), attributes: attributes, sound: sound))
+        let alarm = try await manager.schedule(
+            id: id, configuration: .alarm(schedule: .fixed(date), attributes: attributes, sound: sound))
         return alarm.id
     }
 }

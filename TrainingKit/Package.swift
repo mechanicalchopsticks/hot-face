@@ -5,9 +5,11 @@ let package = Package(
     name: "TrainingKit",
     platforms: [.iOS("26.0"), .macOS(.v14)],
     products: [
-        .library(name: "TrainingKit", targets: [
-            "TrainingDomain", "TrainingRepositories", "TrainingAdapters", "TrainingInterface",
-        ]),
+        .library(
+            name: "TrainingKit",
+            targets: [
+                "TrainingDomain", "TrainingRepositories", "TrainingAdapters", "TrainingInterface",
+            ])
     ],
     targets: [
         .target(name: "TrainingDomain"),
@@ -15,7 +17,8 @@ let package = Package(
         .target(name: "TrainingAdapters", dependencies: ["TrainingDomain"]),
         .target(name: "TrainingInterface", dependencies: ["TrainingDomain"]),
         .testTarget(name: "TrainingDomainTests", dependencies: ["TrainingDomain"]),
-        .testTarget(name: "TrainingRepositoryTests", dependencies: ["TrainingRepositories", "TrainingDomain"],
-                    resources: [.copy("Fixtures")]),
+        .testTarget(
+            name: "TrainingRepositoryTests", dependencies: ["TrainingRepositories", "TrainingDomain"],
+            resources: [.copy("Fixtures")]),
     ]
 )
