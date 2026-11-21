@@ -67,6 +67,38 @@ private struct Fixture {
 }
 
 struct SessionCommandTests {
+    @Test func replaysAStoredV2ReceiptAfterSessionClosure() throws {
+        // Captured once from the V2 writer after starting, completing one set, and finishing.
+        // A closed session accepts this set command only if its original receipt is readable.
+        let fixture = try #require(Bundle.module.url(forResource: "closed-session-v2", withExtension: "store",
+                                                     subdirectory: "Fixtures"))
+        let files = FileManager.default
+        let directory = files.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try files.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? files.removeItem(at: directory) }
+        try files.copyItem(at: fixture, to: directory.appendingPathComponent("training.store"))
+
+        let exerciseID = try #require(UUID(uuidString: "00000000-0000-4000-8000-000000000001"))
+        let sessionID = try #require(UUID(uuidString: "00000000-0000-4000-8000-000000000002"))
+        let commandID = try #require(UUID(uuidString: "00000000-0000-4000-8000-000000000003"))
+        let load = ExerciseLoad(amount: 12.5, unit: .kg, representation: .perImplement, implementCount: 1)
+        let actual = SetPerformance(segments: [.repetitions(8)], load: load, perSide: true)
+        let action = SessionCommand.Action.completeSet(exerciseID: exerciseID, number: 1, performance: actual)
+        let command = SessionCommand(id: commandID, sessionID: sessionID, action: action)
+
+        let store = CoordinatedModelStore(trainingDirectory: directory)
+        #expect(try store.apply(command, clock: FixedClock(86400)) == .alreadyApplied)
+        try store.withContext { context in
+            let session = try #require(context.fetch(FetchDescriptor<V1.Session>()).first)
+            #expect(session.id == sessionID && session.finishedAt == FixedClock(1000).now)
+            let sets = try context.fetch(FetchDescriptor<V1.PerformedSet>())
+            #expect(sets.count == 1)
+            let set = try #require(sets.first)
+            #expect(try set.performance == actual)
+            #expect(set.performedAt == FixedClock(1000).now)
+        }
+    }
+
     @Test func recoversEveryTransitionAndIgnoresRepeatedTaps() throws {
         let f = try Fixture()
         defer { try? FileManager.default.removeItem(at: f.directory) }
