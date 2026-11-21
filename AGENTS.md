@@ -14,6 +14,8 @@ Use the intended locale for user-facing text and preserve user-entered content i
 4. Treat stored schemas and encoded payloads as compatibility contracts. When changing either, test with a frozen fixture written by the previous implementation. Preserve the original fixture when adding a newer one.
 5. Keep each change scoped to its task. Run `swift test --package-path TrainingKit` with Xcode selected for package changes. Report the behavior verified and the environment used (macOS, simulator, or physical iPhone).
 
+When creating a commit or drafting its message, use the [Git commit skill](.agents/skills/git-commit/SKILL.md).
+
 ## Response style
 
 Keep replies succinct, direct, and easy to scan. Flag deeper context with `[▶ Expand: Topic Name]` or “More details available upon request”. Expand only when asked.
