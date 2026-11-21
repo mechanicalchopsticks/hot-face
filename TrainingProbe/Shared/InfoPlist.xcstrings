@@ -1,0 +1,38 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "CFBundleDisplayName": {
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prueba de entrenamiento"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Training Probe"
+          }
+        }
+      }
+    },
+    "NSAlarmKitUsageDescription": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Training Probe uses alarms to signal the end of your sample set and rest while the iPhone is locked."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La app usa alarmas para avisarte al terminar la serie de prueba y el descanso con el iPhone bloqueado."
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

@@ -1,0 +1,110 @@
+# Repository instructions
+
+## Code language
+
+Write all code in English throughout this repository, regardless of the language used in the chat. Use English for all identifiers, including domain entities, models, types, properties, functions, parameters, variables, modules, files, and tests. Write code comments and documentation comments in English as well.
+
+Use the intended locale for user-facing text and preserve user-entered content in its original language.
+
+## Response Style & Expansion Protocol
+
+1. Be extremely succinct, direct, and scannable. Avoid conversational filler or redundant preambles.
+2. When a topic or step has deeper context, technical details, or background information available, embed a visual signal or explicit note to show it can be expanded.
+3. Use the format "[▶ Expand: Topic Name]" or appended text like "(More details available upon request)" at the end of sections that contain hidden complexity.
+4. Only unpack those details if the user explicitly asks to "expand," "tell me more," or deep-dive into that specific flagged section.
+
+## Sosumi Skill
+
+Use this skill to reliably fetch Apple docs as Markdown when coding agents need precise API details.
+
+### When to Use
+
+Use Sosumi when the request involves any of the following:
+
+- Apple platform APIs (`Swift`, `SwiftUI`, `UIKit`, `AppKit`, `Foundation`, etc.)
+- API signatures, availability, parameter behavior, or return semantics
+- Human Interface Guidelines questions
+- WWDC session transcript lookup
+- External Swift-DocC documentation (for example, GitHub Pages or Swift Package Index hosts)
+
+### Core Workflow
+
+1. If you already have a `developer.apple.com` URL, replace the host with `sosumi.ai` and keep the same path.
+2. If you do not know the exact page path, search first, then fetch the best match.
+3. Prefer specific symbol pages instead of broad top-level pages when answering implementation questions.
+
+#### Optional CLI Preflight
+
+If the Sosumi CLI is available, quickly verify local access before deeper debugging:
+
+- `sosumi --version` confirms the CLI is installed and on `PATH`.
+- `sosumi --help` shows top-level usage.
+- `sosumi <command> --help` is the manual for command-specific behavior.
+
+### HTTP Usage
+
+Replace `developer.apple.com` with `sosumi.ai`:
+
+- Original: `https://developer.apple.com/documentation/swift/array`
+- AI-readable: `https://sosumi.ai/documentation/swift/array`
+
+### Content Types
+
+#### Apple API Reference
+
+- Pattern: `https://sosumi.ai/documentation/{framework}/{symbol}`
+- Examples:
+ - `https://sosumi.ai/documentation/swift/array`
+ - `https://sosumi.ai/documentation/swiftui/view`
+
+#### Human Interface Guidelines
+
+- Pattern: `https://sosumi.ai/design/human-interface-guidelines/{topic}`
+- Examples:
+ - `https://sosumi.ai/design/human-interface-guidelines`
+ - `https://sosumi.ai/design/human-interface-guidelines/foundations/color`
+
+#### Apple Video Transcripts
+
+- Pattern: `https://sosumi.ai/videos/play/{collection}/{id}`
+- Examples:
+ - `https://sosumi.ai/videos/play/wwdc2021/10133`
+ - `https://sosumi.ai/videos/play/meet-with-apple/208`
+
+#### External Swift-DocC
+
+- Pattern: `https://sosumi.ai/external/{full-https-url}`
+- Examples:
+ - `https://sosumi.ai/external/https://swiftlang.github.io/swift-docc-plugin/documentation/swiftdoccplugin/`
+ - `https://sosumi.ai/external/https://swiftpackageindex.com/pointfreeco/swift-composable-architecture/1.23.1/documentation/composablearchitecture`
+
+### MCP Tools Quick Reference
+
+Use these when Sosumi is configured as an MCP server (`https://sosumi.ai/mcp`):
+
+| Tool | Parameters | Use |
+|---|---|---|
+| `searchAppleDocumentation` | `query: string` | Search Apple documentation and return structured results |
+| `fetchAppleDocumentation` | `path: string` | Fetch Apple docs or HIG content by path as Markdown |
+| `fetchAppleVideoTranscript` | `path: string` | Fetch Apple video transcript by `/videos/play/...` path |
+| `fetchExternalDocumentation` | `url: string` | Fetch external Swift-DocC page by absolute HTTPS URL |
+
+### Best Practices
+
+- Search first if the exact path is unknown.
+- Fetch targeted symbol pages for coding questions.
+- Keep source links in answers so users can verify details quickly.
+- Use Sosumi paths directly in responses whenever referencing Apple documentation pages.
+- Don't rely on conformance conditions, such as "Conforms when `Element` conforms to `Hashable`." Apple's documentation data leaves some out and gets some wrong. When a condition matters, read the declaration in the module's `.swiftinterface` file in the SDK.
+
+### Troubleshooting
+
+#### 404 or sparse output
+
+- The path may be incorrect or too broad.
+- Run a search query first, then fetch a specific result path.
+
+#### External page cannot be fetched
+
+- The host may block access via `robots.txt` or `X-Robots-Tag` directives.
+- Try another canonical page URL for the same symbol.

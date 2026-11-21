@@ -4,6 +4,10 @@
 
 ## User settings
 xcuserdata/
+.DS_Store
+
+# Local workout reference photos
+/rutinas/
 
 ## Obj-C/Swift specific
 *.hmap
