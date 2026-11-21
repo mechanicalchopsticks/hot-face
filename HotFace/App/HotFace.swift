@@ -8,7 +8,14 @@ struct HotFace: App {
     @UIApplicationDelegateAdaptor(HoldAudioDelegate.self) private var audioDelegate
 
     var body: some Scene {
-        WindowGroup { ProbeView().task { await StorageTrialRunner.runIfRequested() } }
+        WindowGroup {
+            if ProcessInfo.processInfo.arguments.contains("-workout-probe") {
+                ProbeView()
+            } else {
+                TrainingTabView()
+                    .task { await StorageTrialRunner.runIfRequested() }
+            }
+        }
     }
 }
 

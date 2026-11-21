@@ -293,6 +293,16 @@
         }
       }
     },
+    "History" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Historial"
+          }
+        }
+      }
+    },
     "Hold audio test" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -360,6 +370,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Notificaciones locales"
+          }
+        }
+      }
+    },
+    "No active routine" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No hay una rutina activa"
+          }
+        }
+      }
+    },
+    "No gym configured" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No hay un gimnasio configurado"
+          }
+        }
+      }
+    },
+    "No routines yet" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aún no hay rutinas"
+          }
+        }
+      }
+    },
+    "No workouts yet" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aún no hay entrenamientos"
           }
         }
       }
@@ -487,6 +537,16 @@
         }
       }
     },
+    "Routines" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rutinas"
+          }
+        }
+      }
+    },
     "Sample squat" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -542,6 +602,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Serie completada · Descanso iniciado"
+          }
+        }
+      }
+    },
+    "Settings" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajustes"
           }
         }
       }
@@ -642,6 +712,16 @@
         }
       }
     },
+    "Train" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entrenar"
+          }
+        }
+      }
+    },
     "Unknown" : {
       "localizations" : {
         "en" : {
@@ -665,6 +745,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Usar sostenimientos de 90 s para probar el reinicio"
+          }
+        }
+      }
+    },
+    "Your finished workouts will appear here." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aquí aparecerán tus entrenamientos finalizados."
+          }
+        }
+      }
+    },
+    "Your gym and data settings will appear here." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aquí aparecerán los ajustes de tu gimnasio y tus datos."
+          }
+        }
+      }
+    },
+    "Your saved routines will appear here." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aquí aparecerán las rutinas que guardes."
+          }
+        }
+      }
+    },
+    "Your training days will appear here when a routine is active." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aquí aparecerán tus días de entrenamiento cuando tengas una rutina activa."
           }
         }
       }

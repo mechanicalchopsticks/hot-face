@@ -33,7 +33,7 @@ Los modelos objetivo, iPhone 15 Pro e iPhone 16, son [compatibles con iOS 26](ht
 
 El proyecto `HotFace/HotFace.xcodeproj` compila con Xcode 27.2 y el SDK de simulador 27.2. Se instaló en un iPhone 18 Pro simulado con iOS 27.2. El registro de instalación confirmó la app y la extensión WidgetKit. `simctl launch` devolvió el proceso 17694 para `ejemplo.entrenamiento.prueba`. Los dos paquetes declaran iOS 26.0 como mínimo.
 
-Desde Xcode, seleccionar el esquema **HotFace**, elegir un simulador de iPhone y ejecutar. La pantalla ofrece iniciar y finalizar una actividad en vivo de una serie de sentadillas ficticia. Los identificadores de paquete son provisionales para la prueba.
+Desde Xcode, seleccionar el esquema **HotFace**, elegir un simulador de iPhone y ejecutar con el argumento de arranque `-workout-probe`. La pantalla ofrece iniciar y finalizar una actividad en vivo de una serie de sentadillas ficticia. Los identificadores de paquete son provisionales para la prueba.
 
 ## Firma de la prueba
 

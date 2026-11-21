@@ -15,7 +15,7 @@
 - [x] 2.2 Definir entidades versionadas e instantáneas de sesión; verificar guardado/recarga y que editar una rutina no modifica una sesión histórica.
 - [x] 2.3 Implementar comandos persistentes e idempotentes de sesión; probar doble toque y recuperación después de cada transición crítica.
 - [x] 2.4 Incorporar String Catalogs español/inglés en app y extensiones; verificar selección por idioma y formatos decimales/fechas sin cambiar kg/lb ni textos personalizados.
-- [ ] 2.5 Crear navegación Entrenar/Rutinas/Historial/Ajustes y estados vacíos; recorrerla en ambos idiomas con Dynamic Type y documentar cómo ejecutar las pruebas.
+- [x] 2.5 Crear navegación Entrenar/Rutinas/Historial/Ajustes y estados vacíos; recorrerla en ambos idiomas con Dynamic Type y documentar cómo ejecutar las pruebas.
 
 ## 3. Gimnasios, equipos y primera rutina
 

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		000000000000000000000068 /* TrainingTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000067 /* TrainingTabView.swift */; };
 		000000000000000000000059 /* StorageTrialWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000058 /* StorageTrialWidget.swift */; };
 		000000000000000000000057 /* StorageTrialRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000056 /* StorageTrialRunner.swift */; };
 		000000000000000000000054 /* StorageTrial.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000053 /* StorageTrial.swift */; };
@@ -63,6 +64,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		000000000000000000000067 /* TrainingTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingTabView.swift; sourceTree = "<group>"; };
 		000000000000000000000058 /* StorageTrialWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageTrialWidget.swift; sourceTree = "<group>"; };
 		000000000000000000000056 /* StorageTrialRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageTrialRunner.swift; sourceTree = "<group>"; };
 		000000000000000000000053 /* StorageTrial.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageTrial.swift; sourceTree = "<group>"; };
@@ -106,6 +108,7 @@
 			isa = PBXGroup;
 			children = (
 				000000000000000000000004 /* HotFace.swift */,
+				000000000000000000000067 /* TrainingTabView.swift */,
 				000000000000000000000056 /* StorageTrialRunner.swift */,
 				00000000000000000000004E /* lastSetComplete.wav */,
 				00000000000000000000004C /* restComplete.wav */,
@@ -233,6 +236,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				00000000000000000000000F /* HotFace.swift in Sources */,
+				000000000000000000000068 /* TrainingTabView.swift in Sources */,
 				000000000000000000000057 /* StorageTrialRunner.swift in Sources */,
 				000000000000000000000043 /* HoldTrial.swift in Sources */,
 				000000000000000000000041 /* HoldAudioProbe.swift in Sources */,
