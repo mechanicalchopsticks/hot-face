@@ -1,9 +1,6 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "%@" : {
-
-    },
     "3 s preparation · 20 s exercise · 15 s rest" : {
       "localizations" : {
         "en" : {
@@ -50,17 +47,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Actividad"
-          }
-        }
-      }
-    },
-    "Activity in progress" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Actividad en curso"
           }
         }
       }
@@ -199,17 +185,6 @@
         }
       }
     },
-    "Could not start the activity: %@" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No se pudo iniciar la actividad: %@"
-          }
-        }
-      }
-    },
     "Denied" : {
       "localizations" : {
         "en" : {
@@ -227,7 +202,6 @@
       }
     },
     "Disabled" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -255,7 +229,6 @@
       }
     },
     "Enabled" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -289,23 +262,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Finalizar prueba de audio"
-          }
-        }
-      }
-    },
-    "Exercise" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Exercise"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ejercicio"
           }
         }
       }
@@ -398,17 +354,6 @@
         }
       }
     },
-    "Live Activity" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Actividad en vivo"
-          }
-        }
-      }
-    },
     "Local notifications" : {
       "localizations" : {
         "es" : {
@@ -474,23 +419,6 @@
         }
       }
     },
-    "Paused" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Paused"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "En pausa"
-          }
-        }
-      }
-    },
     "Permissions" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -504,40 +432,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Permisos"
-          }
-        }
-      }
-    },
-    "Ready" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ready"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "En espera"
-          }
-        }
-      }
-    },
-    "Rest" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Rest"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Descanso"
           }
         }
       }
@@ -593,17 +487,6 @@
         }
       }
     },
-    "Sample set" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Serie ficticia"
-          }
-        }
-      }
-    },
     "Sample squat" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -642,17 +525,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Serie %lld"
-          }
-        }
-      }
-    },
-    "Set 1" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Serie 1"
           }
         }
       }
@@ -714,7 +586,6 @@
       }
     },
     "Start last hold" : {
-      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -725,7 +596,6 @@
       }
     },
     "Start second set" : {
-      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {

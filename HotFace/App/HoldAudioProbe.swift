@@ -89,7 +89,7 @@ struct HoldAudioProbe: View {
         Section("Hold audio test") {
             if let trial {
                 LabeledContent("Audio method") {
-                    Text(activeAlarms ? "System alarms" : "Local notifications")
+                    if activeAlarms { Text("System alarms") } else { Text("Local notifications") }
                 }
                 TimelineView(.periodic(from: .now, by: 1)) { tick in
                     let now = tick.date
@@ -103,8 +103,10 @@ struct HoldAudioProbe: View {
                         LabeledContent(next.cue.title) { Text(timerInterval: now...next.date, countsDown: true) }
                     }
                     if let next = trial.continuation(at: now) {
-                        Button(next.set == trial.set ? "Start last hold" : "Start second set") {
+                        Button {
                             if let current = trial.continuation(at: .now) { schedule(current) }
+                        } label: {
+                            if next.set == trial.set { Text("Start last hold") } else { Text("Start second set") }
                         }
                     }
                 }
@@ -151,7 +153,7 @@ struct HoldAudioProbe: View {
                     }
                 }
             }
-            if let errorMessage { Text(errorMessage) }
+            if let errorMessage { Text(verbatim: errorMessage) }
         }
         .disabled(scheduling)
         .onChange(of: scenePhase, initial: true) {

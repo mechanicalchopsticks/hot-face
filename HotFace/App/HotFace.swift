@@ -39,13 +39,15 @@ private struct ProbeView: View {
                     Button("Start activity") { run { _ = try await WorkoutController.shared.begin() } }
                         .disabled(!savedHoldTrial.isEmpty)
                 }
-                if let notice { Text(notice) }
+                if let notice { Text(verbatim: notice) }
             }
             .disabled(performingAction)
             HoldAudioProbe()
                 .disabled(activity != nil || performingAction)
             Section("Permissions") {
-                LabeledContent("Live Activities") { Text(liveActivitiesEnabled ? "Enabled" : "Disabled") }
+                LabeledContent("Live Activities") {
+                    if liveActivitiesEnabled { Text("Enabled") } else { Text("Disabled") }
+                }
                 LabeledContent("Alarms") {
                     switch alarmPermission {
                     case .authorized: Text("Allowed")

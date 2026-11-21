@@ -17,14 +17,14 @@ struct WorkoutSetWidget: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: SampleSet.self) { context in
             VStack(alignment: .leading) {
-                Text(context.attributes.exerciseName).font(.headline)
+                Text(verbatim: context.attributes.exerciseName).font(.headline)
                 controls(for: context)
             }
             .padding()
         } dynamicIsland: { context in
             DynamicIsland {
                 DynamicIslandExpandedRegion(.center) {
-                    Text(context.attributes.exerciseName)
+                    Text(verbatim: context.attributes.exerciseName)
                 }
                 DynamicIslandExpandedRegion(.bottom) {
                     controls(for: context)
@@ -32,9 +32,8 @@ struct WorkoutSetWidget: Widget {
             } compactLeading: {
                 Image(systemName: "dumbbell")
             } compactTrailing: {
-                Text(
-                    "\(context.state.workout.currentSet(at: context.state.presentationDate(isStale: context.isStale, now: .now)))"
-                )
+                let date = context.state.presentationDate(isStale: context.isStale, now: .now)
+                Text(context.state.workout.currentSet(at: date), format: .number)
             } minimal: {
                 Image(systemName: "dumbbell")
             }

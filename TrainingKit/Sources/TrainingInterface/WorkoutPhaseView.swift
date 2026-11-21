@@ -13,13 +13,7 @@ public struct WorkoutPhaseView: View {
     public var body: some View {
         let phase = workout.phase(at: date)
         HStack {
-            switch phase {
-            case .ready: Text("Ready")
-            case .preparation: Text("Get ready")
-            case .exercise: Text("Exercise")
-            case .paused: Text("Paused")
-            case .rest: Text("Rest")
-            }
+            Text(phase.title)
             Spacer()
             clock(for: phase, at: date)
         }
@@ -43,6 +37,18 @@ public struct WorkoutPhaseView: View {
         if let deadline, deadline >= now {
             Text(timerInterval: now...deadline, countsDown: true, showsHours: false)
                 .multilineTextAlignment(.trailing)
+        }
+    }
+}
+
+extension WorkoutPhase {
+    var title: LocalizedStringResource {
+        switch self {
+        case .ready: LocalizedStringResource("Ready", bundle: .atURL(Bundle.module.bundleURL))
+        case .preparation: LocalizedStringResource("Get ready", bundle: .atURL(Bundle.module.bundleURL))
+        case .exercise: LocalizedStringResource("Exercise", bundle: .atURL(Bundle.module.bundleURL))
+        case .paused: LocalizedStringResource("Paused", bundle: .atURL(Bundle.module.bundleURL))
+        case .rest: LocalizedStringResource("Rest", bundle: .atURL(Bundle.module.bundleURL))
         }
     }
 }
