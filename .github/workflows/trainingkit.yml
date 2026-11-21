@@ -1,0 +1,14 @@
+name: TrainingKit
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v6
+      - name: Run TrainingKit tests
+        run: swift test --package-path TrainingKit
