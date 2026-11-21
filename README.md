@@ -1,2 +1,2 @@
-# hot-face
+# HotFace
 Gym companion app

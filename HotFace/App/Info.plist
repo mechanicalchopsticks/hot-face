@@ -3,6 +3,6 @@
 <plist version="1.0">
 <dict>
     <key>NSAlarmKitUsageDescription</key>
-    <string>Training Probe uses alarms to signal the end of your sample set and rest while the iPhone is locked.</string>
+    <string>HotFace uses alarms to signal the end of your sample set and rest while the iPhone is locked.</string>
 </dict>
 </plist>

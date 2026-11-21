@@ -31,9 +31,9 @@ Los modelos objetivo, iPhone 15 Pro e iPhone 16, son [compatibles con iOS 26](ht
 
 ## Prueba de compilación y arranque
 
-El proyecto `TrainingProbe/TrainingProbe.xcodeproj` compila con Xcode 27.2 y el SDK de simulador 27.2. Se instaló en un iPhone 18 Pro simulado con iOS 27.2. El registro de instalación confirmó la app y la extensión WidgetKit. `simctl launch` devolvió el proceso 17694 para `ejemplo.entrenamiento.prueba`. Los dos paquetes declaran iOS 26.0 como mínimo.
+El proyecto `HotFace/HotFace.xcodeproj` compila con Xcode 27.2 y el SDK de simulador 27.2. Se instaló en un iPhone 18 Pro simulado con iOS 27.2. El registro de instalación confirmó la app y la extensión WidgetKit. `simctl launch` devolvió el proceso 17694 para `ejemplo.entrenamiento.prueba`. Los dos paquetes declaran iOS 26.0 como mínimo.
 
-Desde Xcode, seleccionar el esquema **TrainingProbe**, elegir un simulador de iPhone y ejecutar. La pantalla ofrece iniciar y finalizar una actividad en vivo de una serie de sentadillas ficticia. Los identificadores de paquete son provisionales para la prueba.
+Desde Xcode, seleccionar el esquema **HotFace**, elegir un simulador de iPhone y ejecutar. La pantalla ofrece iniciar y finalizar una actividad en vivo de una serie de sentadillas ficticia. Los identificadores de paquete son provisionales para la prueba.
 
 ## Firma de la prueba
 
@@ -41,7 +41,7 @@ Desde Xcode, seleccionar el esquema **TrainingProbe**, elegir un simulador de iP
 - **Instalación de desarrollo.** Emparejar ambos iPhone con Xcode y habilitar el modo de desarrollador. Seleccionar el mismo equipo para la app y la extensión, asignarles identificadores de paquete distintos y habilitar el mismo App Group en ambos. Comprobar que los perfiles de desarrollo incluyen los dispositivos y el grupo, y que se dispone del certificado Apple Development con su clave privada. Xcode admite la firma automática. [Perfiles de desarrollo](https://developer.apple.com/help/account/provisioning-profiles/create-a-development-provisioning-profile/)
 - **Distribución Ad Hoc.** El diseño indica que la membresía de Apple Developer está pendiente. Se necesitan membresía activa, los dos dispositivos registrados por UDID, certificado Apple Distribution con su clave privada y perfiles Ad Hoc para los identificadores y capacidades de la app y su extensión. [Distribución Ad Hoc](https://developer.apple.com/help/account/provisioning-profiles/create-an-ad-hoc-provisioning-profile/)
 
-El Mac dispone de una identidad Apple Development válida. La app y la extensión tienen firma automática y el mismo equipo de desarrollo. Se conservaron los identificadores de paquete registrados al traducir el proyecto. La compilación para el iPhone 15 Pro terminó correctamente y la verificación de firma de la app y su extensión pasó en el Mac. La instalación en el iPhone tuvo éxito. Tras el rechazo inicial, el segundo intento de arranque tuvo éxito. Xcode confirmó que TrainingProbe seguía en ejecución en el iPhone físico (PID 972).
+El Mac dispone de una identidad Apple Development válida. La app y la extensión tienen firma automática y el mismo equipo de desarrollo. Se conservaron los identificadores de paquete registrados al traducir el proyecto. La compilación para el iPhone 15 Pro terminó correctamente y la verificación de firma de la app y su extensión pasó en el Mac. La instalación en el iPhone tuvo éxito. Tras el rechazo inicial, el segundo intento de arranque tuvo éxito. Xcode confirmó que el prototipo seguía en ejecución en el iPhone físico (PID 972).
 
 ## Tarea 1.3 · Controles y temporizadores
 
@@ -66,8 +66,7 @@ La versión revisada calcula la fase de la app abierta con el reloj cada segundo
 Para repetir las comprobaciones de tiempos desde la raíz del proyecto:
 
 ```sh
-swiftc TrainingProbe/Shared/WorkoutTimeline.swift TrainingProbe/Tests/WorkoutTimelineChecks.swift -o /tmp/workout-timeline-checks
-/tmp/workout-timeline-checks
+DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --package-path TrainingKit --filter WorkoutTimelineTests
 ```
 
 Para repetir la prueba, tocar **Iniciar actividad**, bloquear el iPhone y encender la pantalla. Desde la actividad en vivo, iniciar, pausar durante el ejercicio y reanudar. Dejar vencer la serie sin tocar el teléfono. Tras el descanso, pulsar **Completar serie** en la siguiente serie y comprobar que comienza un solo descanso. En la app, **Finalizar actividad** cancela las alarmas de la prueba.
@@ -142,7 +141,7 @@ Para cada ejecución anotar el mecanismo elegido, su permiso efectivo, modo de c
 Prueba del reloj desde la raíz del proyecto:
 
 ```sh
-swiftc TrainingProbe/App/HoldTrial.swift TrainingProbe/Tests/HoldTrialChecks.swift -o /tmp/hold-trial-checks
+swiftc HotFace/App/HoldTrial.swift HotFace/Tests/HoldTrialChecks.swift -o /tmp/hold-trial-checks
 /tmp/hold-trial-checks
 ```
 
@@ -161,7 +160,7 @@ El 21 de noviembre de 2026, los informes de concurrencia y recuperación del ens
 
 ### Repetir en un iPhone conectado
 
-Con esta versión de TrainingProbe instalada y las actividades en vivo habilitadas, elegir un UUID nuevo para cada ensayo. Ejecutar en el Mac con el iPhone desbloqueado:
+Con esta versión de HotFace instalada y las actividades en vivo habilitadas, elegir un UUID nuevo para cada ensayo. Ejecutar en el Mac con el iPhone desbloqueado:
 
 ```sh
 export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer

@@ -11,7 +11,7 @@
 
 ## 2. Base de la aplicación y datos
 
-- [ ] 2.1 Crear módulos de dominio, repositorios, adaptadores e interfaz, con reloj inyectable; verificar build y una prueba de transición sin interfaz.
+- [x] 2.1 Crear módulos de dominio, repositorios, adaptadores e interfaz, con reloj inyectable; verificar build y una prueba de transición sin interfaz.
 - [ ] 2.2 Definir entidades versionadas e instantáneas de sesión; verificar guardado/recarga y que editar una rutina no modifica una sesión histórica.
 - [ ] 2.3 Implementar comandos persistentes e idempotentes de sesión; probar doble toque y recuperación después de cada transición crítica.
 - [ ] 2.4 Incorporar String Catalogs español/inglés en app y extensiones; verificar selección por idioma y formatos decimales/fechas sin cambiar kg/lb ni textos personalizados.

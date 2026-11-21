@@ -1,9 +1,10 @@
 import ActivityKit
+import TrainingDomain
 import AlarmKit
 import SwiftUI
 
 @main
-struct TrainingProbe: App {
+struct HotFace: App {
     @UIApplicationDelegateAdaptor(HoldAudioDelegate.self) private var audioDelegate
 
     var body: some Scene {

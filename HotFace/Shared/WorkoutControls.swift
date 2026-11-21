@@ -1,4 +1,6 @@
 import ActivityKit
+import TrainingDomain
+import TrainingInterface
 import SwiftUI
 import WidgetKit
 
@@ -24,19 +26,7 @@ struct WorkoutControls: View {
         let number = workout.currentSet(at: now)
         return VStack(alignment: .leading, spacing: 8) {
             Text("Set \(number)").font(.caption)
-            HStack {
-                switch phase {
-                case .ready: Text("Ready")
-                case .preparation: Text("Get ready")
-                case .exercise: Text("Exercise")
-                case .paused: Text("Paused")
-                case .rest: Text("Rest")
-                }
-                Spacer()
-                clock(for: phase, at: now)
-            }
-            .font(.headline.monospacedDigit())
-            .foregroundStyle(phase == .rest ? Color.teal : Color.primary)
+            WorkoutPhaseView(workout: workout, at: now)
             HStack {
                 switch phase {
                 case .ready: control("Start", .start, number)
@@ -49,25 +39,6 @@ struct WorkoutControls: View {
                 }
             }
             .buttonStyle(.bordered)
-        }
-    }
-
-    @ViewBuilder
-    private func clock(for phase: WorkoutPhase, at now: Date) -> some View {
-        switch phase {
-        case .preparation: countdown(to: workout.exerciseStart, from: now)
-        case .exercise: countdown(to: workout.exerciseEnd, from: now)
-        case .rest: countdown(to: workout.restEnd, from: now)
-        case .paused: Text(Duration.seconds(workout.pausedSeconds ?? 0).formatted(.time(pattern: .minuteSecond)))
-        case .ready: EmptyView()
-        }
-    }
-
-    @ViewBuilder
-    private func countdown(to deadline: Date?, from now: Date) -> some View {
-        if let deadline, deadline >= now {
-            Text(timerInterval: now...deadline, countsDown: true, showsHours: false)
-                .multilineTextAlignment(.trailing)
         }
     }
 

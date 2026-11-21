@@ -1,4 +1,5 @@
 import ActivityKit
+import TrainingDomain
 import SwiftUI
 import WidgetKit
 

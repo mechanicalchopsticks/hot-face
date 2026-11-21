@@ -1,4 +1,6 @@
 import ActivityKit
+import TrainingAdapters
+import TrainingDomain
 import AlarmKit
 import AppIntents
 import SwiftUI
@@ -47,10 +49,15 @@ enum ProbeError: LocalizedError {
 // LiveActivityIntent runs in the app process, including actions from the Lock Screen.
 @MainActor
 final class WorkoutController {
-    static let shared = WorkoutController()
+    static let shared = WorkoutController(clock: SystemWorkoutClock())
+    private let clock: any WorkoutClock
     private let manager = AlarmManager.shared
     private var busy = false
     private var phaseUpdates: Task<Void, Never>?
+
+    init(clock: any WorkoutClock) {
+        self.clock = clock
+    }
 
     func begin() async throws -> Activity<SampleSet> {
         guard !busy else { throw ProbeError.actionInProgress }
@@ -82,10 +89,11 @@ final class WorkoutController {
     func apply(_ action: WorkoutAction, id: String, revision: Int, setNumber: Int) async throws -> Task<Void, Never>? {
         guard !busy else { throw ProbeError.actionInProgress }
         guard let activity = Activity<SampleSet>.activities.first(where: { $0.id == id }) else { return nil }
-        let now = Date()
         let previous = activity.content.state
-        guard previous.workout.revision == revision, previous.workout.currentSet(at: now) == setNumber,
-              let next = previous.workout.applying(action, at: now) else { return nil }
+        guard let next = previous.workout.applying(
+            action, expectedRevision: revision, expectedSet: setNumber,
+            exerciseDuration: 20, restDuration: 15, clock: clock
+        ) else { return nil }
         guard manager.authorizationState == .authorized else { throw ProbeError.alarmPermission }
         busy = true
         defer { busy = false }
@@ -115,7 +123,7 @@ final class WorkoutController {
         guard !busy else { return }
         let content = activity.content.state
         phaseUpdates?.cancel()
-        scheduleNextUpdate(for: activity, content: content, at: .now)
+        scheduleNextUpdate(for: activity, content: content, at: clock.now)
     }
 
     @discardableResult
@@ -126,8 +134,10 @@ final class WorkoutController {
         }
         let update = Task { @MainActor in
             do {
-                while boundary > .now {
-                    try await Task.sleep(for: .seconds(max(0, boundary.timeIntervalSinceNow)))
+                while true {
+                    let remaining = boundary.timeIntervalSince(clock.now)
+                    guard remaining > 0 else { break }
+                    try await Task.sleep(for: .seconds(remaining))
                 }
             } catch { return }
             // All accepted actions replace this task. ActivityKit's readable snapshot may
@@ -142,7 +152,7 @@ final class WorkoutController {
     }
 
     private func publish(_ content: SampleSet.ContentState, for activity: Activity<SampleSet>) async -> Date? {
-        let now = Date.now
+        let now = clock.now
         var snapshot = content
         snapshot.nextPhaseDate = content.workout.nextBoundary(after: now)
         await activity.update(ActivityContent(state: snapshot, staleDate: snapshot.nextPhaseDate), timestamp: now)

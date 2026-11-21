@@ -16,7 +16,7 @@ Dispositivos objetivo: iPhone 15 Pro e iPhone 16 con iOS actualizado. Distribuci
 
 ### 1. App nativa y módulos
 
-Swift y SwiftUI, con iOS 26 como base técnica propuesta para AlarmKit; verificar SDK y versiones instaladas antes de crear el proyecto. Una solución web o multiplataforma no elimina el trabajo nativo de temporizadores, audio y controles bloqueados, por lo que añade complejidad para un producto exclusivamente iPhone.
+La app se llama HotFace. Swift y SwiftUI, con iOS 26 como base técnica propuesta para AlarmKit; verificar SDK y versiones instaladas antes de crear el proyecto. Una solución web o multiplataforma no elimina el trabajo nativo de temporizadores, audio y controles bloqueados, por lo que añade complejidad para un producto exclusivamente iPhone.
 
 - Dominio Swift independiente: ciclos, prescripción, sesiones, saldos, sugerencias y combinaciones de discos.
 - Persistencia: repositorios que almacenan dominio y cambios.
@@ -128,6 +128,6 @@ La cuenta desarrolladora no reemplaza las cuentas personales de iCloud. Validar 
 
 ## Open Questions
 
-- Nombre visible de la app, icono y bundle identifier final. Idea inicial para icono el emoji hot face 🥵
+- Icono y bundle identifier final. Idea inicial para icono el emoji hot face 🥵
 - Sonidos concretos diferenciados y textos finales en ambos idiomas.
 - Cantidad y frecuencia exactas de copias retenidas, respetando cuota y copia válida anterior.
