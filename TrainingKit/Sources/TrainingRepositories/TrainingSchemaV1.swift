@@ -2,14 +2,6 @@ import Foundation
 import SwiftData
 import TrainingDomain
 
-extension CoordinatedModelStore {
-    public init(trainingDirectory: URL) {
-        self.init(schema: Schema(versionedSchema: TrainingSchemaV1.self),
-                  storeURL: trainingDirectory.appendingPathComponent("training.store"),
-                  lockURL: trainingDirectory.appendingPathComponent("training.lock"))
-    }
-}
-
 // The encoded domain values are part of the V1 disk format, including ordered days and segments.
 public enum TrainingSchemaV1: VersionedSchema {
     public static let versionIdentifier = Schema.Version(1, 0, 0)
@@ -93,7 +85,7 @@ public enum TrainingSchemaV1: VersionedSchema {
         public var skippedExerciseIDs: [UUID]
         private var prescriptionData: Data
 
-        public init(routine: Routine, gym: Gym, dayID: UUID, cycle: Cycle? = nil, startedAt: Date) throws {
+        public init(id: UUID = UUID(), routine: Routine, gym: Gym, dayID: UUID, cycle: Cycle? = nil, startedAt: Date) throws {
             guard routine.gymID == gym.id else { throw SessionCreationError.mismatchedGym }
             if let cycle, cycle.routineID != routine.id { throw SessionCreationError.mismatchedCycle }
             let plan = try routine.plan
@@ -105,7 +97,7 @@ public enum TrainingSchemaV1: VersionedSchema {
                 plan: plan, day: day, equipment: gym.equipment
             )
             self.prescriptionData = try JSONEncoder().encode(prescription)
-            self.id = UUID()
+            self.id = id
             self.startedAt = startedAt
             self.cycleID = cycle?.id
             self.isPartial = false
