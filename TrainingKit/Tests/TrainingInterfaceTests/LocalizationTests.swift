@@ -5,6 +5,19 @@ import TrainingDomain
 @testable import TrainingInterface
 
 struct LocalizationTests {
+    @Test(arguments: [("en_US", "12.500001", "12,5"), ("es_ES", "12,500001", "12.5")])
+    func editableWeightsRoundTripAndRejectInvalidInput(localeID: String, formatted: String, wrongSeparator: String) {
+        let locale = Locale(identifier: localeID)
+        let weight = Decimal(12_500_001) / 1_000_000
+
+        #expect(TrainingDisplayFormat.editableWeight(weight, locale: locale) == formatted)
+        #expect(TrainingDisplayFormat.parseWeight(formatted, locale: locale) == weight)
+        #expect(TrainingDisplayFormat.parseWeight("0", locale: locale) == 0)
+        for invalid in ["", wrongSeparator, "12kg", "1e5", "-2", "8 9"] {
+            #expect(TrainingDisplayFormat.parseWeight(invalid, locale: locale) == nil)
+        }
+    }
+
     @Test(arguments: [
         (WorkoutPhase.ready, "Ready", "En espera"),
         (.preparation, "Get ready", "Prepárate"),

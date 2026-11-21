@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		00000000000000000000006A /* GymSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000069 /* GymSettingsView.swift */; };
+		00000000000000000000006C /* EquipmentEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000006B /* EquipmentEditor.swift */; };
+		00000000000000000000006E /* TrainingStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000006D /* TrainingStorage.swift */; };
+		00000000000000000000006F /* TrainingStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000006D /* TrainingStorage.swift */; };
 		000000000000000000000068 /* TrainingTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000067 /* TrainingTabView.swift */; };
 		000000000000000000000059 /* StorageTrialWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000058 /* StorageTrialWidget.swift */; };
 		000000000000000000000057 /* StorageTrialRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000056 /* StorageTrialRunner.swift */; };
@@ -64,6 +68,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		000000000000000000000069 /* GymSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GymSettingsView.swift; sourceTree = "<group>"; };
+		00000000000000000000006B /* EquipmentEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EquipmentEditor.swift; sourceTree = "<group>"; };
+		00000000000000000000006D /* TrainingStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingStorage.swift; sourceTree = "<group>"; };
 		000000000000000000000067 /* TrainingTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingTabView.swift; sourceTree = "<group>"; };
 		000000000000000000000058 /* StorageTrialWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageTrialWidget.swift; sourceTree = "<group>"; };
 		000000000000000000000056 /* StorageTrialRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageTrialRunner.swift; sourceTree = "<group>"; };
@@ -109,6 +116,8 @@
 			children = (
 				000000000000000000000004 /* HotFace.swift */,
 				000000000000000000000067 /* TrainingTabView.swift */,
+				000000000000000000000069 /* GymSettingsView.swift */,
+				00000000000000000000006B /* EquipmentEditor.swift */,
 				000000000000000000000056 /* StorageTrialRunner.swift */,
 				00000000000000000000004E /* lastSetComplete.wav */,
 				00000000000000000000004C /* restComplete.wav */,
@@ -127,6 +136,7 @@
 			children = (
 				000000000000000000000006 /* SampleSet.swift */,
 				000000000000000000000053 /* StorageTrial.swift */,
+				00000000000000000000006D /* TrainingStorage.swift */,
 				000000000000000000000050 /* ProbeSetStore.swift */,
 				000000000000000000000036 /* WorkoutControls.swift */,
 				000000000000000000000033 /* WorkoutIntent.swift */,
@@ -237,6 +247,9 @@
 			files = (
 				00000000000000000000000F /* HotFace.swift in Sources */,
 				000000000000000000000068 /* TrainingTabView.swift in Sources */,
+				00000000000000000000006A /* GymSettingsView.swift in Sources */,
+				00000000000000000000006C /* EquipmentEditor.swift in Sources */,
+				00000000000000000000006E /* TrainingStorage.swift in Sources */,
 				000000000000000000000057 /* StorageTrialRunner.swift in Sources */,
 				000000000000000000000043 /* HoldTrial.swift in Sources */,
 				000000000000000000000041 /* HoldAudioProbe.swift in Sources */,
@@ -256,6 +269,7 @@
 				000000000000000000000059 /* StorageTrialWidget.swift in Sources */,
 				000000000000000000000013 /* SampleSet.swift in Sources */,
 				000000000000000000000055 /* StorageTrial.swift in Sources */,
+				00000000000000000000006F /* TrainingStorage.swift in Sources */,
 				000000000000000000000052 /* ProbeSetStore.swift in Sources */,
 				000000000000000000000038 /* WorkoutControls.swift in Sources */,
 				000000000000000000000035 /* WorkoutIntent.swift in Sources */,

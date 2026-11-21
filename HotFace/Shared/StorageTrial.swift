@@ -26,13 +26,7 @@ struct StorageTrial {
     static let commandNotification = "ejemplo.entrenamiento.prueba.storage-trial"
 
     static func trialsDirectory() throws -> URL {
-        guard
-            let group = FileManager.default.containerURL(
-                forSecurityApplicationGroupIdentifier: "group.ejemplo.entrenamiento.prueba")
-        else {
-            throw CocoaError(.fileNoSuchFile)
-        }
-        return group.appendingPathComponent("Library/Application Support/StorageTrials")
+        try TrainingStorage.applicationSupportDirectory().appendingPathComponent("StorageTrials")
     }
 
     static func pendingCommand() throws -> URL {

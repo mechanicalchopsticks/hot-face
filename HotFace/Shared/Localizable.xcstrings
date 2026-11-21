@@ -34,6 +34,16 @@
         }
       }
     },
+    "Active gym" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gimnasio activo"
+          }
+        }
+      }
+    },
     "Activity" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -47,6 +57,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Actividad"
+          }
+        }
+      }
+    },
+    "Add equipment" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir equipo"
+          }
+        }
+      }
+    },
+    "Add gym" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir gimnasio"
+          }
+        }
+      }
+    },
+    "Add load" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir carga"
+          }
+        }
+      }
+    },
+    "Add plates" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir discos"
           }
         }
       }
@@ -151,6 +201,66 @@
         }
       }
     },
+    "Available loads" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cargas disponibles"
+          }
+        }
+      }
+    },
+    "Barbell with plates" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Barra con discos"
+          }
+        }
+      }
+    },
+    "Base weight (optional)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Peso base (opcional)"
+          }
+        }
+      }
+    },
+    "Bodyweight" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Peso corporal"
+          }
+        }
+      }
+    },
+    "Cancel" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancelar"
+          }
+        }
+      }
+    },
+    "Cardio" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cardio"
+          }
+        }
+      }
+    },
     "Complete set" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -185,6 +295,46 @@
         }
       }
     },
+    "Could not load gyms" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudieron cargar los gimnasios"
+          }
+        }
+      }
+    },
+    "Could not save equipment" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo guardar el equipo"
+          }
+        }
+      }
+    },
+    "Could not save gym" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo guardar el gimnasio"
+          }
+        }
+      }
+    },
+    "Could not select gym" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo seleccionar el gimnasio"
+          }
+        }
+      }
+    },
     "Denied" : {
       "localizations" : {
         "en" : {
@@ -213,6 +363,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Desactivadas"
+          }
+        }
+      }
+    },
+    "Dumbbells" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mancuernas"
+          }
+        }
+      }
+    },
+    "Edit equipment" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editar equipo"
           }
         }
       }
@@ -266,6 +436,46 @@
         }
       }
     },
+    "Enter a valid weight for each load and a positive weight and count for each plate entry." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ingresa un peso válido para cada carga y un peso y una cantidad mayores que cero para cada tipo de disco."
+          }
+        }
+      }
+    },
+    "Equipment" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Equipos"
+          }
+        }
+      }
+    },
+    "Equipment name" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nombre del equipo"
+          }
+        }
+      }
+    },
+    "Equipment type" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tipo de equipo"
+          }
+        }
+      }
+    },
     "First hold" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -273,6 +483,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Primer sostenimiento"
+          }
+        }
+      }
+    },
+    "Fixed-weight bars" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Barras de peso fijo"
           }
         }
       }
@@ -289,6 +509,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Prepárate"
+          }
+        }
+      }
+    },
+    "Gym name" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nombre del gimnasio"
+          }
+        }
+      }
+    },
+    "Gyms" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gimnasios"
           }
         }
       }
@@ -430,6 +670,26 @@
         }
       }
     },
+    "Number of plates" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cantidad de discos"
+          }
+        }
+      }
+    },
+    "OK" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aceptar"
+          }
+        }
+      }
+    },
     "Pause" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -482,6 +742,56 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Permisos"
+          }
+        }
+      }
+    },
+    "Plate inventory" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inventario de discos"
+          }
+        }
+      }
+    },
+    "Plate weight" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Peso del disco"
+          }
+        }
+      }
+    },
+    "Plate-loaded machine" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Máquina de discos"
+          }
+        }
+      }
+    },
+    "Rename gym" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cambiar nombre del gimnasio"
+          }
+        }
+      }
+    },
+    "Resistance bands" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bandas de resistencia"
           }
         }
       }
@@ -558,6 +868,26 @@
         }
       }
     },
+    "Save" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardar"
+          }
+        }
+      }
+    },
+    "Selectorized machine" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Máquina selectora"
+          }
+        }
+      }
+    },
     "Set" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -585,6 +915,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Serie %lld"
+          }
+        }
+      }
+    },
+    "Set as active gym" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seleccionar como gimnasio activo"
           }
         }
       }
@@ -675,6 +1015,16 @@
         }
       }
     },
+    "Station (optional)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estación (opcional)"
+          }
+        }
+      }
+    },
     "Stop" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -722,6 +1072,26 @@
         }
       }
     },
+    "Try again" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reintentar"
+          }
+        }
+      }
+    },
+    "Try saving the equipment again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vuelve a intentar guardar el equipo."
+          }
+        }
+      }
+    },
     "Unknown" : {
       "localizations" : {
         "en" : {
@@ -749,22 +1119,32 @@
         }
       }
     },
+    "Weight" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Peso"
+          }
+        }
+      }
+    },
+    "Weight unit" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unidad de peso"
+          }
+        }
+      }
+    },
     "Your finished workouts will appear here." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aquí aparecerán tus entrenamientos finalizados."
-          }
-        }
-      }
-    },
-    "Your gym and data settings will appear here." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aquí aparecerán los ajustes de tu gimnasio y tus datos."
           }
         }
       }
