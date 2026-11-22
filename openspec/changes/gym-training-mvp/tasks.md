@@ -40,6 +40,17 @@ Continuación de 3.1: comenzar por 3.11 (modelo y migración) y 3.12 (Ajustes). 
 
 ## 4. Entrenamiento básico de principio a fin
 
+### Primera entrega después del grupo 3
+
+A partir de aquí, cada flujo nuevo de una pestaña empieza con un prototipo interactivo con datos de ejemplo. Probarlo con el usuario, ajustar la UI y después integrar la lógica y el almacenamiento de ese flujo. Aplicar el mismo criterio cuando una pestaña ya implementada incorpore funciones como sugerencias de progresión o exportación.
+
+- [ ] 4.0.1 Crear el recorrido interactivo de Entrenar con el iPhone desbloqueado. Precargar en memoria un día de rutina1 o rutina3 con cargas de ejemplo. Probar en el iPhone que se puede iniciar el día, ver la carga y la prescripción, completar una serie con un toque, corregirla durante el descanso, avanzar al siguiente ejercicio y ver la corrección reflejada en el resumen. Ajustar la UI con el usuario tras recorrer la sesión.
+- [ ] 4.0.2 Una vez definido el recorrido desbloqueado, probar con el usuario la experiencia de pantalla bloqueada usando la misma sesión de ejemplo. Completar una serie, consultar el descanso y volver a la app para comprobar qué serie sigue. Ajustar la información y los controles visibles antes de su integración en 5.6.
+
+### Integración del entrenamiento
+
+Con ambos recorridos definidos, conectar las pantallas acordadas al dominio, la persistencia y los temporizadores mediante las tareas 4.1–4.7 y las correspondientes del grupo 5. Verificar los comportamientos de estas tareas con sus dependencias reales.
+
 - [ ] 4.1 Implementar pantalla de serie con nombre, estación, equipo e indicaciones; verificar que Completar registra valores e inicia descanso con un toque.
 - [ ] 4.2 Implementar corrección de serie durante descanso y series que incluyen ambos lados; probar que corregir no duplica series ni altera la rutina habitual.
 - [ ] 4.3 Implementar cambios temporales, reutilización de ajustes y guardado explícito habitual; verificar persistencia solo en el ámbito elegido.
@@ -70,6 +81,7 @@ Continuación de 3.1: comenzar por 3.11 (modelo y migración) y 3.12 (Ajustes). 
 
 ## 7. Historial, notas y CSV
 
+- [ ] 7.0 Probar primero el flujo de Historial con fixtures de una sesión completa y otra parcial. Abrir una sesión y revisar sus series y cargas con el usuario. Ajustar la UI antes de conectar las consultas y acciones del grupo 7.
 - [ ] 7.1 Implementar consultas de sesiones, progreso y marcas con unidades explícitas; verificar sesiones parciales y comparación sin confundir equipos o gimnasios.
 - [ ] 7.2 Registrar cambios habituales con fecha y valores anteriores/nuevos; probar sugerencia editada, sustitución y archivo sin reescribir el pasado.
 - [ ] 7.3 Implementar notas fechadas con editar/eliminar/deshacer/rehacer; verificar el alcance de deshacer durante la edición.
@@ -78,6 +90,7 @@ Continuación de 3.1: comenzar por 3.11 (modelo y migración) y 3.12 (Ajustes). 
 
 ## 8. Respaldo y restauración privados
 
+- [ ] 8.0 Probar en Ajustes los flujos nuevos de respaldo y restauración con fechas y estados de ejemplo. Revisar con el usuario cómo reconoce la última copia y cuál restauraría, y ajustar el recorrido antes de conectar CloudKit.
 - [ ] 8.1 Configurar capacidades y contenedor privado CloudKit al disponer de membresía; verificar acceso separado con ambas cuentas de prueba.
 - [ ] 8.2 Implementar snapshot consistente versionado, subida de assets y manifiesto final; probar interrupción de red sin publicar una copia incompleta.
 - [ ] 8.3 Implementar reintento automático y estado de último respaldo; probar cuenta ausente, cuota, offline y retorno de conectividad sin bloquear sesiones.
@@ -86,6 +99,7 @@ Continuación de 3.1: comenzar por 3.11 (modelo y migración) y 3.12 (Ajustes). 
 
 ## 9. Importación y revisión de fotografías
 
+- [ ] 9.0 Probar en Rutinas la revisión de un borrador precargado basado en las fotos analizadas. Recorrer los días, corregir una prescripción y ver el resultado en el editor con datos de ejemplo. Ajustar la UI con el usuario antes de integrar la extracción y el guardado.
 - [ ] 9.1 Definir contrato estructurado de extracción y borrador revisable; validar ejemplos sintéticos de ambas caras, campos dudosos y repetición combinada.
 - [ ] 9.2 Evaluar proveedor visual, coste y tratamiento de imágenes; entregar comparación y elección antes de activar servicios pagados.
 - [ ] 9.3 Implementar servicio mínimo autenticado y adaptador, sin claves en el cliente ni imágenes en logs; probar peticiones inválidas, límites, timeout y reintento.

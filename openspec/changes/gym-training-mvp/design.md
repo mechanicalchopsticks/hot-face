@@ -8,11 +8,19 @@ Dispositivos objetivo: iPhone 15 Pro e iPhone 16 con iOS actualizado. Distribuci
 
 ## Goals / Non-Goals
 
-**Goals:** Separar reglas deterministas de servicios de iOS, persistir avances incrementales, mantener historial inmutable frente a cambios de prescripción y validar primero la ejecución bloqueada. Diseñar entregas verticales utilizables.
+**Goals:** Separar reglas deterministas de servicios de iOS, persistir avances incrementales y mantener historial inmutable frente a cambios de prescripción. El grupo 1 valida la factibilidad técnica con el iPhone bloqueado. Tras el grupo 3, la primera experiencia de uso que se diseña y prueba es Entrenar con el iPhone desbloqueado.
 
 **Non-Goals:** Un servidor como dependencia del entrenamiento, cuentas compartidas, traducción automática de notas, importación de Markdown y un motor de recomendaciones basado en IA.
 
 ## Decisions
+
+### Entrega por pestaña a partir del cierre del grupo 3
+
+El primer prototipo se abre desde Entrenar en el iPhone con un día precargado a partir de rutina1 o rutina3. Usa cargas de ejemplo y mantiene el avance en memoria. Durante la prueba, el usuario puede consultar la serie actual, completarla, corregir lo realizado durante el descanso, pasar al siguiente ejercicio y revisar el resumen. Se ajusta el recorrido con lo observado durante una sesión de prueba.
+
+Una vez definida la experiencia desbloqueada, se prueba la misma sesión de ejemplo con el iPhone bloqueado para decidir qué información y acciones tener a mano entre series. Después se conectan las interacciones acordadas a los comandos, repositorios y servicios de iOS y se verifica el recorrido con almacenamiento real.
+
+Para cada flujo pendiente de Rutinas, Historial y Ajustes se repite el ciclo en su pestaña: probar una UI interactiva con fixtures, incorporar las observaciones del usuario y conectar la lógica y el almacenamiento necesarios. Se aprovechan las pantallas y capacidades entregadas en los grupos anteriores. Los datos de ejemplo se mantienen separados de las rutinas y sesiones del usuario.
 
 ### 1. App nativa y módulos
 
@@ -126,7 +134,7 @@ La cuenta desarrolladora no reemplaza las cuentas personales de iCloud. Validar 
 
 1. Validar factibilidad bloqueada y persistencia antes de implementar la experiencia completa.
 2. Crear proyecto y pruebas del dominio; primera rutina ingresada manualmente, sin migrador Markdown.
-3. Incorporar flujos verticales: entrenamiento básico, temporización/superseries, progresión, historial/respaldo e importación.
+3. Al cerrar el grupo 3, seguir la secuencia de entrega por pestaña descrita en Decisions. Incorporar entrenamiento, temporización, superseries, progresión, historial, respaldo e importación a medida que se integren sus flujos.
 4. Probar respaldo/restauración y actualización de esquema con datos de ensayo antes de usar datos reales.
 5. Registrar ambos iPhone, configurar producción iCloud y distribuir compilación Ad Hoc probada.
 6. Antes de cada actualización con cambio de esquema, generar copia recuperable. Un binario anterior no debe abrir un esquema incompatible: restaurar copia compatible si es necesario.
