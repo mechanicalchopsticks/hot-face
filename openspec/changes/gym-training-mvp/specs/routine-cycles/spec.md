@@ -12,6 +12,17 @@ The app SHALL support manually creating, editing and copying routines with reord
 - **THEN** the copy retains its structure and settings and starts with a fresh history and new progression balances
 - **AND** the original remains intact and the previously active routine is archived with its history
 
+### Requirement: Exercise groups in the day editor
+The day editor SHALL group the day's exercises by their optional group and preserve their manual order within each group. Exercises without an assigned group SHALL count as one group. The list SHALL show a heading for each group only when at least two groups are visible. Named groups SHALL use their user-entered names. The unassigned group SHALL use the localized heading “Ungrouped” (“Sin grupo” in Spanish).
+
+#### Scenario: A day contains a single group
+- **WHEN** all exercises in the day belong to the same named group, or all are unassigned
+- **THEN** the editor shows the exercises in their manual order without a group heading
+
+#### Scenario: A day contains named and unassigned exercises
+- **WHEN** a day contains a squat and a lunge assigned to “Pierna” and an unassigned walk
+- **THEN** the Spanish editor shows the squat and lunge under “Pierna” in their manual order and the walk under “Sin grupo”
+
 ### Requirement: Routine set count and exercise overrides
 The routine editor SHALL offer a default set count alongside the rest settings. A new routine SHALL start with a default of 1 set. Each new manual exercise SHALL inherit the current routine default. The exercise editor SHALL show the effective count and allow the user to set an individual override or return to the routine default. Both the default and the override SHALL be positive whole numbers.
 

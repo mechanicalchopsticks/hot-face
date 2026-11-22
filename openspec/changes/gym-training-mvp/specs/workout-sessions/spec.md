@@ -1,73 +1,85 @@
 ## Purpose
 
-Guiar el entrenamiento sin conexión y conservar cada avance, distinguiendo la configuración habitual de lo realmente realizado.
+Guide workouts offline and save progress while distinguishing the usual prescription from what the user actually performed.
 
 ## ADDED Requirements
 
-### Requirement: Entrenamiento íntegro sin conexión
-La app SHALL permitir iniciar, registrar, ajustar, recuperar y finalizar entrenamientos sin conexión. La pantalla SHALL mostrar ejercicio, estación opcional, equipamiento, indicaciones y prescripción de la serie actual.
+### Requirement: Fully offline workouts
+The app SHALL support starting, logging, adjusting, recovering and finishing workouts offline. The screen SHALL show the current exercise, its station when available, equipment, instructions and current set prescription.
 
-#### Scenario: Sesión sin red
-- **WHEN** el usuario entrena sin conexión
-- **THEN** todos los avances se guardan localmente y el respaldo pendiente no bloquea la sesión
+#### Scenario: Train offline
+- **WHEN** the user trains offline
+- **THEN** all progress is saved locally and a pending backup does not block the session
 
-### Requirement: Registro rápido de series
-La app SHALL registrar los valores mostrados e iniciar el descanso correspondiente con un toque en Completar serie, permitiendo corregir la serie durante el descanso. Una serie por lado SHALL incluir ambos lados.
+### Requirement: Quick set logging
+One tap on Complete Set SHALL record the displayed values and start the applicable rest. The user SHALL be able to correct the set during rest. A per-side set SHALL include both sides.
 
-#### Scenario: Repeticiones por lado
-- **WHEN** termina 10 repeticiones por cada lado y pulsa Completar serie
-- **THEN** registra una sola serie de 10 por lado e inicia el descanso correspondiente
+#### Scenario: Per-side repetitions
+- **WHEN** the user finishes 10 repetitions on each side and taps Complete Set
+- **THEN** the app records one set of 10 repetitions per side and starts the rest
 
-### Requirement: Ajustes de sesión
-La app SHALL permitir cambiar peso, series, repeticiones, duración y ejercicio, reutilizar ajustes temporales previos y añadir ejercicios de cualquier grupo. Los ajustes SHALL afectar solo a la sesión salvo guardado explícito como habituales.
+### Requirement: Session adjustments
+The app SHALL allow the user to change the weight, set count, repetitions, duration or exercise, reuse previous temporary adjustments and add exercises from any group. Adjustments SHALL apply only to the session unless the user explicitly saves them as usual settings.
 
-#### Scenario: Ejercicio adicional
-- **WHEN** el usuario añade un ejercicio durante el entrenamiento sin guardarlo como habitual
-- **THEN** aparece en la sesión y su historial, pero no en el siguiente ciclo
+#### Scenario: Add an exercise
+- **WHEN** the user adds an exercise during a workout without saving it as usual
+- **THEN** the exercise appears in the session and its history and is absent from the next cycle
 
-#### Scenario: Guardar una sustitución
-- **WHEN** el usuario guarda una sustitución como habitual
-- **THEN** se registra el cambio permanente y se reinicia el saldo del ejercicio sustituido
+#### Scenario: Save a replacement
+- **WHEN** the user saves a replacement as usual
+- **THEN** the app records the permanent change and resets the exercise’s effort balance
 
-### Requirement: Orden y omisiones
-La app SHALL permitir posponer, seleccionar otro ejercicio pendiente, volver al pospuesto y omitir ejercicios. Cambiar el orden de sesión SHALL dejar intacto el orden habitual.
+### Requirement: Exercise order and skips
+The app SHALL allow the user to postpone an exercise, select another pending exercise, return to the postponed exercise and skip exercises. Changes to session order SHALL preserve the usual order.
 
-#### Scenario: Estación ocupada
-- **WHEN** el usuario pospone un ejercicio, hace otro y regresa al primero
-- **THEN** conserva el progreso de ambos sin registrar una modificación de rutina
+#### Scenario: An occupied station
+- **WHEN** the user postpones an exercise, performs another and returns to the first
+- **THEN** the app retains progress for both exercises without recording a routine change
 
-### Requirement: Finalización parcial conserva el trabajo
-La app SHALL cerrar definitivamente una sesión al finalizarla, conservar series y valoraciones realizadas, marcar lo restante como no realizado y completar el día del ciclo. No SHALL descartar el entrenamiento por estar incompleto.
+### Requirement: Exercise groups in the Train list
+Train lists for selecting, postponing or reordering exercises SHALL use the day editor’s group headings: one heading per visible group when at least two are present, counting unassigned exercises as one localized “Ungrouped” section. The list SHALL preserve session order within each group and SHALL leave the next exercise determined by the session sequence.
 
-#### Scenario: Salir antes de terminar
-- **WHEN** el usuario finaliza tras dos series de un ejercicio de cuatro series
-- **THEN** conserva las dos series, permite valorar ese ejercicio parcial y no deja pendientes para otra sesión
+#### Scenario: Show groups while keeping the next exercise in session order
+- **WHEN** the Spanish Train list opens with a squat, a walk and a lunge in session order, with the squat and lunge assigned to “Pierna” and the walk unassigned
+- **THEN** the list shows the squat and lunge under “Pierna” and the walk under “Sin grupo”
+- **AND** completing the squat leaves the walk next in the session
 
-#### Scenario: Último ejercicio
-- **WHEN** termina la última serie del último ejercicio pendiente, estando los demás completados u omitidos
-- **THEN** muestra entrenamiento terminado directamente, sin descanso final innecesario
+#### Scenario: Only one group is visible
+- **WHEN** the visible exercise list contains only members of one named group or only unassigned exercises
+- **THEN** Train shows those exercises in session order without a group heading
 
-### Requirement: Recuperación de sesión abierta
-La app SHALL conservar el avance tras un cierre inesperado y permitir continuar o finalizar una sesión abierta incluso en otra fecha. Bloquear el teléfono o salir de la app no SHALL finalizarla.
+### Requirement: Partial completion preserves performed work
+The app SHALL permanently close a session when the user finishes it, retain performed sets and ratings, mark the remaining work as unperformed and mark the cycle day complete. It SHALL retain incomplete workouts.
 
-#### Scenario: Recuperar al día siguiente
-- **WHEN** el usuario abre la app al día siguiente de un cierre con sesión pendiente
-- **THEN** ofrece continuar con el avance guardado o finalizar lo realizado; solo la finalización completa el día
+#### Scenario: Finish before completing all work
+- **WHEN** the user finishes after two sets of a four-set exercise
+- **THEN** the app retains both sets, allows a rating for the partial exercise and leaves no pending work for another session
 
-### Requirement: Superseries
-La app SHALL permitir superseries habituales o temporales, incluso entre grupos distintos, con igual número de series y distintas repeticiones o duraciones. Cada ronda SHALL incluir una serie de cada miembro y descansar al final. SHALL permitir desarmarlas y guardar explícitamente cambios habituales.
+#### Scenario: Last exercise
+- **WHEN** the user finishes the last set of the last pending exercise and all other exercises are complete or skipped
+- **THEN** the app shows the finished workout immediately without starting a final rest
 
-#### Scenario: Crear agrupación incompatible
-- **WHEN** se agrupan ejercicios con diferente número de series
-- **THEN** requiere resolver el número común antes de activar la superserie
+### Requirement: Open session recovery
+The app SHALL retain progress after an unexpected closure and allow the user to continue or finish the work already performed, even on another date. Locking the phone or leaving the app SHALL keep the session open.
 
-#### Scenario: Desarmar durante la sesión
-- **WHEN** el usuario desarma una superserie
-- **THEN** conserva las series realizadas y deja disponibles las restantes de cada ejercicio sin duplicarlas
+#### Scenario: Recover the next day
+- **WHEN** the user opens the app the next day with a pending session
+- **THEN** the app offers to continue the session or finish the work already saved, and only finishing marks the cycle day complete
+
+### Requirement: Supersets
+The app SHALL support usual and temporary supersets, including exercises from different groups, with equal set counts and different repetitions or durations. Each round SHALL include one set of each member and rest at the end. The user SHALL be able to dissolve a superset during a workout and explicitly save a change as usual.
+
+#### Scenario: Group exercises with incompatible set counts
+- **WHEN** the user groups exercises with different set counts
+- **THEN** the app requires a common set count before activating the superset
+
+#### Scenario: Dissolve a superset during a session
+- **WHEN** the user dissolves the superset
+- **THEN** the app retains performed sets and makes each member’s remaining sets available without duplication
 
 ### Requirement: Cardio
-La app SHALL representar cardio mediante indicaciones y temporizador de duración, sin registrar distancia, velocidad ni resistencia en el alcance inicial.
+The app SHALL represent cardio through instructions and a duration timer. The initial scope SHALL exclude recording distance, speed and resistance.
 
-#### Scenario: Cardio prescrito
-- **WHEN** se inicia un ejercicio de cardio de 15 minutos
-- **THEN** muestra sus indicaciones y un temporizador de duración
+#### Scenario: Prescribed cardio
+- **WHEN** the user starts a 15-minute cardio exercise
+- **THEN** the app shows its instructions and a duration timer
