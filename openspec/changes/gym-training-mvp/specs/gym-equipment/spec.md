@@ -11,12 +11,43 @@ La app SHALL permitir crear y editar gimnasios y seleccionar uno activo. Todo ca
 - **WHEN** el usuario vuelve a un gimnasio anterior
 - **THEN** no reactiva automáticamente su rutina antigua; inicia una nueva, que puede copiar de una archivada
 
+### Requirement: Eliminar un gimnasio
+La app SHALL permitir eliminar un gimnasio desde Ajustes. Antes de confirmar, SHALL identificar el gimnasio e indicar que dejará de estar disponible para entrenar y que se conservará su historial. Cancelar SHALL conservar el catálogo y la selección actuales.
+
+#### Scenario: Eliminar un gimnasio inactivo
+- **WHEN** el usuario confirma la eliminación de un gimnasio inactivo
+- **THEN** ese gimnasio y sus equipos desaparecen de los selectores, incluso después de reabrir la app
+- **AND** el gimnasio y la rutina activos siguen seleccionados, y las sesiones y rutinas archivadas del gimnasio eliminado se pueden consultar con su gimnasio y equipo originales
+
+#### Scenario: Eliminar el gimnasio activo
+- **WHEN** el usuario elimina el gimnasio activo y quedan otros gimnasios
+- **THEN** elige el gimnasio de reemplazo antes de confirmar, se archiva la rutina activa si existe y se inicia la creación de una rutina con saldos en cero en el gimnasio elegido
+- **AND** si hay una sesión abierta en el gimnasio que se quiere eliminar, puede continuarla o finalizarla y solo puede confirmar la eliminación después de finalizarla
+
+#### Scenario: Eliminar el último gimnasio
+- **WHEN** el usuario confirma la eliminación del único gimnasio tras finalizar cualquier sesión abierta
+- **THEN** se archiva la rutina activa si existe y Ajustes muestra el catálogo vacío con la opción de crear un gimnasio
+- **AND** el historial sigue disponible y crear un gimnasio con el mismo nombre le da una identidad nueva
+
 ### Requirement: Equipamiento disponible
 La app SHALL representar mancuernas, barra con discos, barras fijas, máquinas selectoras, máquinas de discos, peso corporal, bandas y cardio. Las cargas disponibles SHALL pertenecer al equipamiento del gimnasio seleccionado.
 
 #### Scenario: Seleccionar equipo
 - **WHEN** se elige una barra con discos o una máquina de discos en dos ejercicios del mismo gimnasio
 - **THEN** ambos consultan los mismos tamaños de disco y cada ejercicio conserva su propia carga habitual
+
+### Requirement: Eliminar un equipo
+La app SHALL permitir eliminar un equipo desde los Ajustes de su gimnasio. Antes de confirmar, SHALL identificar el equipo y su gimnasio. Cancelar SHALL conservar el equipo y sus asignaciones.
+
+#### Scenario: Retirar una máquina del catálogo
+- **WHEN** el usuario confirma la eliminación de una máquina
+- **THEN** la máquina desaparece del catálogo y de los selectores de equipo, incluso después de reabrir la app
+- **AND** se conservan los inventarios compartidos, los demás equipos y los registros históricos con la estación, las cargas y las unidades originales
+
+#### Scenario: El equipo estaba asignado a un ejercicio
+- **WHEN** se elimina un equipo utilizado en una rutina vigente
+- **THEN** el ejercicio conserva su prescripción y muestra el equipo como eliminado para que el usuario pueda reemplazarlo antes de volver a usarlo
+- **AND** una sesión ya iniciada conserva la copia de la prescripción con la que empezó y puede finalizarse
 
 ### Requirement: Inventario inicial editable por gimnasio
 Cada gimnasio nuevo SHALL comenzar con inventarios editables de discos, mancuernas individuales y barras fijas. El usuario SHALL poder añadir, editar y quitar pesos en Ajustes del gimnasio. Cada ejercicio SHALL poder elegir del inventario correspondiente a su equipo. Cada entrada SHALL conservar su unidad original.

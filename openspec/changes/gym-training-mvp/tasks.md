@@ -34,6 +34,10 @@ Continuación de 3.1: comenzar por 3.11 (modelo y migración) y 3.12 (Ajustes). 
 - [x] 3.11 Persistir los tres inventarios compartidos por gimnasio, con unidad por entrada y valores iniciales de gym-equipment. Migrar catálogos de 3.1. Reabrir un almacén congelado de V3 con dos equipos que comparten tamaños y comprobar deduplicación, unidades, pesos propios, selección de gimnasio e historial. Conservar las fixtures anteriores.
 - [x] 3.12 Adaptar Ajustes para editar los tres inventarios una vez por gimnasio, el peso propio de la barra (45 lb iniciales) y el máximo opcional por lado de barras y máquinas de discos. Verificar en español e inglés la edición de unidades mixtas, que los pesos retirados siguen ausentes al reabrir y que otro gimnasio conserva sus valores.
 
+- [ ] 3.13 Implementar la eliminación de gimnasios en el repositorio y en Ajustes. Cubrir gimnasio inactivo, sustitución del activo, sesión abierta y eliminación del último. Verificar archivo de la rutina, estado vacío, identidad nueva al reutilizar el nombre y consulta del historial tras reabrir el almacén.
+- [ ] 3.14 Implementar la eliminación de equipo en el repositorio, Ajustes y los selectores. Mostrar la asignación eliminada en el editor de rutinas y permitir reemplazarla. Verificar tras reabrir que los inventarios compartidos y los equipos de otros gimnasios conservan sus valores, que una sesión abierta puede finalizarse y que el historial conserva estación, cargas y unidades.
+- [ ] 3.15 Probar en simulador, en español e inglés, la confirmación y cancelación de ambas eliminaciones. Comprobar el nombre del elemento y su gimnasio cuando corresponda, los efectos anunciados y que cancelar conserva la selección, la rutina y las asignaciones originales.
+
 ## 4. Entrenamiento básico de principio a fin
 
 - [ ] 4.1 Implementar pantalla de serie con nombre, estación, equipo e indicaciones; verificar que Completar registra valores e inicia descanso con un toque.
