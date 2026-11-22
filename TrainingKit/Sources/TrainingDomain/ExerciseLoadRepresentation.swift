@@ -70,7 +70,7 @@ extension ExerciseLoad {
 extension ExerciseLoad.Unit {
     private static let kilogramsPerPound = Decimal(45_359_237) / 100_000_000
 
-    func converted(_ amount: Decimal, to target: Self) -> Decimal {
+    public func converted(_ amount: Decimal, to target: Self) -> Decimal {
         guard self != target else { return amount }
         return self == .lb ? amount * Self.kilogramsPerPound : amount / Self.kilogramsPerPound
     }
