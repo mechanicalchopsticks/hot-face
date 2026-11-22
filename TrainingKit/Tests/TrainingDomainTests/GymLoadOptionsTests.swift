@@ -39,4 +39,26 @@ struct GymLoadOptionsTests {
         #expect(loads.map(\.amount) == (1...30).map { Decimal($0 * 5) })
         #expect(loads.allSatisfy { $0.unit == .kg && $0.representation == .combined && $0.implementCount == 1 })
     }
+
+    @Test func mixesPlateUnitsBeforeApplyingTheEquipmentLimit() throws {
+        var inventory = GymInventory()
+        inventory[.plates] = [.init(5, .lb), .init(2.5, .kg)]
+        var machine = EquipmentDescription(name: "Machine", kind: .plateLoadedMachine, unit: .kg)
+        machine.maximumAddedWeightPerSide = 5
+
+        let loads = inventory.loadOptions(for: machine)
+
+        let expected = try ["0", "2.26796185", "2.5", "4.5359237", "4.76796185", "5"].map { value in
+            try #require(Decimal(string: value, locale: Locale(identifier: "en_US_POSIX")))
+        }
+        #expect(loads.map(\.amount) == expected)
+        #expect(loads.allSatisfy { $0.unit == .kg && $0.representation == .perSide && $0.implementCount == 2 })
+    }
+
+    @Test func emptyPlateInventoryOffersOnlyTheUnloadedEquipment() {
+        let machine = EquipmentDescription(name: "Machine", kind: .plateLoadedMachine, unit: .kg)
+        let unloaded = ExerciseLoad(amount: 0, unit: .kg, representation: .perSide, implementCount: 2)
+
+        #expect(GymInventory().loadOptions(for: machine) == [unloaded])
+    }
 }
