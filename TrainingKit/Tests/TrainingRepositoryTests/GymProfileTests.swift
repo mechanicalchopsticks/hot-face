@@ -164,6 +164,55 @@ struct GymProfileTests {
         }
     }
 
+    @Test func selectedLoadChangesRepresentationAndKeepsTheStoredBalance() throws {
+        try withTemporaryDirectory { directory in
+            func reopen() -> CoordinatedModelStore { CoordinatedModelStore(trainingDirectory: directory) }
+            let gymID = try #require(reopen().createGym(name: "Gym A").activeGymID)
+            let dumbbells = EquipmentDescription(name: "Rack", kind: .dumbbell, unit: .lb)
+            _ = try reopen().saveEquipment(dumbbells, in: gymID)
+            _ = try reopen().saveInventory([.init(10, .lb), .init(10, .kg)], for: .dumbbells, in: gymID)
+            let otherGym = try #require(reopen().createGym(name: "Gym B").gyms.first { $0.id != gymID })
+            #expect(otherGym.loadOptions(for: dumbbells.id).isEmpty)
+
+            let gym = try #require(reopen().gymCatalog().gyms.first { $0.id == gymID })
+            let options = gym.loadOptions(for: dumbbells.id, dumbbellCount: 2)
+            #expect(options.map(\.unit) == [.lb, .kg])
+            let weight = try #require(options.first { $0.unit == .kg })
+            var exercise = ExercisePrescription(name: "Curl", sets: 3, segments: [.repetitions(10)])
+            exercise.equipmentID = dumbbells.id
+            exercise.load = .confirmed(weight)
+            let day = RoutineDay(name: "Day", exercises: [exercise])
+            try reopen().withContext { context in
+                let routine = try TrainingSchemaV1.Routine(
+                    gymID: gymID, plan: RoutinePlan(name: "Routine", days: [day]))
+                let progression = TrainingSchemaV1.Progression(exerciseID: exercise.id)
+                progression.balance = 2
+                context.insert(routine)
+                context.insert(progression)
+                try context.save()
+            }
+            try reopen().withContext { context in
+                let routine = try #require(context.fetch(FetchDescriptor<TrainingSchemaV1.Routine>()).first)
+                var plan = try routine.plan
+                guard case .confirmed(let selected) = plan.days[0].exercises[0].load else {
+                    Issue.record("Expected the selected dumbbell load")
+                    return
+                }
+                plan.days[0].exercises[0].load = .confirmed(try selected.displayed(as: .combined))
+                try routine.replacePlan(plan)
+                try context.save()
+            }
+            try reopen().withContext { context in
+                let routine = try #require(context.fetch(FetchDescriptor<TrainingSchemaV1.Routine>()).first)
+                let expected = ExerciseLoad(amount: 20, unit: .kg, representation: .combined, implementCount: 2)
+                #expect(try routine.plan.days[0].exercises[0].load == .confirmed(expected))
+                let progression = try #require(context.fetch(FetchDescriptor<TrainingSchemaV1.Progression>()).first)
+                #expect(progression.exerciseID == exercise.id && progression.balance == 2)
+                #expect(try context.fetchCount(FetchDescriptor<TrainingSchemaV1.PrescriptionChange>()) == 0)
+            }
+        }
+    }
+
     private func fixture(_ name: String, extension fileExtension: String) throws -> URL {
         try #require(Bundle.module.url(forResource: name, withExtension: fileExtension, subdirectory: "Fixtures"))
     }

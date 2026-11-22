@@ -11,6 +11,11 @@ public struct GymProfile: Identifiable, Sendable {
     public let name: String
     public let inventory: GymInventory
     public let equipment: [EquipmentDescription]
+
+    public func loadOptions(for equipmentID: UUID, dumbbellCount: Int = 1) -> [ExerciseLoad] {
+        guard let item = equipment.first(where: { $0.id == equipmentID }) else { return [] }
+        return inventory.loadOptions(for: item.kind, dumbbellCount: dumbbellCount)
+    }
 }
 
 public struct GymCatalog: Sendable {
