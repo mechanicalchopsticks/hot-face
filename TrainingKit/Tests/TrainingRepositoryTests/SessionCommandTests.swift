@@ -71,6 +71,66 @@ private struct Fixture {
 }
 
 struct SessionCommandTests {
+    @Test func recordsPrescribedLoadsWithoutConfirmingEstimates() throws {
+        let files = FileManager.default
+        let directory = files.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try files.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? files.removeItem(at: directory) }
+        func reopen() -> CoordinatedModelStore { CoordinatedModelStore(trainingDirectory: directory) }
+
+        let estimate = ExerciseLoad(amount: 20, unit: .lb, representation: .perImplement, implementCount: 1)
+        let zero = ExerciseLoad(amount: 0, unit: .kg, representation: .perSide, implementCount: 2)
+        var curl = ExercisePrescription(name: "Curl", sets: 1, segments: [.repetitions(10)])
+        curl.load = .estimated(estimate)
+        let plank = ExercisePrescription(name: "Plank", sets: 1, segments: [.seconds(30)])
+        var press = ExercisePrescription(name: "Press", sets: 1, segments: [.repetitions(8)])
+        press.load = .confirmed(zero)
+        press.perSide = true
+        let day = RoutineDay(name: "A", exercises: [curl, plank, press])
+        let plan = RoutinePlan(name: "Plan", days: [day])
+
+        let (gymID, routineID) = try reopen().withContext { context in
+            let gym = try V1.Gym(name: "Gym")
+            let routine = try V1.Routine(gymID: gym.id, plan: plan)
+            context.insert(gym)
+            context.insert(routine)
+            try context.save()
+            return (gym.id, routine.id)
+        }
+
+        let sessionID = UUID()
+        let start = SessionCommand(
+            sessionID: sessionID, action: .start(routineID: routineID, gymID: gymID, dayID: day.id, cycleID: nil))
+        #expect(try reopen().apply(start, clock: FixedClock(10)) == .applied)
+        let sessionDay = try reopen().withContext { context in
+            let session = try #require(context.fetch(FetchDescriptor<V1.Session>()).first)
+            return try session.prescription.day
+        }
+        for exercise in sessionDay.exercises {
+            let command = SessionCommand(
+                sessionID: sessionID,
+                action: .completeSet(exerciseID: exercise.id, number: 1, performance: .init(asPrescribed: exercise)))
+            #expect(try reopen().apply(command, clock: FixedClock(20)) == .applied)
+        }
+
+        try reopen().withContext { context in
+            let sets = try context.fetch(FetchDescriptor<V1.PerformedSet>())
+            #expect(sets.count == 3)
+            let curlSet = try #require(sets.first { $0.exerciseID == curl.id })
+            let plankSet = try #require(sets.first { $0.exerciseID == plank.id })
+            let pressSet = try #require(sets.first { $0.exerciseID == press.id })
+            #expect(try curlSet.performance == SetPerformance(segments: [.repetitions(10)], load: estimate))
+            #expect(try plankSet.performance == SetPerformance(segments: [.seconds(30)]))
+            #expect(try pressSet.performance == SetPerformance(segments: [.repetitions(8)], load: zero, perSide: true))
+
+            let routine = try #require(context.fetch(FetchDescriptor<V1.Routine>()).first)
+            #expect(routine.revision == 1)
+            #expect(try routine.plan == plan)
+            let session = try #require(context.fetch(FetchDescriptor<V1.Session>()).first)
+            #expect(try session.prescription.day == day)
+        }
+    }
+
     @Test func replaysAStoredV2ReceiptAfterSessionClosure() throws {
         // Captured once from the V2 writer after starting, completing one set, and finishing.
         // A closed session accepts this set command only if its original receipt is readable.

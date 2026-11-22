@@ -19,4 +19,9 @@ public struct SetPerformance: Codable, Equatable, Sendable {
         self.perSide = perSide
         self.isPartial = isPartial
     }
+
+    /// Records a set as prescribed, including the numeric value of an estimate.
+    public init(asPrescribed exercise: ExercisePrescription) {
+        self.init(segments: exercise.segments, load: exercise.load.value, perSide: exercise.perSide)
+    }
 }
