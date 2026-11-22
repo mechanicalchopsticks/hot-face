@@ -19,7 +19,19 @@ struct ExerciseEditor: View {
                 TextField("Station (optional)", text: text($exercise.station))
             }
             Section("Prescription") {
-                Stepper("Sets: \(exercise.sets)", value: $exercise.sets, in: 1...Int.max)
+                Toggle(
+                    "Custom set count",
+                    isOn: Binding(
+                        get: { exercise.sets != nil },
+                        set: { exercise.sets = $0 ? defaults.setCount(for: exercise) : nil }))
+                if exercise.sets != nil {
+                    Stepper(
+                        "Sets: \(defaults.setCount(for: exercise))",
+                        value: Binding(get: { defaults.setCount(for: exercise) }, set: { exercise.sets = $0 }),
+                        in: 1...Int.max)
+                } else {
+                    Text("Sets: \(defaults.setCount(for: exercise))")
+                }
                 Toggle("Per side", isOn: $exercise.perSide)
             }
             Section("Segments in each set") {

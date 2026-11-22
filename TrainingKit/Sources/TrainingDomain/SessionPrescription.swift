@@ -53,7 +53,11 @@ public struct SessionPrescription: Codable, Equatable, Sendable {
         self.routineID = routineID
         self.routineRevision = routineRevision
         self.routineName = plan.name
-        self.day = day
+        var snapshot = day
+        for index in snapshot.exercises.indices {
+            snapshot.exercises[index].sets = plan.setCount(for: day.exercises[index])
+        }
+        self.day = snapshot
         let equipmentIDs = Set(day.exercises.compactMap(\.equipmentID))
         self.equipment = equipment.filter { equipmentIDs.contains($0.id) }
         self.restBetweenSets = plan.restBetweenSets
