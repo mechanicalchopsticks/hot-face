@@ -71,6 +71,51 @@ private struct Fixture {
 }
 
 struct SessionCommandTests {
+    @Test func sessionKeepsResolvedSetCountsThroughRoutineEditsAndCompletion() throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        func reopen() -> CoordinatedModelStore { CoordinatedModelStore(trainingDirectory: directory) }
+        let gymID = try #require(reopen().createGym(name: "Gym").activeGymID)
+        let curl = ExercisePrescription(name: "Curl", segments: [.repetitions(8)])
+        let row = ExercisePrescription(name: "Row", sets: 5, segments: [.repetitions(10)])
+        let day = RoutineDay(name: "A", exercises: [curl, row])
+        var routine = ManualRoutine(gymID: gymID)
+        routine.plan = RoutinePlan(name: "Plan", days: [day], defaultSets: 3)
+        try reopen().saveRoutine(routine)
+        let sessionID = UUID()
+        func apply(_ action: SessionCommand.Action) throws {
+            let command = SessionCommand(sessionID: sessionID, action: action)
+            #expect(try reopen().apply(command, clock: FixedClock(10)) == .applied)
+        }
+        try apply(.start(routineID: routine.id, gymID: gymID, dayID: day.id, cycleID: nil))
+        routine = try #require(reopen().editableRoutines(in: gymID).first)
+        routine.plan.defaultSets = 4
+        routine.plan.days[0].exercises[1].sets = 2
+        try reopen().saveRoutine(routine)
+
+        func checkSnapshot(finished: Bool) throws {
+            try reopen().withContext { context in
+                let session = try #require(context.fetch(FetchDescriptor<V1.Session>()).first)
+                #expect((session.finishedAt != nil) == finished)
+                #expect(!session.isPartial)
+                #expect(try session.prescription.day.exercises.map(\.sets) == [3, 5])
+            }
+        }
+        try checkSnapshot(finished: false)
+        for (exercise, count) in [(curl, 3), (row, 5)] {
+            for number in 1...count {
+                try apply(
+                    .completeSet(exerciseID: exercise.id, number: number, performance: .init(asPrescribed: exercise)))
+            }
+        }
+        #expect(throws: SessionCommandError.invalidSetNumber) {
+            try apply(.completeSet(exerciseID: curl.id, number: 4, performance: .init(asPrescribed: curl)))
+        }
+        try apply(.finish)
+        try checkSnapshot(finished: true)
+    }
+
     @Test func recordsPrescribedLoadsWithoutConfirmingEstimates() throws {
         let files = FileManager.default
         let directory = files.temporaryDirectory.appendingPathComponent(UUID().uuidString)

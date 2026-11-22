@@ -89,7 +89,8 @@ private struct RoutineEditor: View {
                         path.append(.day(day.id))
                     }
                 }
-                Section("Default rest") {
+                Section("Routine defaults") {
+                    Stepper("Sets: \(draft.plan.defaultSets)", value: $draft.plan.defaultSets, in: 1...Int.max)
                     RestStepper(title: "Between sets", seconds: $draft.plan.restBetweenSets)
                     RestStepper(title: "Between exercises", seconds: $draft.plan.restBetweenExercises)
                 }
@@ -139,7 +140,7 @@ private struct RoutineEditor: View {
                 .onMove { day.wrappedValue.exercises.move(fromOffsets: $0, toOffset: $1) }
                 .onDelete { day.wrappedValue.exercises.remove(atOffsets: $0) }
                 Button("Add exercise", systemImage: "plus") {
-                    let exercise = ExercisePrescription(name: "", sets: 1, segments: [.repetitions(8)])
+                    let exercise = ExercisePrescription(name: "", segments: [.repetitions(8)])
                     day.wrappedValue.exercises.append(exercise)
                     path.append(.exercise(day: day.wrappedValue.id, exercise: exercise.id))
                 }

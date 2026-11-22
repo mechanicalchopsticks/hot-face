@@ -4,9 +4,14 @@ import TrainingDomain
 import TrainingRepositories
 
 struct ManualRoutineTests {
-    @Test func editsAManualRoutineWithIndependentLoadsFromSharedPlates() throws {
+    private func temporaryDirectory() throws -> URL {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        return directory
+    }
+
+    @Test func editsAManualRoutineWithIndependentLoadsFromSharedPlates() throws {
+        let directory = try temporaryDirectory()
         defer { try? FileManager.default.removeItem(at: directory) }
         func reopen() -> CoordinatedModelStore { CoordinatedModelStore(trainingDirectory: directory) }
 
@@ -64,5 +69,77 @@ struct ManualRoutineTests {
         incomplete.plan.days[1].exercises[0].segments = []
         #expect(throws: RoutineEditorError.incompletePlan) { try reopen().saveRoutine(incomplete) }
         #expect(try reopen().editableRoutines(in: gymID).first?.plan == edited.plan)
+    }
+
+    @Test func inheritsAcrossDaysAndRestoresInheritanceAfterReopening() throws {
+        let directory = try temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: directory) }
+        func reopen() -> CoordinatedModelStore { CoordinatedModelStore(trainingDirectory: directory) }
+        let gymID = try #require(reopen().createGym(name: "Gym").activeGymID)
+        func read() throws -> ManualRoutine { try #require(reopen().editableRoutines(in: gymID).first) }
+        func counts(_ plan: RoutinePlan) -> [[Int]] {
+            plan.days.map { $0.exercises.map(plan.setCount(for:)) }
+        }
+        var draft = ManualRoutine(gymID: gymID)
+        #expect(draft.plan.defaultSets == 4)
+        draft.plan.name = "Plan"
+        draft.plan.days = [
+            RoutineDay(
+                name: "A",
+                exercises: [
+                    ExercisePrescription(name: "Curl", segments: [.repetitions(8)]),
+                    ExercisePrescription(name: "Row", sets: 3, segments: [.repetitions(8)]),
+                ]),
+            RoutineDay(
+                name: "B",
+                exercises: [
+                    ExercisePrescription(name: "Plank", segments: [.seconds(30)]),
+                    ExercisePrescription(name: "Squat", sets: 5, segments: [.repetitions(8)]),
+                ]),
+        ]
+        #expect(counts(draft.plan) == [[4, 3], [4, 5]])
+        draft.plan.defaultSets = 3
+        try reopen().saveRoutine(draft)
+        var edited = try read()
+        #expect(counts(edited.plan) == [[3, 3], [3, 5]])
+        edited.plan.defaultSets = 4
+        #expect(counts(edited.plan) == [[4, 3], [4, 5]])
+        try reopen().saveRoutine(edited)
+        edited = try read()
+        #expect(counts(edited.plan) == [[4, 3], [4, 5]])
+        edited.plan.days[1].exercises[1].sets = nil
+        #expect(counts(edited.plan) == [[4, 3], [4, 4]])
+        try reopen().saveRoutine(edited)
+        edited = try read()
+        edited.plan.defaultSets = 2
+        #expect(counts(edited.plan) == [[2, 3], [2, 2]])
+
+        edited.plan.defaultSets = 0
+        #expect(throws: RoutineEditorError.incompletePlan) { try reopen().saveRoutine(edited) }
+        edited.plan.defaultSets = 2
+        edited.plan.days[0].exercises[1].sets = -1
+        #expect(throws: RoutineEditorError.incompletePlan) { try reopen().saveRoutine(edited) }
+        #expect(try counts(read().plan) == [[4, 3], [4, 4]])
+    }
+
+    @Test func preservesExplicitSingleSetFromFrozenRoutine() throws {
+        let directory = try temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let fixture = try #require(
+            Bundle.module.url(forResource: "shared-equipment-v3", withExtension: "store", subdirectory: "Fixtures"))
+        try FileManager.default.copyItem(at: fixture, to: directory.appendingPathComponent("training.store"))
+        func reopen() -> CoordinatedModelStore { CoordinatedModelStore(trainingDirectory: directory) }
+        let gymID = try #require(reopen().gymCatalog().activeGymID)
+        var routine = try #require(reopen().editableRoutines(in: gymID).first)
+        #expect(routine.plan.defaultSets == 1)
+        #expect(routine.plan.days[0].exercises[0].sets == 1)
+        routine.plan.defaultSets = 4
+        try reopen().saveRoutine(routine)
+        routine = try #require(reopen().editableRoutines(in: gymID).first)
+        #expect(routine.plan.setCount(for: routine.plan.days[0].exercises[0]) == 1)
+        routine.plan.days[0].exercises[0].sets = nil
+        try reopen().saveRoutine(routine)
+        routine = try #require(reopen().editableRoutines(in: gymID).first)
+        #expect(routine.plan.setCount(for: routine.plan.days[0].exercises[0]) == 4)
     }
 }

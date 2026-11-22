@@ -45,7 +45,8 @@ public struct ExercisePrescription: Identifiable, Codable, Equatable, Sendable {
     public var instructions: String?
     public var equipmentID: UUID?
     public var station: String?
-    public var sets: Int
+    /// A missing count inherits the routine default. Older payloads always contain an explicit count.
+    public var sets: Int?
     public var segments: [ExerciseSegment]
     public var perSide = false
     public var load: PrescribedLoad = .undefined
@@ -53,7 +54,7 @@ public struct ExercisePrescription: Identifiable, Codable, Equatable, Sendable {
     public var restAfterExercise: TimeInterval?
     public var supersetID: UUID?
 
-    public init(id: UUID = UUID(), name: String, sets: Int, segments: [ExerciseSegment]) {
+    public init(id: UUID = UUID(), name: String, sets: Int? = nil, segments: [ExerciseSegment]) {
         self.id = id
         self.name = name
         self.sets = sets
@@ -76,16 +77,31 @@ public struct RoutineDay: Identifiable, Codable, Equatable, Sendable {
 public struct RoutinePlan: Codable, Equatable, Sendable {
     public var name: String
     public var days: [RoutineDay]
+    public var defaultSets: Int
     public var restBetweenSets: TimeInterval
     public var restBetweenExercises: TimeInterval
 
     public init(
-        name: String, days: [RoutineDay], restBetweenSets: TimeInterval = 105,
+        name: String, days: [RoutineDay], defaultSets: Int = 4, restBetweenSets: TimeInterval = 105,
         restBetweenExercises: TimeInterval = 135
     ) {
         self.name = name
         self.days = days
+        self.defaultSets = defaultSets
         self.restBetweenSets = restBetweenSets
         self.restBetweenExercises = restBetweenExercises
+    }
+
+    public init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        name = try values.decode(String.self, forKey: .name)
+        days = try values.decode([RoutineDay].self, forKey: .days)
+        defaultSets = try values.decodeIfPresent(Int.self, forKey: .defaultSets) ?? 1
+        restBetweenSets = try values.decode(TimeInterval.self, forKey: .restBetweenSets)
+        restBetweenExercises = try values.decode(TimeInterval.self, forKey: .restBetweenExercises)
+    }
+
+    public func setCount(for exercise: ExercisePrescription) -> Int {
+        exercise.sets ?? defaultSets
     }
 }

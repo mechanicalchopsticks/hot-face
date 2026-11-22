@@ -68,14 +68,14 @@ private func validateForEditing(_ plan: RoutinePlan) throws {
     }
     func validRest(_ duration: TimeInterval) -> Bool { duration.isFinite && duration >= 0 }
 
-    guard hasName(plan.name), !plan.days.isEmpty,
+    guard hasName(plan.name), !plan.days.isEmpty, plan.defaultSets > 0,
         validRest(plan.restBetweenSets), validRest(plan.restBetweenExercises)
     else { throw RoutineEditorError.incompletePlan }
 
     for day in plan.days {
         guard hasName(day.name), !day.exercises.isEmpty else { throw RoutineEditorError.incompletePlan }
         for exercise in day.exercises {
-            guard hasName(exercise.name), exercise.sets > 0, !exercise.segments.isEmpty,
+            guard hasName(exercise.name), plan.setCount(for: exercise) > 0, !exercise.segments.isEmpty,
                 exercise.restBetweenSets.map(validRest) != false, exercise.restAfterExercise.map(validRest) != false
             else { throw RoutineEditorError.incompletePlan }
             for segment in exercise.segments {

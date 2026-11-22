@@ -62,7 +62,9 @@ private struct SessionWriter {
         case .completeSet(let id, let number, let performance):
             let session = try openSession()
             let target = try session.exercise(id)
-            guard number > 0, number <= target.sets else { throw SessionCommandError.invalidSetNumber }
+            guard number > 0, number <= (try target.snapshotSetCount) else {
+                throw SessionCommandError.invalidSetNumber
+            }
             let sets = FetchDescriptor<V1.PerformedSet>(
                 predicate: #Predicate {
                     $0.sessionID == sessionID && $0.exerciseID == id && $0.number == number
@@ -101,7 +103,9 @@ private struct SessionWriter {
             let sets = try context.fetch(
                 FetchDescriptor<V1.PerformedSet>(predicate: #Predicate { $0.sessionID == sessionID }))
             let byExercise = Dictionary(grouping: sets, by: \.exerciseID)
-            let partial = plan.day.exercises.contains { (byExercise[$0.id]?.count ?? 0) < $0.sets }
+            let partial = try plan.day.exercises.contains {
+                (byExercise[$0.id]?.count ?? 0) < (try $0.snapshotSetCount)
+            }
             if let cycleID = session.cycleID {
                 let cycle = try cycle(with: cycleID)
                 let dayID = plan.day.id
@@ -133,6 +137,15 @@ private struct SessionWriter {
         let cycles = FetchDescriptor<V1.Cycle>(predicate: #Predicate { $0.id == id })
         guard let cycle = try context.fetch(cycles).first else { throw SessionCommandError.missingCycle }
         return cycle
+    }
+}
+
+extension ExercisePrescription {
+    fileprivate var snapshotSetCount: Int {
+        get throws {
+            guard let sets else { throw CocoaError(.coderReadCorrupt) }
+            return sets
+        }
     }
 }
 

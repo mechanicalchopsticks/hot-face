@@ -24,7 +24,7 @@ The day editor SHALL group the day's exercises by their optional group and prese
 - **THEN** the Spanish editor shows the squat and lunge under “Pierna” in their manual order and the walk under “Sin grupo”
 
 ### Requirement: Routine set count and exercise overrides
-The routine editor SHALL offer a default set count alongside the rest settings. A new routine SHALL start with a default of 1 set. Each new manual exercise SHALL inherit the current routine default. The exercise editor SHALL show the effective count and allow the user to set an individual override or return to the routine default. Both the default and the override SHALL be positive whole numbers.
+The routine editor SHALL offer a default set count alongside the rest settings. A new routine SHALL start with a default of 4 sets. Each new manual exercise SHALL inherit the current routine default. The exercise editor SHALL show the effective count and allow the user to set an individual override or return to the routine default. Both the default and the override SHALL be positive whole numbers.
 
 #### Scenario: Change the routine default across training days
 - **WHEN** the user changes the routine default from 3 sets to 4

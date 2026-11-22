@@ -541,6 +541,16 @@
         }
       }
     },
+    "Custom set count" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Personalizar número de series"
+          }
+        }
+      }
+    },
     "Day name" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -559,17 +569,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Días"
-          }
-        }
-      }
-    },
-    "Default rest" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Descansos de la rutina"
           }
         }
       }
@@ -1378,6 +1377,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Revisión"
+          }
+        }
+      }
+    },
+    "Routine defaults" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Valores predeterminados de la rutina"
           }
         }
       }
