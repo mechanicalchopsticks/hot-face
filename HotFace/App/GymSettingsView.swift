@@ -95,10 +95,12 @@ struct GymSettingsView: View {
 private struct GymProfileView: View {
     enum Editor: Identifiable {
         case name
+        case inventory(GymInventory.Kind)
         case equipment(EquipmentDescription?)
 
         var id: String {
             switch self {
+            case .inventory(let kind): "inventory-\(kind)"
             case .name: "name"
             case .equipment(let existing): existing?.id.uuidString ?? "newEquipment"
             }
@@ -120,6 +122,11 @@ private struct GymProfileView: View {
                     Button("Set as active gym", action: selectGym)
                 }
                 Button("Rename gym") { editor = .name }
+            }
+            Section("Shared weights") {
+                ForEach(GymInventory.Kind.allCases, id: \.self) { kind in
+                    Button(kind.title) { editor = .inventory(kind) }
+                }
             }
             Section("Equipment") {
                 ForEach(gym.equipment) { item in
@@ -150,6 +157,11 @@ private struct GymProfileView: View {
             case .name:
                 GymNameEditor(title: "Rename gym", name: gym.name) { name in
                     try model.update { try $0.renameGym(gym.id, name: name) }
+                }
+            case .inventory(let kind):
+                InventoryEditor(kind: kind, weights: gym.inventory[kind], locale: locale) { weights in
+                    try model.update { try $0.saveInventory(weights, for: kind, in: gym.id) }
+                    self.editor = nil
                 }
             case .equipment(let existing):
                 EquipmentEditor(existing: existing, locale: locale) { item in

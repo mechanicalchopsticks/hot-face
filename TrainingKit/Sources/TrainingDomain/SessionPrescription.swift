@@ -12,6 +12,7 @@ public struct EquipmentDescription: Identifiable, Codable, Equatable, Sendable {
     public var unit: ExerciseLoad.Unit
     public var availableLoads: [Decimal] = []
     public var baseWeight: Decimal?
+    public var maximumAddedWeightPerSide: Decimal?
     public var plates: [PlateInventory] = []
 
     public init(id: UUID = UUID(), name: String, kind: Kind, unit: ExerciseLoad.Unit) {
