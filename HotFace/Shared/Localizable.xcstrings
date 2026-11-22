@@ -542,6 +542,7 @@
       }
     },
     "Custom set count" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -819,7 +820,6 @@
       }
     },
     "Exercises" : {
-      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -1382,6 +1382,7 @@
       }
     },
     "Routine defaults" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -1546,6 +1547,9 @@
           }
         }
       }
+    },
+    "Sets: %@" : {
+
     },
     "Sets: %lld" : {
       "extractionState" : "stale",
