@@ -11,11 +11,7 @@ struct TrainingTabView: View {
                     message: "Your training days will appear here when a routine is active.")
             }
             Tab("Routines", systemImage: "list.bullet.clipboard") {
-                EmptySection(
-                    "Routines",
-                    heading: "No routines yet",
-                    systemImage: "list.bullet.clipboard",
-                    message: "Your saved routines will appear here.")
+                RoutinesView()
             }
             Tab("History", systemImage: "clock") {
                 EmptySection(
