@@ -1,38 +1,65 @@
 ## Purpose
 
-Organizar rutinas personales en días y ciclos independientes del calendario, conservando las versiones archivadas.
+Organize personal routines into training days and cycles that run independently of calendar dates, and retain archived versions.
 
 ## ADDED Requirements
 
-### Requirement: Rutina activa y creación
-La app SHALL permitir crear manualmente, editar y copiar rutinas con días ordenables y ejercicios agrupados, manteniendo una sola rutina activa.
+### Requirement: Active routine and routine creation
+The app SHALL support manually creating, editing and copying routines with reorderable days and grouped exercises. Only one routine SHALL be active at a time.
 
-#### Scenario: Copiar una rutina anterior
-- **WHEN** el usuario copia y activa una rutina archivada
-- **THEN** conserva estructura y configuración, inicia historial y saldos nuevos y mantiene intacta la original
-- **AND** archiva la rutina previamente activa con su historial
+#### Scenario: Copy a previous routine
+- **WHEN** the user copies and activates an archived routine
+- **THEN** the copy retains its structure and settings and starts with a fresh history and new progression balances
+- **AND** the original remains intact and the previously active routine is archived with its history
 
-### Requirement: Ciclos independientes de fechas
-La app SHALL completar el ciclo cuando todos sus días estén completados u omitidos y disponer de nuevo de todos los días al iniciar el siguiente ciclo.
+### Requirement: Routine set count and exercise overrides
+The routine editor SHALL offer a default set count alongside the rest settings. A new routine SHALL start with a default of 1 set. Each new manual exercise SHALL inherit the current routine default. The exercise editor SHALL show the effective count and allow the user to set an individual override or return to the routine default. Both the default and the override SHALL be positive whole numbers.
 
-#### Scenario: Omitir un día
-- **WHEN** el usuario omite un día y termina los restantes en fechas distintas
-- **THEN** el ciclo termina y el día omitido vuelve a estar disponible en el siguiente
+#### Scenario: Change the routine default across training days
+- **WHEN** the user changes the routine default from 3 sets to 4
+- **THEN** every exercise that inherits the default shows 4 sets across all days, including exercises already in the routine
+- **AND** an exercise with an individual override of 5 sets keeps 5 after saving and reopening the routine
 
-#### Scenario: Finalización parcial
-- **WHEN** el usuario finaliza una sesión con ejercicios pendientes
-- **THEN** el día queda completado en el ciclo sin trasladar los pendientes a otro día
+#### Scenario: Keep an explicit override even when it matches the default
+- **WHEN** the user explicitly sets an exercise to 3 sets while the routine default is 3 and later changes the default to 4
+- **THEN** the exercise keeps its override of 3 sets
 
-### Requirement: Orden temporal de días
-La app SHALL aplicar los cambios de orden de días solo al ciclo actual, salvo elección explícita de conservarlos en ciclos futuros.
+#### Scenario: Return an exercise to the routine default
+- **WHEN** the user clears an exercise override while the routine default is 4 sets
+- **THEN** the exercise immediately shows 4 sets
+- **AND** after saving and reopening the routine, the exercise follows subsequent changes to the default
 
-#### Scenario: Reordenar sin guardar como habitual
-- **WHEN** el usuario mueve el Día 3 delante del Día 2 para el ciclo actual
-- **THEN** el siguiente ciclo conserva el orden habitual anterior
+#### Scenario: Open a routine saved before set inheritance was available
+- **WHEN** the user opens a previously saved routine that contains only individual exercise set counts
+- **THEN** the routine default is 1 and each stored exercise count is preserved as an explicit override, including counts of 1
+- **AND** the user can return any exercise to the routine default independently
 
-### Requirement: Renovación manual
-La app SHALL mantener la rutina activa entre ciclos hasta que el usuario la reemplace o cambie de gimnasio.
+#### Scenario: Preserve the set counts prescribed at session start
+- **WHEN** a session starts with a routine default of 3 sets and an exercise override of 5 sets
+- **THEN** the session records 3 sets for an inheriting exercise and 5 for the exercise with the override
+- **AND** later routine edits preserve those counts in the open session and its history
 
-#### Scenario: Terminar un ciclo
-- **WHEN** termina el último día del ciclo
-- **THEN** no se archiva ni reemplaza automáticamente la rutina
+### Requirement: Cycles independent of calendar dates
+The app SHALL complete a cycle once all days have been completed or skipped and make all days available again at the start of the next cycle.
+
+#### Scenario: Skip a day
+- **WHEN** the user skips one day and finishes the others on different dates
+- **THEN** the cycle ends and the skipped day is available again in the next cycle
+
+#### Scenario: Finish a partial session
+- **WHEN** the user finishes a session with exercises still pending
+- **THEN** the day counts as completed in the cycle and the pending exercises do not carry over to another day
+
+### Requirement: Temporary day order
+Changes to day order SHALL apply only to the current cycle unless the user explicitly chooses to keep them for future cycles.
+
+#### Scenario: Reorder days for the current cycle
+- **WHEN** the user moves Day 3 ahead of Day 2 for the current cycle
+- **THEN** the next cycle uses the previous usual order
+
+### Requirement: Manual routine renewal
+The app SHALL keep the routine active between cycles until the user replaces it or changes gyms.
+
+#### Scenario: Finish a cycle
+- **WHEN** the user finishes the last day of the cycle
+- **THEN** the routine remains active
