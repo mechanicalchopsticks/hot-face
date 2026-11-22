@@ -261,6 +261,16 @@
         }
       }
     },
+    "Check the weights and remove duplicate entries. Plate sizes must be positive." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Revisa los pesos y elimina las entradas duplicadas. El peso de los discos debe ser positivo."
+          }
+        }
+      }
+    },
     "Complete set" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -321,6 +331,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No se pudo guardar el gimnasio"
+          }
+        }
+      }
+    },
+    "Could not save inventory" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo guardar el inventario"
           }
         }
       }
@@ -446,6 +466,16 @@
         }
       }
     },
+    "Enter a valid weight." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Introduce un peso válido."
+          }
+        }
+      }
+    },
     "Equipment" : {
       "localizations" : {
         "es" : {
@@ -483,6 +513,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Primer sostenimiento"
+          }
+        }
+      }
+    },
+    "Fixed bars (total weight)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Barras fijas (peso total)"
           }
         }
       }
@@ -554,6 +594,16 @@
         }
       }
     },
+    "Individual dumbbells" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mancuernas individuales"
+          }
+        }
+      }
+    },
     "Last hold" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -610,6 +660,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Notificaciones locales"
+          }
+        }
+      }
+    },
+    "Maximum added per side (optional)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Máximo añadido por lado (opcional)"
           }
         }
       }
@@ -752,6 +812,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Inventario de discos"
+          }
+        }
+      }
+    },
+    "Plate sizes" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tamaños de disco"
           }
         }
       }
@@ -956,6 +1026,16 @@
         }
       }
     },
+    "Shared weights" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pesos compartidos"
+          }
+        }
+      }
+    },
     "Start" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1088,6 +1168,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Vuelve a intentar guardar el equipo."
+          }
+        }
+      }
+    },
+    "Try saving the inventory again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Intenta guardar el inventario de nuevo."
           }
         }
       }

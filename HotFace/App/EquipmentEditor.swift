@@ -14,18 +14,12 @@ struct EquipmentEditor: View {
     @State private var unit: ExerciseLoad.Unit
     @State private var loads: [LoadRow]
     @State private var baseWeight: String
-    @State private var plates: [PlateRow]
+    @State private var maximumPerSide: String
     @State private var errorMessage: LocalizedStringKey?
 
     private struct LoadRow: Identifiable {
         let id = UUID()
         var weight = ""
-    }
-
-    private struct PlateRow: Identifiable {
-        let id = UUID()
-        var weight = ""
-        var count = ""
     }
 
     init(existing: EquipmentDescription?, locale: Locale, onSave: @escaping (EquipmentDescription) throws -> Void) {
@@ -41,9 +35,12 @@ struct EquipmentEditor: View {
         }
         _loads = State(initialValue: existing?.availableLoads.map { LoadRow(weight: format($0)) } ?? [])
         _baseWeight = State(initialValue: existing?.baseWeight.map(format) ?? "")
-        _plates = State(
-            initialValue: existing?.plates.map { PlateRow(weight: format($0.weight), count: String($0.count)) } ?? [])
+        _maximumPerSide = State(initialValue: existing?.maximumAddedWeightPerSide.map(format) ?? "")
     }
+
+    private var usesPlates: Bool { kind == .barbell || kind == .plateLoadedMachine }
+
+    private var editsEquipmentLoads: Bool { !usesPlates && kind != .dumbbell && kind != .fixedBar }
 
     private var title: LocalizedStringKey { existing == nil ? "Add equipment" : "Edit equipment" }
 
@@ -63,31 +60,31 @@ struct EquipmentEditor: View {
                         Text(verbatim: "lb").tag(ExerciseLoad.Unit.lb)
                     }
                 }
-                Section("Available loads") {
-                    ForEach($loads) { $load in
-                        TextField("Weight", text: $load.weight)
-                            .keyboardType(.decimalPad)
-                    }
-                    .onDelete { loads.remove(atOffsets: $0) }
-                    Button("Add load", systemImage: "plus") { loads.append(LoadRow()) }
-                }
-                if kind == .barbell || kind == .plateLoadedMachine || !baseWeight.isEmpty || !plates.isEmpty {
-                    Section {
-                        TextField("Base weight (optional)", text: $baseWeight)
-                            .keyboardType(.decimalPad)
-                    }
-                    Section("Plate inventory") {
-                        ForEach($plates) { $plate in
-                            VStack {
-                                TextField("Plate weight", text: $plate.weight)
-                                    .keyboardType(.decimalPad)
-                                TextField("Number of plates", text: $plate.count)
-                                    .keyboardType(.numberPad)
-                            }
+                if editsEquipmentLoads {
+                    Section("Available loads") {
+                        ForEach($loads) { $load in
+                            TextField("Weight", text: $load.weight).keyboardType(.decimalPad)
                         }
-                        .onDelete { plates.remove(atOffsets: $0) }
-                        Button("Add plates", systemImage: "plus") { plates.append(PlateRow()) }
+                        .onDelete { loads.remove(atOffsets: $0) }
+                        Button("Add load", systemImage: "plus") { loads.append(LoadRow()) }
                     }
+                }
+                if usesPlates || !baseWeight.isEmpty {
+                    Section {
+                        TextField("Base weight (optional)", text: $baseWeight).keyboardType(.decimalPad)
+                        if usesPlates {
+                            TextField("Maximum added per side (optional)", text: $maximumPerSide).keyboardType(
+                                .decimalPad)
+                        }
+                    }
+                }
+            }
+            .onChange(of: kind) { previous, selected in
+                if existing == nil && selected == .barbell && baseWeight.isEmpty {
+                    unit = .lb
+                    baseWeight = "45"
+                } else if existing == nil && previous == .barbell && baseWeight == "45" && unit == .lb {
+                    baseWeight = ""
                 }
             }
             .navigationTitle(title)
@@ -125,19 +122,20 @@ struct EquipmentEditor: View {
         do {
             var item = EquipmentDescription(id: existing?.id ?? UUID(), name: name, kind: kind, unit: unit)
             item.station = station.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : station
-            item.availableLoads = try loads.map { try parseWeight($0.weight) }
+            if editsEquipmentLoads {
+                item.availableLoads = try loads.map { try parseWeight($0.weight) }
+            } else if usesPlates && existing?.kind == kind {
+                item.availableLoads = existing?.availableLoads ?? []
+            }
             item.baseWeight =
                 baseWeight.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : try parseWeight(baseWeight)
-            item.plates = try plates.map { row in
-                guard let count = Int(row.count.trimmingCharacters(in: .whitespacesAndNewlines)) else {
-                    throw GymProfileError.invalidLoads
-                }
-                return PlateInventory(weight: try parseWeight(row.weight), count: count)
+            if usesPlates && !maximumPerSide.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                item.maximumAddedWeightPerSide = try parseWeight(maximumPerSide)
             }
             try onSave(item)
             dismiss()
         } catch GymProfileError.invalidLoads {
-            errorMessage = "Enter a valid weight for each load and a positive weight and count for each plate entry."
+            errorMessage = "Enter a valid weight."
         } catch {
             errorMessage = "Try saving the equipment again."
         }
