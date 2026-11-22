@@ -40,9 +40,38 @@ extension ExerciseLoad {
         return display
     }
 
+    /// Calculates percentage change using only the added weight per side. Zero has no percentage change.
+    public func addedWeightPercentageChange(to target: ExerciseLoad, equipmentWeight: InventoryWeight? = nil) throws
+        -> Decimal?
+    {
+        let comparisonUnit = unit == target.unit && (equipmentWeight?.unit ?? unit) == unit ? unit : .kg
+        let equipmentAmount = equipmentWeight.map { $0.unit.converted($0.amount, to: comparisonUnit) }
+
+        func addedPerSide(_ load: ExerciseLoad) throws -> Decimal {
+            var normalized = load
+            normalized.amount = load.unit.converted(load.amount, to: comparisonUnit)
+            normalized.unit = comparisonUnit
+            return try normalized.displayed(as: .perSide, equipmentWeightInLoadUnit: equipmentAmount).amount
+        }
+
+        let currentWeight = try addedPerSide(self)
+        let targetWeight = try addedPerSide(target)
+        guard currentWeight > 0 else { return nil }
+        return (targetWeight - currentWeight) * 100 / currentWeight
+    }
+
     private static func requiredEquipmentWeight(_ weight: Decimal?) throws -> Decimal {
         guard let weight else { throw ConversionError.missingEquipmentWeight }
         guard !weight.isNaN, weight >= 0 else { throw ConversionError.invalidLoad }
         return weight
+    }
+}
+
+extension ExerciseLoad.Unit {
+    private static let kilogramsPerPound = Decimal(45_359_237) / 100_000_000
+
+    func converted(_ amount: Decimal, to target: Self) -> Decimal {
+        guard self != target else { return amount }
+        return self == .lb ? amount * Self.kilogramsPerPound : amount / Self.kilogramsPerPound
     }
 }

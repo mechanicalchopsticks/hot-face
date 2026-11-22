@@ -164,6 +164,46 @@ struct GymProfileTests {
         }
     }
 
+    @Test func plateEquipmentReadsTheEditedGymInventoryAndItsOwnPerSideLimit() throws {
+        try withTemporaryDirectory { directory in
+            func reopen() -> CoordinatedModelStore { CoordinatedModelStore(trainingDirectory: directory) }
+
+            let gymID = try #require(reopen().createGym(name: "Gym").activeGymID)
+            var barbell = EquipmentDescription(name: "Barbell", kind: .barbell, unit: .lb)
+            barbell.baseWeight = 45
+            var machine = EquipmentDescription(name: "Machine", kind: .plateLoadedMachine, unit: .lb)
+            machine.baseWeight = 60
+            machine.maximumAddedWeightPerSide = 90
+            _ = try reopen().saveEquipment(barbell, in: gymID)
+            _ = try reopen().saveEquipment(machine, in: gymID)
+
+            let gym = try #require(reopen().gymCatalog().gyms.first)
+            let barLoads = gym.loadOptions(for: barbell.id)
+            let machineLoads = gym.loadOptions(for: machine.id)
+            for loads in [barLoads, machineLoads] {
+                let totals = try loads.map { try $0.displayed(as: .totalAdded).amount }
+                #expect(totals.contains(30))
+                #expect(!totals.contains(31))
+            }
+            #expect(try barLoads.last?.displayed(as: .totalAdded).amount == 500)
+            #expect(try barLoads.last?.displayed(as: .includingEquipment, equipmentWeightInLoadUnit: 45).amount == 545)
+            let barTotals = try barLoads.map { try $0.displayed(as: .totalAdded).amount }
+            #expect(!barTotals.contains(505))
+            #expect(try machineLoads.last?.displayed(as: .totalAdded).amount == 180)
+            #expect(
+                try machineLoads.last?.displayed(as: .includingEquipment, equipmentWeightInLoadUnit: 60).amount == 240)
+
+            let remaining = gym.inventory.plates.filter { $0.amount >= 10 }
+            _ = try reopen().saveInventory(remaining, for: .plates, in: gymID)
+            let updated = try #require(reopen().gymCatalog().gyms.first)
+            for item in [barbell, machine] {
+                let totals = try updated.loadOptions(for: item.id).map { try $0.displayed(as: .totalAdded).amount }
+                #expect(!totals.contains(30))
+                #expect(totals.contains(40))
+            }
+        }
+    }
+
     @Test func selectedLoadChangesRepresentationAndKeepsTheStoredBalance() throws {
         try withTemporaryDirectory { directory in
             func reopen() -> CoordinatedModelStore { CoordinatedModelStore(trainingDirectory: directory) }

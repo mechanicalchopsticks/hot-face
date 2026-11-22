@@ -38,4 +38,25 @@ struct ExerciseLoadRepresentationTests {
             try load.displayed(as: .perImplement)
         }
     }
+
+    @Test(arguments: [ExerciseLoad.Representation.perSide, .totalAdded, .includingEquipment])
+    func platePercentageUsesOnlyAddedWeightInEveryView(representation: ExerciseLoad.Representation) throws {
+        let current = ExerciseLoad(amount: 10, unit: .kg, representation: .perSide, implementCount: 2)
+        let target = ExerciseLoad(amount: 12.5, unit: .kg, representation: .perSide, implementCount: 2)
+        let baseWeight = InventoryWeight(20, .kg)
+        let displayedCurrent = try current.displayed(as: representation, equipmentWeightInLoadUnit: baseWeight.amount)
+        let displayedTarget = try target.displayed(as: representation, equipmentWeightInLoadUnit: baseWeight.amount)
+
+        #expect(
+            try displayedCurrent.addedWeightPercentageChange(to: displayedTarget, equipmentWeight: baseWeight) == 25)
+        #expect(try displayedCurrent.addedWeightPercentageChange(to: target, equipmentWeight: baseWeight) == 25)
+    }
+
+    @Test func unloadedEquipmentHasNoPercentageChange() throws {
+        let baseWeight = InventoryWeight(45, .lb)
+        let unloaded = ExerciseLoad(amount: 45, unit: .lb, representation: .includingEquipment, implementCount: 2)
+        let target = ExerciseLoad(amount: 2.5, unit: .lb, representation: .perSide, implementCount: 2)
+
+        #expect(try unloaded.addedWeightPercentageChange(to: target, equipmentWeight: baseWeight) == nil)
+    }
 }

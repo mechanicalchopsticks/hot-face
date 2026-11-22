@@ -14,7 +14,7 @@ public struct GymProfile: Identifiable, Sendable {
 
     public func loadOptions(for equipmentID: UUID, dumbbellCount: Int = 1) -> [ExerciseLoad] {
         guard let item = equipment.first(where: { $0.id == equipmentID }) else { return [] }
-        return inventory.loadOptions(for: item.kind, dumbbellCount: dumbbellCount)
+        return inventory.loadOptions(for: item, dumbbellCount: dumbbellCount)
     }
 }
 
