@@ -1,8 +1,10 @@
 # Repository instructions
 
-## Code language
+## Code and documentation language
 
 Write all code in English throughout this repository, regardless of the language used in the chat. Use English for all identifiers, including domain entities, models, types, properties, functions, parameters, variables, modules, files, and tests. Write code comments and documentation comments in English as well.
+
+When creating or updating a document that uses English keywords (such as OpenSpec's `Requirement`, `Scenario`, `WHEN`, or `THEN`), write the entire document in English, including headings, descriptions, and task lists.
 
 Use the intended locale for user-facing text and preserve user-entered content in its original language.
 
