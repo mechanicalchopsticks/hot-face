@@ -1,5 +1,6 @@
 import SwiftUI
 import TrainingDomain
+import TrainingInterface
 import TrainingRepositories
 
 struct RoutinesView: View {
@@ -66,6 +67,7 @@ private enum EditorRoute: Hashable {
 
 private struct RoutineEditor: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.locale) private var locale
     @State var draft: ManualRoutine
     let gym: GymProfile
     @State private var path: [EditorRoute] = []
@@ -131,14 +133,24 @@ private struct RoutineEditor: View {
     private func dayEditor(_ day: Binding<RoutineDay>) -> some View {
         Form {
             TextField("Day name", text: day.name)
-            Section("Exercises") {
-                ForEach(day.wrappedValue.exercises) { exercise in
-                    NavigationLink(value: EditorRoute.exercise(day: day.wrappedValue.id, exercise: exercise.id)) {
-                        if exercise.name.isEmpty { Text("Unnamed exercise") } else { Text(verbatim: exercise.name) }
+            ForEach(ExerciseGroupSection.sections(for: day.wrappedValue)) { section in
+                Section {
+                    ForEach(section.exercises) { exercise in
+                        NavigationLink(value: EditorRoute.exercise(day: day.wrappedValue.id, exercise: exercise.id)) {
+                            if exercise.name.isEmpty { Text("Unnamed exercise") } else { Text(verbatim: exercise.name) }
+                        }
+                    }
+                    .onMove { section.move($0, to: $1, in: &day.wrappedValue) }
+                    .onDelete { section.delete($0, from: &day.wrappedValue) }
+                } header: {
+                    if let heading = section.heading(locale: locale) {
+                        Text(verbatim: heading).textCase(nil)
+                    } else {
+                        Text("Exercises")
                     }
                 }
-                .onMove { day.wrappedValue.exercises.move(fromOffsets: $0, toOffset: $1) }
-                .onDelete { day.wrappedValue.exercises.remove(atOffsets: $0) }
+            }
+            Section {
                 Button("Add exercise", systemImage: "plus") {
                     let exercise = ExercisePrescription(name: "", segments: [.repetitions(8)])
                     day.wrappedValue.exercises.append(exercise)
