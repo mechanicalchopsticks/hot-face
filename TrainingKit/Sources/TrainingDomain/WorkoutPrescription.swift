@@ -23,6 +23,13 @@ public enum PrescribedLoad: Codable, Equatable, Sendable {
     case undefined
     case estimated(ExerciseLoad)
     case confirmed(ExerciseLoad)
+
+    public var value: ExerciseLoad? {
+        switch self {
+        case .undefined: nil
+        case .estimated(let load), .confirmed(let load): load
+        }
+    }
 }
 
 public enum ExerciseSegment: Codable, Equatable, Sendable {
