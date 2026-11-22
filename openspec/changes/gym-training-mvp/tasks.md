@@ -1,117 +1,118 @@
 # Tasks
 
-## 1. Factibilidad en iPhone
+## 1. iPhone feasibility
 
-- [x] 1.1 Inspeccionar Xcode/SDK y versiones de ambos dispositivos; entregar registro de compatibilidad con iOS 26 y lista concreta de requisitos de firma.
-- [x] 1.2 Crear un proyecto mínimo de prueba con app y extensión de Live Activity; verificar compilación e inicio en simulador sin incluir todavía datos reales.
-- [x] 1.3 Probar AlarmKit, ActivityKit y App Intents en iPhone para completar serie, iniciar/pausar/reanudar, tres segundos preparatorios y transición automática a descanso; documentar resultados observables y permisos.
-- [x] 1.4 Probar señales diferenciadas, sostenimientos, música y audífonos con pantalla bloqueada/cambio de app; entregar matriz de resultados que distinga cierre forzado y reinicio de bloqueo normal.
-- [x] 1.5 Validar SwiftData y almacenamiento compartido app/extensión con dos acciones concurrentes y recuperación; demostrar que no se pierde ni duplica una serie.
-- [x] 1.6 Consolidar el resultado de factibilidad contra workout-timers; si algún requisito no es viable, presentar evidencia y resolver con el usuario antes de implementar esa parte.
+- [x] 1.1 Inspect Xcode, the SDK and both device versions. Record iOS 26 compatibility and list signing requirements.
+- [x] 1.2 Create a minimal test app and Live Activity extension. Verify build and launch in the simulator using test data.
+- [x] 1.3 Test AlarmKit, ActivityKit and App Intents on iPhone for completing a set, starting, pausing, resuming, three seconds of preparation and automatic transition to rest. Document observable results and permissions.
+- [x] 1.4 Test distinct cues, holds, music and headphones while locked and when switching apps. Record separate results for normal locking, force quit and restart.
+- [x] 1.5 Validate SwiftData and shared app/extension storage with two concurrent actions and recovery. Demonstrate that no set is lost or duplicated.
+- [x] 1.6 Compare feasibility results with workout-timers. If an agreed requirement is infeasible, present the evidence and resolve it with the user before implementation.
 
-## 2. Base de la aplicación y datos
+## 2. Application and data foundations
 
-- [x] 2.1 Crear módulos de dominio, repositorios, adaptadores e interfaz, con reloj inyectable; verificar build y una prueba de transición sin interfaz.
-- [x] 2.2 Definir entidades versionadas e instantáneas de sesión; verificar guardado/recarga y que editar una rutina no modifica una sesión histórica.
-- [x] 2.3 Implementar comandos persistentes e idempotentes de sesión; probar doble toque y recuperación después de cada transición crítica.
-- [x] 2.4 Incorporar String Catalogs español/inglés en app y extensiones; verificar selección por idioma y formatos decimales/fechas sin cambiar kg/lb ni textos personalizados.
-- [x] 2.5 Crear navegación Entrenar/Rutinas/Historial/Ajustes y estados vacíos; recorrerla en ambos idiomas con Dynamic Type y documentar cómo ejecutar las pruebas.
+- [x] 2.1 Create domain, repository, adapter and interface modules. Verify the build and test a transition without the UI.
+- [x] 2.2 Define versioned entities and session snapshots. Verify saving and reloading, and that routine edits preserve historical sessions.
+- [x] 2.3 Implement persistent, idempotent session commands. Test double taps and recovery after each critical transition.
+- [x] 2.4 Add English and Spanish String Catalogs to the app and extensions. Verify language selection and decimal and date formatting while preserving kg/lb units and custom text.
+- [x] 2.5 Implement Train, Routines, History and Settings navigation and empty states. Walk through them in both languages with Dynamic Type and document how to run the tests.
 
-## 3. Gimnasios, equipos y primera rutina
+## 3. Gyms, equipment and the first routine
 
-Continuación de 3.1: comenzar por 3.11 (modelo y migración) y 3.12 (Ajustes). Usar el catálogo resultante en 3.2 y 3.3 antes de integrar el selector en 3.5.
+Continue 3.1 with 3.11 (model and migration) and 3.12 (Settings). Use the resulting catalog in 3.2 and 3.3 before integrating the picker in 3.5.
 
-- [x] 3.1 Implementar perfiles de gimnasio y equipo con cargas disponibles; verificar creación/edición y selección independiente por gimnasio.
-- [x] 3.2 Implementar la selección de mancuernas individuales y barras fijas del gimnasio, y los 30 valores de máquinas selectoras de paso de 5 kg (5–150 kg). Probar 10 lb y 10 kg en el mismo inventario, una y dos mancuernas, peso total de barra fija y conversiones de ida y vuelta por unidad/total/por lado que conserven carga física y saldo.
-- [x] 3.3 Calcular las cargas simétricas alcanzables con los tamaños de disco compartidos y repetibles. Probar 30 frente a 31 lb añadidas, retirar tamaños pequeños, admitir 500 y descartar 505 lb, y aplicar un máximo inferior por lado específico de una máquina. Excluir el peso propio de los límites y del porcentaje de progresión.
-- [x] 3.4 Implementar estados de carga sin definir/estimada/confirmada; verificar que usar una estimación no la confirma y que cero no equivale a ausente.
-- [x] 3.5 Crear el editor manual de rutinas, días, ejercicios, variantes, segmentos y descansos con el selector de carga según gimnasio y equipo. Ingresar una rutina con tiempo, repeticiones por lado y 7+7+7. Verificar que dos ejercicios consultan el mismo inventario y guardan cargas habituales independientes.
-- [ ] 3.6 Implementar activación, copia y archivo; probar cambio y regreso de gimnasio con rutina nueva, saldos cero e historial anterior conservado.
-- [ ] 3.7 Implementar ciclos y orden temporal/habitual de días; probar omisiones, fechas distintas, cierre de ciclo y disponibilidad en el siguiente.
-- [ ] 3.8 Documentar y verificar el flujo desde los inventarios iniciales editables del gimnasio hasta la elección de carga por ejercicio en la primera rutina, sin importar Markdown.
-- [ ] 3.9 Consultar localmente la última carga real por gimnasio y nombre. Probar con varias rutinas archivadas, una sesión parcial, una omisión posterior, una carga cero y un registro más reciente de otro gimnasio.
-- [ ] 3.10 Integrar la sugerencia en el editor de rutinas nuevas. Verificar la comparación de 4 × (7+7+7) frente a 3 × 8, fecha, carga, unidad, estación e indicaciones disponibles, sin mostrar el gimnasio. Probar confirmar, editar, dejar sin definir y conservar una carga copiada.
-- [x] 3.11 Persistir los tres inventarios compartidos por gimnasio, con unidad por entrada y valores iniciales de gym-equipment. Migrar catálogos de 3.1. Reabrir un almacén congelado de V3 con dos equipos que comparten tamaños y comprobar deduplicación, unidades, pesos propios, selección de gimnasio e historial. Conservar las fixtures anteriores.
-- [x] 3.12 Adaptar Ajustes para editar los tres inventarios una vez por gimnasio, el peso propio de la barra (45 lb iniciales) y el máximo opcional por lado de barras y máquinas de discos. Verificar en español e inglés la edición de unidades mixtas, que los pesos retirados siguen ausentes al reabrir y que otro gimnasio conserva sus valores.
+- [x] 3.1 Implement gym and equipment profiles with available loads. Verify creation, editing and independent selection per gym.
+- [x] 3.2 Implement selection of individual dumbbells, fixed bars and the 30 selectorized-machine loads from 5 to 150 kg in 5 kg steps. Test 10 lb and 10 kg in one inventory, one and two dumbbells, total fixed-bar weight and round-trip conversions between per-implement, total and per-side views that preserve physical load and progression balance.
+- [x] 3.3 Calculate reachable symmetric loads using shared, repeatable plate sizes. Test 30 versus 31 lb added, removing small sizes, accepting 500 and rejecting 505 lb, and enforcing a lower machine-specific per-side limit. Exclude equipment weight from limits and progression percentages.
+- [x] 3.4 Implement undefined, estimated and confirmed load states. Verify that using an estimate leaves it estimated and that zero is distinct from a missing load.
+- [x] 3.5 Build the manual editor for routines, days, exercises, variants, segments and rest, with load selection by gym and equipment. Enter a routine with a timed exercise, per-side repetitions and 7+7+7. Verify that two exercises use the same inventory and save independent usual loads.
+- [ ] 3.5.1 Add the routine set count beside the rest settings and an optional per-exercise override in both editor languages. Start new routines at 1 set. Test changing the default from 3 to 4 across days, retaining explicit overrides even when equal to the old default, and restoring inheritance after reopening. Verify session snapshots and reopen a frozen pre-inheritance fixture to check that existing exercise counts become overrides.
+- [ ] 3.6 Implement activation, copying and archiving. Test switching gyms and returning with a new routine, zero balances and preserved history.
+- [ ] 3.7 Implement cycles and temporary or usual day order. Test skipped days, different dates, cycle completion and availability in the next cycle.
+- [ ] 3.8 Document and verify the flow from editable initial gym inventories to choosing a load per exercise in the first routine without importing Markdown.
+- [ ] 3.9 Query the last actual load locally by gym and exercise name. Test multiple archived routines, a partial session, a later skip, a zero load and a newer record from another gym.
+- [ ] 3.10 Integrate the suggestion into the new-routine editor. Verify the comparison of 4 × (7+7+7) with 3 × 8, the date, load, unit and available station and instructions, omitting the gym name. Test confirming, editing, leaving the load undefined and keeping a copied load.
+- [x] 3.11 Persist the three shared inventories per gym with units per entry and initial values from gym-equipment. Migrate the catalogs from 3.1. Reopen a frozen V3 store with two equipment items sharing sizes and verify deduplication, units, base weights, gym selection and history. Retain earlier fixtures.
+- [x] 3.12 Update Settings to edit the three inventories once per gym, the barbell base weight (initially 45 lb) and the optional per-side maximum for barbells and plate-loaded machines. Verify mixed-unit editing in Spanish and English, that removed weights stay absent after reopening and that another gym keeps its values.
 
-- [ ] 3.13 Implementar la eliminación de gimnasios en el repositorio y en Ajustes. Cubrir gimnasio inactivo, sustitución del activo, sesión abierta y eliminación del último. Verificar archivo de la rutina, estado vacío, identidad nueva al reutilizar el nombre y consulta del historial tras reabrir el almacén.
-- [ ] 3.14 Implementar la eliminación de equipo en el repositorio, Ajustes y los selectores. Mostrar la asignación eliminada en el editor de rutinas y permitir reemplazarla. Verificar tras reabrir que los inventarios compartidos y los equipos de otros gimnasios conservan sus valores, que una sesión abierta puede finalizarse y que el historial conserva estación, cargas y unidades.
-- [ ] 3.15 Probar en simulador, en español e inglés, la confirmación y cancelación de ambas eliminaciones. Comprobar el nombre del elemento y su gimnasio cuando corresponda, los efectos anunciados y que cancelar conserva la selección, la rutina y las asignaciones originales.
+- [ ] 3.13 Implement gym deletion in the repository and Settings. Cover an inactive gym, replacement of the active gym, an open session and deletion of the last gym. After reopening the store, verify routine archiving, the empty state, a new identity when reusing a name and access to history.
+- [ ] 3.14 Implement equipment deletion in the repository, Settings and pickers. Show a deleted assignment in the routine editor and allow replacement. After reopening, verify that shared inventories and equipment in other gyms retain their values, that an open session can finish and that history retains the station, loads and units.
+- [ ] 3.15 Test confirmation and cancellation of both deletion flows in the simulator in Spanish and English. Check the item name, its gym when applicable, the stated effects and that cancellation preserves the original selection, routine and assignments.
 
-## 4. Entrenamiento básico de principio a fin
+## 4. End-to-end basic training
 
-### Primera entrega después del grupo 3
+### First delivery after group 3
 
-A partir de aquí, cada flujo nuevo de una pestaña empieza con un prototipo interactivo con datos de ejemplo. Probarlo con el usuario, ajustar la UI y después integrar la lógica y el almacenamiento de ese flujo. Aplicar el mismo criterio cuando una pestaña ya implementada incorpore funciones como sugerencias de progresión o exportación.
+From this point, start each new tab flow with an interactive prototype using sample data. Test it with the user, refine the UI and then integrate the logic and storage. Apply the same approach when an existing tab gains functionality such as progression suggestions or export.
 
-- [ ] 4.0.1 Crear el recorrido interactivo de Entrenar con el iPhone desbloqueado. Precargar en memoria un día de rutina1 o rutina3 con cargas de ejemplo. Probar en el iPhone que se puede iniciar el día, ver la carga y la prescripción, completar una serie con un toque, corregirla durante el descanso, avanzar al siguiente ejercicio y ver la corrección reflejada en el resumen. Ajustar la UI con el usuario tras recorrer la sesión.
-- [ ] 4.0.2 Una vez definido el recorrido desbloqueado, probar con el usuario la experiencia de pantalla bloqueada usando la misma sesión de ejemplo. Completar una serie, consultar el descanso y volver a la app para comprobar qué serie sigue. Ajustar la información y los controles visibles antes de su integración en 5.6.
+- [ ] 4.0.1 Create the interactive Train flow for an unlocked iPhone. Preload one day from rutina1 or rutina3 in memory with sample loads. On iPhone, start the day, inspect the load and prescription, complete a set with one tap, correct it during rest, advance to the next exercise and verify the correction in the summary. Refine the UI with the user after the walkthrough.
+- [ ] 4.0.2 Once the unlocked flow is defined, test the lock-screen experience with the user using the same sample session. Complete a set, check the rest timer and return to the app to see which set is next. Refine visible information and controls before integration in 5.6.
 
-### Integración del entrenamiento
+### Workout integration
 
-Con ambos recorridos definidos, conectar las pantallas acordadas al dominio, la persistencia y los temporizadores mediante las tareas 4.1–4.7 y las correspondientes del grupo 5. Verificar los comportamientos de estas tareas con sus dependencias reales.
+Once both flows are defined, connect the agreed screens to the domain, persistence and timers through tasks 4.1–4.7 and the corresponding tasks in group 5.
 
-- [ ] 4.1 Implementar pantalla de serie con nombre, estación, equipo e indicaciones; verificar que Completar registra valores e inicia descanso con un toque.
-- [ ] 4.2 Implementar corrección de serie durante descanso y series que incluyen ambos lados; probar que corregir no duplica series ni altera la rutina habitual.
-- [ ] 4.3 Implementar cambios temporales, reutilización de ajustes y guardado explícito habitual; verificar persistencia solo en el ámbito elegido.
-- [ ] 4.4 Implementar añadir, sustituir, posponer, seleccionar y omitir ejercicios; probar estación ocupada, regreso y conservación del orden habitual.
-- [ ] 4.5 Implementar cierre completo/parcial y resumen; verificar conservación de series/valoraciones, pendientes no realizados, día completado y ausencia de descanso final.
-- [ ] 4.6 Implementar recuperación de sesión abierta; probar cierre inesperado y reapertura en otra fecha con opciones continuar/finalizar.
-- [ ] 4.7 Completar un ciclo sin conexión y revisar historial; entregar prueba integrada y guía breve de sesión parcial frente a sesión abierta.
+- [ ] 4.1 Implement the set screen with exercise name, station, equipment and instructions. Verify that Complete records the values and starts rest with one tap.
+- [ ] 4.2 Implement set correction during rest and sets that include both sides. Verify that corrections preserve the usual routine and do not duplicate sets.
+- [ ] 4.3 Implement temporary changes, reuse of adjustments and explicit saving as usual settings. Verify persistence only within the chosen scope.
+- [ ] 4.4 Implement adding, replacing, postponing, selecting and skipping exercises. Test an occupied station, returning to the exercise and preserving the usual order.
+- [ ] 4.5 Implement full and partial session completion and the summary. Verify retention of sets and ratings, pending exercises recorded as unperformed, the day marked complete and no final rest.
+- [ ] 4.6 Implement open-session recovery. Test unexpected termination and reopening on another date with options to continue or finish.
+- [ ] 4.7 Complete a cycle offline and review history. Deliver an integration test and a short guide distinguishing a partially completed session from an open session.
 
-## 5. Temporizadores, audio y superseries
+## 5. Timers, audio and supersets
 
-- [ ] 5.1 Integrar la solución validada de temporización con estados persistidos y reloj inyectable; probar pausas, tres segundos preparatorios, fin anticipado y tiempo restante.
-- [ ] 5.2 Implementar descansos 1:45/2:15 y ajustes por rutina/ejercicio/superserie, ±15 s y terminar; probar que no cambian valores futuros ni producen tiempos negativos.
-- [ ] 5.3 Implementar transiciones a siguiente serie/ejercicio en espera; verificar vencimiento fuera de app y ausencia de arranque automático no solicitado.
-- [ ] 5.4 Implementar temporización por lado, sostenimientos y reinicio configurable; probar señal/transición del primer lado y descanso solo tras ambos.
-- [ ] 5.5 Implementar creación y desarme de superseries habituales/temporales; probar rondas, series iguales, prescripciones mixtas y conservación del progreso al desarmar.
-- [ ] 5.6 Integrar controles bloqueados y señales localizadas; verificar una sesión real con música/audífonos y permisos concedidos/denegados sin presentar controles inoperantes como exitosos.
-- [ ] 5.7 Documentar capacidades comprobadas, límites del sistema y pasos de permisos; contrastar la guía con la matriz de dispositivos.
+- [ ] 5.1 Integrate the validated timing solution with persisted states and an injectable clock. Test pauses, three seconds of preparation, early completion and remaining time.
+- [ ] 5.2 Implement rests of 1:45 and 2:15 with routine, exercise and superset settings, ±15-second adjustments and early completion. Test that adjustments preserve future defaults and never produce negative times.
+- [ ] 5.3 Implement transitions to the next set or exercise in a waiting state. Verify expiration outside the app and that the next activity starts only when requested.
+- [ ] 5.4 Implement per-side timing, holds and configurable restart. Test the cue and transition after the first side and rest only after both sides.
+- [ ] 5.5 Implement creation and dissolution of usual and temporary supersets. Test rounds, equal set counts, mixed prescriptions and preservation of progress when dissolving a superset.
+- [ ] 5.6 Integrate localized lock-screen controls and cues. Verify a real session with music and headphones and with permissions granted and denied. Verify that inoperative controls do not report success.
+- [ ] 5.7 Document verified capabilities, system limits and permission steps. Cross-check the guide against the device matrix.
 
-## 6. Progresión y valoración
+## 6. Progression and ratings
 
-- [ ] 6.1 Implementar saldo saturado y valoración opcional de ejercicios completos/parciales; probar cancelación, límites, ausencia de valoración y ajustes temporales.
-- [ ] 6.2 Implementar reinicios por cambios habituales y sustituciones; verificar que notas, orden y representación de carga no reinician.
-- [ ] 6.3 Implementar sugerencias de peso desde las mismas cargas disponibles que ofrece el editor según el gimnasio y el equipo. Probar el umbral inclusivo del 10 %, carga cero, inventario limitado y 50→52,5 y 50→55 conservando repeticiones. Verificar que el motor descarta cargas de discos inalcanzables o superiores al límite del equipo.
-- [ ] 6.4 Implementar puente de repeticiones separado del saldo; probar 35×10→35×12→45×10 y retorno a 12 tras puente a 15.
-- [ ] 6.5 Implementar escalones de subida/bajada, caso 15 sin puente y límites sin carga mayor/menor; probar 9→10/8, mínimo 6 y ajuste manual en tiempo/combinados.
-- [ ] 6.6 Revisar con el usuario la política propuesta de invalidación del puente al editar una sugerencia; documentar la decisión y cubrirla con pruebas antes de codificar ese caso.
-- [ ] 6.7 Integrar sugerencia editable al iniciar y confirmación habitual; probar rechazo repetido, aceptación personalizada, reinicio del saldo y motivo en ambos idiomas.
+- [ ] 6.1 Implement a capped balance and optional ratings for complete and partial exercises. Test cancellation, limits, missing ratings and temporary adjustments.
+- [ ] 6.2 Implement resets for changes to usual settings and exercise replacements. Verify that notes, order and load representation preserve the balance.
+- [ ] 6.3 Implement weight suggestions using the same loads the editor offers for the gym and equipment. Test the inclusive 10% threshold, zero load, limited inventory and increases from 50 to 52.5 and 50 to 55 with repetitions preserved. Verify that the engine excludes unreachable plate loads and loads above the equipment limit.
+- [ ] 6.4 Implement the repetition bridge separately from the balance. Test 35×10 → 35×12 → 45×10 and a return to 12 after bridging to 15.
+- [ ] 6.5 Implement upward and downward steps, the case of 15 repetitions without a bridge, and limits where no higher or lower load exists. Test 9 → 10 or 8, a minimum of 6, and manual adjustment for timed and combined exercises.
+- [ ] 6.6 Review the proposed bridge invalidation policy with the user for edits to a suggestion. Document the decision and cover it with tests before implementing that case.
+- [ ] 6.7 Integrate an editable suggestion at exercise start with confirmation to save it as usual. Test repeated rejection, customized acceptance, balance reset and the reason in both languages.
 
-## 7. Historial, notas y CSV
+## 7. History, notes and CSV
 
-- [ ] 7.0 Probar primero el flujo de Historial con fixtures de una sesión completa y otra parcial. Abrir una sesión y revisar sus series y cargas con el usuario. Ajustar la UI antes de conectar las consultas y acciones del grupo 7.
-- [ ] 7.1 Implementar consultas de sesiones, progreso y marcas con unidades explícitas; verificar sesiones parciales y comparación sin confundir equipos o gimnasios.
-- [ ] 7.2 Registrar cambios habituales con fecha y valores anteriores/nuevos; probar sugerencia editada, sustitución y archivo sin reescribir el pasado.
-- [ ] 7.3 Implementar notas fechadas con editar/eliminar/deshacer/rehacer; verificar el alcance de deshacer durante la edición.
-- [ ] 7.4 Implementar exportación CSV de entrenamientos y cambios; probar caracteres especiales, texto multilínea, unidades mixtas, cero/ausente y relaciones entre filas.
-- [ ] 7.5 Documentar columnas y formatos CSV y verificar que una exportación de muestra se interpreta igual desde interfaces española e inglesa.
+- [ ] 7.0 First test the History flow using fixtures for one complete and one partial session. Open a session and review its sets and loads with the user. Refine the UI before connecting the queries and actions in group 7.
+- [ ] 7.1 Implement queries for sessions, progress and personal records with explicit units. Verify partial sessions and comparisons that distinguish equipment and gyms.
+- [ ] 7.2 Record changes to usual prescriptions with their date and previous and new values. Test edited suggestions, replacements and archiving while preserving historical records.
+- [ ] 7.3 Implement dated notes with editing, deletion, undo and redo. Verify the scope of undo during editing.
+- [ ] 7.4 Implement CSV export of workouts and changes. Test special characters, multiline text, mixed units, zero versus missing values and relationships between rows.
+- [ ] 7.5 Document CSV columns and formats. Verify that a sample export has the same interpretation from the Spanish and English interfaces.
 
-## 8. Respaldo y restauración privados
+## 8. Private backup and restore
 
-- [ ] 8.0 Probar en Ajustes los flujos nuevos de respaldo y restauración con fechas y estados de ejemplo. Revisar con el usuario cómo reconoce la última copia y cuál restauraría, y ajustar el recorrido antes de conectar CloudKit.
-- [ ] 8.1 Configurar capacidades y contenedor privado CloudKit al disponer de membresía; verificar acceso separado con ambas cuentas de prueba.
-- [ ] 8.2 Implementar snapshot consistente versionado, subida de assets y manifiesto final; probar interrupción de red sin publicar una copia incompleta.
-- [ ] 8.3 Implementar reintento automático y estado de último respaldo; probar cuenta ausente, cuota, offline y retorno de conectividad sin bloquear sesiones.
-- [ ] 8.4 Implementar restauración a almacén temporal y sustitución validada; probar copia corrupta, esquema anterior y preservación de datos locales si falla.
-- [ ] 8.5 Definir y documentar retención y cambio de cuenta; verificar aislamiento entre usuarios y que siempre se conserva una copia válida durante renovación.
+- [ ] 8.0 Test the new backup and restore flows in Settings using sample dates and states. Review with the user how they identify the latest backup and choose one to restore. Refine the flow before connecting CloudKit.
+- [ ] 8.1 Configure CloudKit capabilities and the private container once membership is available. Verify separate access with both test accounts.
+- [ ] 8.2 Implement a consistent versioned snapshot, asset uploads and a final manifest. Test network interruption and verify that an incomplete backup is never published.
+- [ ] 8.3 Implement automatic retry and the latest backup status. Test a missing account, quota limits, offline use and reconnection without blocking sessions.
+- [ ] 8.4 Implement restoration to a temporary store and validated replacement. Test a corrupt backup, an older schema and preservation of local data on failure.
+- [ ] 8.5 Define and document retention and account switching. Verify isolation between users and that a valid backup is always preserved during renewal.
 
-## 9. Importación y revisión de fotografías
+## 9. Photo import and review
 
-- [ ] 9.0 Probar en Rutinas la revisión de un borrador precargado basado en las fotos analizadas. Recorrer los días, corregir una prescripción y ver el resultado en el editor con datos de ejemplo. Ajustar la UI con el usuario antes de integrar la extracción y el guardado.
-- [ ] 9.1 Definir contrato estructurado de extracción y borrador revisable; validar ejemplos sintéticos de ambas caras, campos dudosos y repetición combinada.
-- [ ] 9.2 Evaluar proveedor visual, coste y tratamiento de imágenes; entregar comparación y elección antes de activar servicios pagados.
-- [ ] 9.3 Implementar servicio mínimo autenticado y adaptador, sin claves en el cliente ni imágenes en logs; probar peticiones inválidas, límites, timeout y reintento.
-- [ ] 9.4 Evaluar extracción con rutina1 y rutina3 como muestras locales autorizadas; verificar leyendas diferentes, numeración, estación tachada, escritos sin color y MAQ distinto de carga.
-- [ ] 9.5 Implementar revisión editable por días con referencia a imagen; verificar corrección de orden, nombres, tiempos, c/u y segmentos antes de guardar.
-- [ ] 9.6 Implementar convención configurable del gimnasio para abdomen sin día a Día 1 por confirmar; probar prioridad de día explícito y ausencia de esa convención en otros gimnasios.
-- [ ] 9.7 Integrar el borrador importado con el editor de rutina y las superseries manuales. Verificar que una carga ausente de la hoja solo se completa por entrada del usuario o confirmación de la sugerencia histórica. Completar importación→edición→entrenamiento sin red y documentar qué debe revisarse.
+- [ ] 9.0 Test review of a preloaded draft in Routines based on the analyzed photos. Walk through the days, correct a prescription and inspect the result in the editor using sample data. Refine the UI with the user before integrating extraction and saving.
+- [ ] 9.1 Define a structured extraction contract and reviewable draft. Validate synthetic examples covering both sides of the sheet, uncertain fields and combined repetitions.
+- [ ] 9.2 Evaluate the visual extraction provider, cost and image handling. Deliver a comparison and make a selection before enabling paid services.
+- [ ] 9.3 Implement a minimal authenticated service and adapter. Keep keys out of the client and images out of logs. Test invalid requests, limits, timeouts and retries.
+- [ ] 9.4 Evaluate extraction with rutina1 and rutina3 as authorized local samples. Verify differing legends, numbering, a crossed-out station, uncolored handwritten entries and the distinction between MAQ and load.
+- [ ] 9.5 Implement editable review by day with an image reference. Verify corrections to order, names, times, per-side indications (“c/u”) and segments before saving.
+- [ ] 9.6 Implement the configurable gym convention that tentatively assigns abdominal exercises without a day to Day 1 for confirmation. Test that an explicit day takes priority and that other gyms do not use the convention by default.
+- [ ] 9.7 Integrate the imported draft with the routine editor and manual supersets. Verify that a missing load is filled only through user input or confirmation of a historical suggestion. Complete import → edit → offline training and document what to review.
 
-## 10. Distribución y comprobación integrada
+## 10. Distribution and integrated verification
 
-- [ ] 10.1 Preparar firma Ad Hoc, registrar ambos dispositivos y documentar expiración/renovación; verificar instalación privada con identidad estable.
-- [ ] 10.2 Validar iCloud de producción en la compilación distribuida; restaurar datos de ensayo de cada cuenta sin intercambio de información.
-- [ ] 10.3 Ejecutar en ambos iPhone el flujo crear/importar→entrenar parcial→recuperar→finalizar→progresar→respaldar→exportar, en español e inglés; registrar evidencias y fallos.
-- [ ] 10.4 Probar actualización sobre instalación previa con datos de ensayo y migración de esquema; verificar conservación del historial y procedimiento documentado de recuperación.
-- [ ] 10.5 Revisar todos los escenarios de las ocho especificaciones y la matriz de audio/bloqueo; entregar informe con resultados reales y limitaciones pendientes, sin marcar como probado lo evaluado solo en simulador.
+- [ ] 10.1 Prepare Ad Hoc signing, register both devices and document expiration and renewal. Verify private installation with a stable identity.
+- [ ] 10.2 Validate production iCloud in the distributed build. Restore each account’s test data and verify isolation between accounts.
+- [ ] 10.3 Run create/import → partial workout → recover → finish → progress → back up → export on both iPhones in Spanish and English. Record evidence and failures.
+- [ ] 10.4 Test updating over a previous installation with test data and schema migration. Verify preservation of history and the documented recovery procedure.
+- [ ] 10.5 Review all scenarios in the eight specifications and the audio/lock-screen matrix. Report actual results and outstanding limitations, distinguishing simulator-only evidence from physical-device verification.
