@@ -111,6 +111,13 @@ private struct SessionWriter {
                 exercise.segments = segments
                 exercise.load = load
             }
+            // The correction form still describes the performed set when the next set changes during rest.
+            if segments != snapshot.day.exercises[index].segments,
+                let last = try context.fetch(performed).max(by: { $0.performedAt < $1.performedAt }),
+                snapshot.restPrescription?.setID != last.id
+            {
+                snapshot.restPrescription = .init(setID: last.id, segments: snapshot.day.exercises[index].segments)
+            }
             adjust(&snapshot.day.exercises[index])
             try validateForEditing(RoutinePlan(name: snapshot.routineName, days: [snapshot.day]))
             var temporaryIDs = snapshot.temporaryExerciseIDs ?? []
