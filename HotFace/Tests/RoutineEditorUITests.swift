@@ -180,10 +180,24 @@ final class RoutineEditorUITests: XCTestCase {
         XCTAssertFalse(app.textFields["Actual repetitions"].exists)
         XCTAssertFalse(button("Complete set", in: app).exists)
 
-        press("Close")
+        press("Correct set")
+        let count = app.textFields["Actual repetitions"]
+        tap(count)
+        count.typeText("12")
+        press("Save")
+        app.terminate()
+        launch(app, spanish: false)
+        XCTAssertTrue(button("Finish workout", in: app).exists)
         press("Continue workout")
         XCTAssertTrue(containsText("Set 1 completed").waitForExistence(timeout: 5), app.debugDescription)
         XCTAssertTrue(containsText("Set 2 of 4").exists)
+        press("Close")
+        press("Finish workout")
+        press("Finish workout")
+        XCTAssertTrue(containsText("Partially completed").waitForExistence(timeout: 5))
+        XCTAssertTrue(containsText("12 reps").exists)
+        press("Done")
+        XCTAssertFalse(button("Continue workout", in: app).exists)
     }
 
     private func launch(_ app: XCUIApplication, spanish: Bool) {

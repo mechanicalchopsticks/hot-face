@@ -71,6 +71,24 @@ private struct Fixture {
 }
 
 struct SessionCommandTests {
+    @Test func nextDayRecoveryOffersTheOriginalSetOrPartialClosure() throws {
+        for resume in [false, true] {
+            let f = try Fixture()
+            defer { try? FileManager.default.removeItem(at: f.directory) }
+            _ = try f.store.apply(f.start, clock: FixedClock(0))
+            _ = try f.store.apply(f.complete(1), clock: FixedClock(10))
+            let restored = try #require(try f.store.openWorkout())
+            #expect(restored.id == f.sessionID && restored.nextSet?.number == 2)
+            #expect(try f.store.currentCycle(for: restored.prescription.routineID).completedDayIDs.isEmpty)
+            let action: SessionCommand.Action =
+                resume ? .logSet(exerciseID: f.exercise.id, number: 2, performance: f.performance) : .finish
+            _ = try f.store.apply(f.command(action), clock: FixedClock(86401))
+            let summary = try f.store.workoutSummary(id: f.sessionID)
+            #expect(summary.finishedAt == FixedClock(86401).now && summary.partial == !resume)
+            #expect(summary.exercises[0].sets.count == (resume ? 2 : 1))
+        }
+    }
+
     @Test func partiallyFinishedSummaryRetainsWorkAndRating() throws {
         let f = try Fixture(withExistingSet: true)
         defer { try? FileManager.default.removeItem(at: f.directory) }

@@ -38,6 +38,9 @@ private struct ActiveRoutineView: View {
     @State private var cycle: RoutineCycle?
     @State private var openWorkout: OpenWorkout?
     @State private var presentedWorkout: OpenWorkout?
+    @State private var confirmsFinish = false
+    @State private var summary: WorkoutSummary?
+    @State private var finishFailed = false
     @State private var loadFailed = false
     @State private var startError: LocalizedStringKey?
 
@@ -54,6 +57,7 @@ private struct ActiveRoutineView: View {
                     List {
                         Section {
                             Button("Continue workout") { presentedWorkout = openWorkout }
+                            Button("Finish workout") { confirmsFinish = true }
                         } header: {
                             Text(verbatim: openWorkout.prescription.day.name)
                         }
@@ -82,6 +86,15 @@ private struct ActiveRoutineView: View {
             }
             .navigationTitle("Train")
             .navigationBarTitleDisplayMode(.inline)
+            .confirmationDialog("Finish workout", isPresented: $confirmsFinish, titleVisibility: .visible) {
+                Button("Finish workout") { finishOpenWorkout() }
+            } message: {
+                Text("Your completed sets will be kept.")
+            }
+            .sheet(item: $summary, onDismiss: reload) { value in
+                FinishedWorkoutView(summary: value) { summary = nil }
+            }
+            .alert("Could not finish workout", isPresented: $finishFailed) { Button("OK") {} }
             .sheet(item: $presentedWorkout, onDismiss: reload) { workout in
                 WorkoutSessionView(workout: workout)
             }
@@ -96,6 +109,16 @@ private struct ActiveRoutineView: View {
             }
         }
         .onAppear(perform: reload)
+    }
+
+    private func finishOpenWorkout() {
+        guard let openWorkout else { return }
+        do {
+            let store = try TrainingStorage.openStore()
+            _ = try store.apply(SessionCommand(sessionID: openWorkout.id, action: .finish), clock: SystemWorkoutClock())
+            summary = try store.workoutSummary(id: openWorkout.id)
+            reload()
+        } catch { finishFailed = true }
     }
 
     private func reload() {
