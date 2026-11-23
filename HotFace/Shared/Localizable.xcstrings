@@ -288,6 +288,7 @@
       }
     },
     "Archive routine" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -298,6 +299,7 @@
       }
     },
     "Archive routine?" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -308,6 +310,7 @@
       }
     },
     "Archived routines" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -318,6 +321,7 @@
       }
     },
     "Assigned equipment was deleted. Choose a replacement." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -459,6 +463,7 @@
       }
     },
     "Clear load" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -486,6 +491,7 @@
       }
     },
     "Confirm load" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -513,6 +519,7 @@
       }
     },
     "Copy from routine" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -523,6 +530,7 @@
       }
     },
     "Copy routine" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -533,6 +541,7 @@
       }
     },
     "Could not archive routine" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -543,6 +552,7 @@
       }
     },
     "Could not delete equipment" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -553,6 +563,7 @@
       }
     },
     "Could not delete gym" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -563,6 +574,7 @@
       }
     },
     "Could not finish workout" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -584,6 +596,7 @@
       }
     },
     "Could not load previous weights" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -693,6 +706,7 @@
       }
     },
     "Date" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -725,6 +739,7 @@
       }
     },
     "Delete equipment" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -735,6 +750,7 @@
       }
     },
     "Delete equipment?" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -745,6 +761,7 @@
       }
     },
     "Delete gym" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -1020,6 +1037,7 @@
       }
     },
     "Finish workout" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -1156,6 +1174,7 @@
       }
     },
     "Instructions" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -1177,6 +1196,7 @@
       }
     },
     "Keep training" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -1220,6 +1240,7 @@
       }
     },
     "Leave undefined" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -1290,6 +1311,7 @@
       }
     },
     "New prescription" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -1442,7 +1464,6 @@
       }
     },
     "Per side" : {
-      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -1524,6 +1545,17 @@
         }
       }
     },
+    "Previous workout" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entrenamiento anterior"
+          }
+        }
+      }
+    },
     "Remove %@ from %@? Replace it in assigned exercises. Shared weights and workout history will be preserved." : {
       "localizations" : {
         "es" : {
@@ -1566,6 +1598,7 @@
       }
     },
     "Replacement gym" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -1635,6 +1668,7 @@
       }
     },
     "Review previous load" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -1662,6 +1696,7 @@
       }
     },
     "Routine actions" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -1727,6 +1762,7 @@
       }
     },
     "Save and activate" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -1944,6 +1980,7 @@
       }
     },
     "Station" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -1992,6 +2029,7 @@
       }
     },
     "Switch gyms?" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -2201,6 +2239,7 @@
       }
     },
     "Workout in progress" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -2238,16 +2277,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aquí aparecerán las rutinas que guardes."
-          }
-        }
-      }
-    },
-    "Previous workout" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Entrenamiento anterior"
           }
         }
       }
