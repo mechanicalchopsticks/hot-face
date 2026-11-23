@@ -2124,9 +2124,6 @@
         }
       }
     },
-    "Sets: %@" : {
-
-    },
     "Sets: %lld" : {
       "extractionState" : "stale",
       "localizations" : {

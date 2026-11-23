@@ -32,27 +32,6 @@ struct ExerciseEditor: View {
                 TextField("Instructions (optional)", text: text($exercise.instructions), axis: .vertical)
                 TextField("Station (optional)", text: text($exercise.station))
             }
-            Section("Sets and rest") {
-                Toggle(
-                    "Custom set count",
-                    isOn: Binding(
-                        get: { exercise.sets != nil },
-                        set: { exercise.sets = $0 ? defaults.setCount(for: exercise) : nil }))
-                if exercise.sets != nil {
-                    Stepper(
-                        "Sets: \(defaults.setCount(for: exercise))",
-                        value: Binding(get: { defaults.setCount(for: exercise) }, set: { exercise.sets = $0 }),
-                        in: 1...Int.max)
-                } else {
-                    Text("Sets: \(defaults.setCount(for: exercise))")
-                }
-                optionalRest(
-                    "Custom rest between sets", title: "Between sets", value: $exercise.restBetweenSets,
-                    inherited: defaults.restBetweenSets)
-                optionalRest(
-                    "Custom rest after exercise", title: "After exercise", value: $exercise.restAfterExercise,
-                    inherited: defaults.restBetweenExercises)
-            }
             Section("Segments in each set") {
                 Toggle("Per side", isOn: $exercise.perSide)
                 ForEach(exercise.segments.indices, id: \.self) { index in
@@ -124,7 +103,25 @@ struct ExerciseEditor: View {
                     }
                 }
             }
-
+            Section("Sets and rest") {
+                Toggle(
+                    "Custom set count",
+                    isOn: Binding(
+                        get: { exercise.sets != nil },
+                        set: { exercise.sets = $0 ? defaults.setCount(for: exercise) : nil }))
+                if exercise.sets != nil {
+                    Stepper(
+                        "Sets: \(defaults.setCount(for: exercise))",
+                        value: Binding(get: { defaults.setCount(for: exercise) }, set: { exercise.sets = $0 }),
+                        in: 1...Int.max)
+                }
+                optionalRest(
+                    "Custom rest between sets", title: "Between sets", value: $exercise.restBetweenSets,
+                    inherited: defaults.restBetweenSets)
+                optionalRest(
+                    "Custom rest after exercise", title: "After exercise", value: $exercise.restAfterExercise,
+                    inherited: defaults.restBetweenExercises)
+            }
         }
         .alert("Create group", isPresented: $creatingGroup) {
             TextField("Group name", text: $groupName)
