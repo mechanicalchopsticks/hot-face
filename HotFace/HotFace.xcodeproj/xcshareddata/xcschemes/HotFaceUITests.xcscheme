@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Scheme version="1.7">
+   <BuildAction parallelizeBuildables="YES" buildImplicitDependencies="YES">
+      <BuildActionEntries>
+         <BuildActionEntry buildForTesting="YES" buildForRunning="NO" buildForProfiling="NO" buildForArchiving="NO" buildForAnalyzing="YES">
+            <BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="000000000000000000000083" BuildableName="HotFaceUITests.xctest" BlueprintName="HotFaceUITests" ReferencedContainer="container:HotFace.xcodeproj"/>
+         </BuildActionEntry>
+      </BuildActionEntries>
+   </BuildAction>
+   <TestAction buildConfiguration="Debug" selectedDebuggerIdentifier="Xcode.DebuggerFoundation.Debugger.LLDB" selectedLauncherIdentifier="Xcode.DebuggerFoundation.Launcher.LLDB" shouldUseLaunchSchemeArgsEnv="YES">
+      <Testables>
+         <TestableReference skipped="NO">
+            <BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="000000000000000000000083" BuildableName="HotFaceUITests.xctest" BlueprintName="HotFaceUITests" ReferencedContainer="container:HotFace.xcodeproj"/>
+         </TestableReference>
+      </Testables>
+      <MacroExpansion>
+         <BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="000000000000000000000002" BuildableName="HotFace.app" BlueprintName="HotFace" ReferencedContainer="container:HotFace.xcodeproj"/>
+      </MacroExpansion>
+   </TestAction>
+</Scheme>
