@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		00000000000000000000009F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000009E /* Assets.xcassets */; };
 		00000000000000000000006A /* GymSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000069 /* GymSettingsView.swift */; };
 		00000000000000000000006C /* EquipmentEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000006B /* EquipmentEditor.swift */; };
 		000000000000000000000071 /* InventoryEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000070 /* InventoryEditor.swift */; };
@@ -81,6 +82,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		00000000000000000000009E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		000000000000000000000069 /* GymSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GymSettingsView.swift; sourceTree = "<group>"; };
 		00000000000000000000006B /* EquipmentEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EquipmentEditor.swift; sourceTree = "<group>"; };
 		000000000000000000000070 /* InventoryEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InventoryEditor.swift; sourceTree = "<group>"; };
@@ -140,6 +142,7 @@
 		00000000000000000000000B /* App */ = {
 			isa = PBXGroup;
 			children = (
+				00000000000000000000009E /* Assets.xcassets */,
 				000000000000000000000004 /* HotFace.swift */,
 				000000000000000000000067 /* TrainingTabView.swift */,
 				000000000000000000000095 /* SampleWorkoutView.swift */,
@@ -285,7 +288,7 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		000000000000000000000028 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (000000000000000000000045 /* firstHold.wav in Resources */, 000000000000000000000047 /* holdPause.wav in Resources */, 000000000000000000000049 /* lastHold.wav in Resources */, 00000000000000000000004B /* lastHoldComplete.wav in Resources */, 00000000000000000000004D /* restComplete.wav in Resources */, 00000000000000000000004F /* lastSetComplete.wav in Resources */, 000000000000000000000024 /* Localizable.xcstrings in Resources */, 000000000000000000000025 /* InfoPlist.xcstrings in Resources */, ); runOnlyForDeploymentPostprocessing = 0; };
+		000000000000000000000028 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (00000000000000000000009F /* Assets.xcassets in Resources */, 000000000000000000000045 /* firstHold.wav in Resources */, 000000000000000000000047 /* holdPause.wav in Resources */, 000000000000000000000049 /* lastHold.wav in Resources */, 00000000000000000000004B /* lastHoldComplete.wav in Resources */, 00000000000000000000004D /* restComplete.wav in Resources */, 00000000000000000000004F /* lastSetComplete.wav in Resources */, 000000000000000000000024 /* Localizable.xcstrings in Resources */, 000000000000000000000025 /* InfoPlist.xcstrings in Resources */, ); runOnlyForDeploymentPostprocessing = 0; };
 		000000000000000000000029 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (000000000000000000000026 /* Localizable.xcstrings in Resources */, 000000000000000000000027 /* InfoPlist.xcstrings in Resources */, ); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXResourcesBuildPhase section */
 
@@ -358,6 +361,7 @@
 		000000000000000000000019 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Shared/HotFace.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -381,6 +385,7 @@
 		00000000000000000000001A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Shared/HotFace.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
