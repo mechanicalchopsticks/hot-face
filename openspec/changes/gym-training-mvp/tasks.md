@@ -38,7 +38,7 @@ Continue 3.1 with 3.11 (model and migration) and 3.12 (Settings). Use the result
 
 - [x] 3.13 Implement gym deletion in the repository and Settings. Cover an inactive gym, replacement of the active gym, an open session and deletion of the last gym. After reopening the store, verify routine archiving, the empty state, a new identity when reusing a name and access to history.
 - [x] 3.14 Implement equipment deletion in the repository, Settings and pickers. Show a deleted assignment in the routine editor and allow replacement. After reopening, verify that shared inventories and equipment in other gyms retain their values, that an open session can finish and that history retains the station, loads and units.
-- [ ] 3.15 Test confirmation and cancellation of both deletion flows in the simulator in Spanish and English. Check the item name, its gym when applicable, the stated effects and that cancellation preserves the original selection, routine and assignments.
+- [x] 3.15 Test confirmation and cancellation of both deletion flows in the simulator in Spanish and English. Check the item name, its gym when applicable, the stated effects and that cancellation preserves the original selection, routine and assignments.
 
 ## 4. End-to-end basic training
 

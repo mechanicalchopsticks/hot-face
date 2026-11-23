@@ -22,6 +22,8 @@ swift test --package-path TrainingKit
 git ls-files -z -- '*.swift' | xargs -0 xcrun swift-format lint --strict
 ```
 
+Para ejecutar las pruebas de borrado, abre `HotFace/HotFace.xcodeproj`, selecciona el esquema **HotFaceUITests** y un simulador de iPhone, y ejecuta **Product → Test**. Cada idioma usa un almacén temporal propio para comprobar qué se conserva al cancelar y qué cambia al confirmar.
+
 ### Navegación y Dynamic Type
 
 1. Abre `HotFace/HotFace.xcodeproj` en Xcode, selecciona el esquema **HotFace** y elige un simulador de iPhone.

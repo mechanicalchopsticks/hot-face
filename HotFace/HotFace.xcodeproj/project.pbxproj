@@ -45,6 +45,7 @@
 		000000000000000000000015 /* WorkoutLiveActivity.appex in Embed App Extension */ = {isa = PBXBuildFile; fileRef = 000000000000000000000009 /* WorkoutLiveActivity.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		000000000000000000000062 /* TrainingKit in Frameworks */ = {isa = PBXBuildFile; productRef = 000000000000000000000060 /* TrainingKit */; };
 		000000000000000000000063 /* TrainingKit in Frameworks */ = {isa = PBXBuildFile; productRef = 000000000000000000000061 /* TrainingKit */; };
+		000000000000000000000081 /* CatalogDeletionUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000080 /* CatalogDeletionUITests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -55,6 +56,7 @@
 			remoteGlobalIDString = 000000000000000000000003;
 			remoteInfo = WorkoutLiveActivity;
 		};
+		000000000000000000000087 = {isa = PBXContainerItemProxy; containerPortal = 000000000000000000000001; proxyType = 1; remoteGlobalIDString = 000000000000000000000002; remoteInfo = HotFace; };
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -102,6 +104,8 @@
 		000000000000000000000007 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		000000000000000000000008 /* HotFace.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HotFace.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		000000000000000000000009 /* WorkoutLiveActivity.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = WorkoutLiveActivity.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		000000000000000000000080 /* CatalogDeletionUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests/CatalogDeletionUITests.swift; sourceTree = "<group>"; };
+		000000000000000000000082 /* HotFaceUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HotFaceUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -114,6 +118,7 @@
 			isa = PBXGroup;
 			children = (
 				000000000000000000000008 /* HotFace.app */,
+				000000000000000000000082 /* HotFaceUITests.xctest */,
 				000000000000000000000009 /* WorkoutLiveActivity.appex */,
 			);
 			name = Products;
@@ -175,6 +180,7 @@
 				00000000000000000000000C /* Shared */,
 				00000000000000000000000D /* WorkoutLiveActivity */,
 				00000000000000000000000A /* Products */,
+				000000000000000000000080 /* CatalogDeletionUITests.swift */,
 			);
 			sourceTree = "<group>";
 		};
@@ -219,6 +225,17 @@
 			productReference = 000000000000000000000009 /* WorkoutLiveActivity.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
+		000000000000000000000083 /* HotFaceUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 000000000000000000000084;
+			buildPhases = (000000000000000000000085 /* Sources */, );
+			buildRules = ();
+			dependencies = (000000000000000000000086 /* HotFace */, );
+			name = HotFaceUITests;
+			productName = HotFaceUITests;
+			productReference = 000000000000000000000082 /* HotFaceUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -243,6 +260,7 @@
 			targets = (
 				000000000000000000000002 /* HotFace */,
 				000000000000000000000003 /* WorkoutLiveActivity */,
+				000000000000000000000083 /* HotFaceUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -292,6 +310,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		000000000000000000000085 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (000000000000000000000081 /* CatalogDeletionUITests.swift in Sources */, ); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -300,6 +319,7 @@
 			target = 000000000000000000000003 /* WorkoutLiveActivity */;
 			targetProxy = 000000000000000000000017 /* PBXContainerItemProxy */;
 		};
+		000000000000000000000086 /* HotFace */ = {isa = PBXTargetDependency; target = 000000000000000000000002 /* HotFace */; targetProxy = 000000000000000000000087; };
 /* End PBXTargetDependency section */
 
 /* Begin XCLocalSwiftPackageReference section */
@@ -409,6 +429,7 @@
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				ONLY_ACTIVE_ARCH = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -429,6 +450,28 @@
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		000000000000000000000088 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GENERATE_INFOPLIST_FILE = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = ejemplo.entrenamiento.prueba.uitests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = iphonesimulator;
+				TEST_TARGET_NAME = HotFace;
+			};
+			name = Debug;
+		};
+		000000000000000000000089 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GENERATE_INFOPLIST_FILE = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = ejemplo.entrenamiento.prueba.uitests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = iphonesimulator;
+				TEST_TARGET_NAME = HotFace;
 			};
 			name = Release;
 		};
@@ -462,6 +505,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		000000000000000000000084 = {isa = XCConfigurationList; buildConfigurations = (000000000000000000000088 /* Debug */, 000000000000000000000089 /* Release */, ); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
 /* End XCConfigurationList section */
 	};
 	rootObject = 000000000000000000000001 /* Project object */;
