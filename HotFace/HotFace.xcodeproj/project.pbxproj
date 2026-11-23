@@ -16,6 +16,7 @@
 		00000000000000000000006E /* TrainingStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000006D /* TrainingStorage.swift */; };
 		00000000000000000000006F /* TrainingStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000006D /* TrainingStorage.swift */; };
 		000000000000000000000068 /* TrainingTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000067 /* TrainingTabView.swift */; };
+		000000000000000000000096 /* SampleWorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000095 /* SampleWorkoutView.swift */; };
 		000000000000000000000059 /* StorageTrialWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000058 /* StorageTrialWidget.swift */; };
 		000000000000000000000057 /* StorageTrialRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000056 /* StorageTrialRunner.swift */; };
 		000000000000000000000054 /* StorageTrial.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000053 /* StorageTrial.swift */; };
@@ -48,6 +49,7 @@
 		000000000000000000000081 /* CatalogDeletionUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000080 /* CatalogDeletionUITests.swift */; };
 		000000000000000000000092 /* BandColorUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000091 /* BandColorUITests.swift */; };
 		000000000000000000000094 /* RoutineEditorUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000093 /* RoutineEditorUITests.swift */; };
+		000000000000000000000098 /* SampleWorkoutUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000097 /* SampleWorkoutUITests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -84,6 +86,7 @@
 		000000000000000000000076 /* ExerciseLoadEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseLoadEditor.swift; sourceTree = "<group>"; };
 		00000000000000000000006D /* TrainingStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingStorage.swift; sourceTree = "<group>"; };
 		000000000000000000000067 /* TrainingTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingTabView.swift; sourceTree = "<group>"; };
+		000000000000000000000095 /* SampleWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleWorkoutView.swift; sourceTree = "<group>"; };
 		000000000000000000000058 /* StorageTrialWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageTrialWidget.swift; sourceTree = "<group>"; };
 		000000000000000000000056 /* StorageTrialRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageTrialRunner.swift; sourceTree = "<group>"; };
 		000000000000000000000053 /* StorageTrial.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageTrial.swift; sourceTree = "<group>"; };
@@ -110,6 +113,7 @@
 		000000000000000000000082 /* HotFaceUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HotFaceUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		000000000000000000000091 /* BandColorUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests/BandColorUITests.swift; sourceTree = "<group>"; };
 		000000000000000000000093 /* RoutineEditorUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests/RoutineEditorUITests.swift; sourceTree = "<group>"; };
+		000000000000000000000097 /* SampleWorkoutUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests/SampleWorkoutUITests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -133,6 +137,7 @@
 			children = (
 				000000000000000000000004 /* HotFace.swift */,
 				000000000000000000000067 /* TrainingTabView.swift */,
+				000000000000000000000095 /* SampleWorkoutView.swift */,
 				000000000000000000000069 /* GymSettingsView.swift */,
 				00000000000000000000006B /* EquipmentEditor.swift */,
 				000000000000000000000070 /* InventoryEditor.swift */,
@@ -187,6 +192,7 @@
 				000000000000000000000080 /* CatalogDeletionUITests.swift */,
 				000000000000000000000091 /* BandColorUITests.swift */,
 				000000000000000000000093 /* RoutineEditorUITests.swift */,
+				000000000000000000000097 /* SampleWorkoutUITests.swift */,
 			);
 			sourceTree = "<group>";
 		};
@@ -283,6 +289,7 @@
 			files = (
 				00000000000000000000000F /* HotFace.swift in Sources */,
 				000000000000000000000068 /* TrainingTabView.swift in Sources */,
+				000000000000000000000096 /* SampleWorkoutView.swift in Sources */,
 				00000000000000000000006A /* GymSettingsView.swift in Sources */,
 				00000000000000000000006C /* EquipmentEditor.swift in Sources */,
 				000000000000000000000071 /* InventoryEditor.swift in Sources */,
@@ -316,7 +323,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		000000000000000000000085 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (000000000000000000000081 /* CatalogDeletionUITests.swift in Sources */, 000000000000000000000092 /* BandColorUITests.swift in Sources */, 000000000000000000000094 /* RoutineEditorUITests.swift in Sources */, ); runOnlyForDeploymentPostprocessing = 0; };
+		000000000000000000000085 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (000000000000000000000081 /* CatalogDeletionUITests.swift in Sources */, 000000000000000000000092 /* BandColorUITests.swift in Sources */, 000000000000000000000094 /* RoutineEditorUITests.swift in Sources */, 000000000000000000000098 /* SampleWorkoutUITests.swift in Sources */, ); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
