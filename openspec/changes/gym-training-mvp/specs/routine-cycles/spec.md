@@ -29,6 +29,15 @@ When the user adds a routine, the editor SHALL prefill its name with the current
 - **THEN** the second day's name field contains “Día 2” and the first day keeps the name “Pierna”
 - **AND** the first day added to another new routine starts as “Día 1”
 
+### Requirement: Exercise editor sections
+The exercise editor SHALL group the controls for set count, rest between sets and rest after the exercise in one section. Each control SHALL allow an independent choice between the routine default and an exercise override. The editor SHALL place a single “Per side” toggle in the section listing the segments in each set. The toggle SHALL apply to the whole exercise.
+
+#### Scenario: Edit a multi-segment exercise
+- **WHEN** the user opens an exercise with two segments
+- **THEN** the set count and both rest controls appear together
+- **AND** the user can override rest between sets while inheriting the routine's set count and rest after the exercise
+- **AND** the segment list contains one “Per side” toggle for both segments
+
 ### Requirement: Exercise segments prescribed to failure
 For each exercise segment, the editor SHALL offer “To failure” (“Fallo” in Spanish) alongside repetitions and seconds. This option SHALL prescribe as many repetitions as possible without a numeric target.
 
