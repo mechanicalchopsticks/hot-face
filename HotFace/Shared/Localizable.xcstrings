@@ -1,66 +1,6 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "No band selected" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sin banda seleccionada"
-          }
-        }
-      }
-    },
-    "No group" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sin grupo"
-          }
-        }
-      }
-    },
-    "Group name" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nombre del grupo"
-          }
-        }
-      }
-    },
-    "Exercise group" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Grupo de ejercicios"
-          }
-        }
-      }
-    },
-    "Create group…" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Crear grupo…"
-          }
-        }
-      }
-    },
-    "Create group" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Crear grupo"
-          }
-        }
-      }
-    },
     "%@ s" : {
       "localizations" : {
         "es" : {
@@ -425,6 +365,7 @@
       }
     },
     "Band color" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -479,6 +420,7 @@
       }
     },
     "Black" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -489,6 +431,7 @@
       }
     },
     "Blue" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -510,6 +453,7 @@
       }
     },
     "Brown" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -772,6 +716,28 @@
         }
       }
     },
+    "Create group" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crear grupo"
+          }
+        }
+      }
+    },
+    "Create group…" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crear grupo…"
+          }
+        }
+      }
+    },
     "Custom rest after exercise" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -806,6 +772,7 @@
       }
     },
     "Dark gray" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -1104,6 +1071,17 @@
         }
       }
     },
+    "Exercise group" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grupo de ejercicios"
+          }
+        }
+      }
+    },
     "Exercise name" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1190,6 +1168,17 @@
         }
       }
     },
+    "Generic equipment" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Equipos genéricos"
+          }
+        }
+      }
+    },
     "Get ready" : {
       "localizations" : {
         "en" : {
@@ -1206,17 +1195,8 @@
         }
       }
     },
-    "Generic equipment" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Equipos genéricos"
-          }
-        }
-      }
-    },
     "Green" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -1233,6 +1213,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Grupo (opcional)"
+          }
+        }
+      }
+    },
+    "Group name" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nombre del grupo"
           }
         }
       }
@@ -1381,6 +1372,7 @@
       }
     },
     "Light blue" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -1391,6 +1383,7 @@
       }
     },
     "Light gray" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -1482,6 +1475,26 @@
         }
       }
     },
+    "No band selected" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin banda seleccionada"
+          }
+        }
+      }
+    },
+    "No group" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin grupo"
+          }
+        }
+      }
+    },
     "No gym configured" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1564,6 +1577,7 @@
       }
     },
     "Orange" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -1651,6 +1665,7 @@
       }
     },
     "Pink" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -1727,6 +1742,7 @@
       }
     },
     "Purple" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -1737,6 +1753,7 @@
       }
     },
     "Red" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -2110,6 +2127,17 @@
         }
       }
     },
+    "Specific equipment" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Equipos específicos"
+          }
+        }
+      }
+    },
     "Start" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2165,16 +2193,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Iniciar segunda serie"
-          }
-        }
-      }
-    },
-    "Specific equipment" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Equipos específicos"
           }
         }
       }
@@ -2439,6 +2457,7 @@
       }
     },
     "White" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -2460,6 +2479,7 @@
       }
     },
     "Yellow" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
