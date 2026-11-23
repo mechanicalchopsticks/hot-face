@@ -12,8 +12,15 @@ public struct GymProfile: Identifiable, Sendable {
     public let inventory: GymInventory
     public let equipment: [EquipmentDescription]
 
+    public var genericEquipment: [EquipmentDescription] { EquipmentDescription.genericOptions(in: id) }
+
+    public func equipment(withID id: UUID?) -> EquipmentDescription? {
+        guard let id else { return nil }
+        return equipment.first { $0.id == id } ?? genericEquipment.first { $0.id == id }
+    }
+
     public func loadOptions(for equipmentID: UUID, dumbbellCount: Int = 1) -> [ExerciseLoad] {
-        guard let item = equipment.first(where: { $0.id == equipmentID }) else { return [] }
+        guard let item = equipment(withID: equipmentID) else { return [] }
         return inventory.loadOptions(for: item, dumbbellCount: dumbbellCount)
     }
 }

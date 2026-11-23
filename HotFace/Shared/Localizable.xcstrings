@@ -1146,6 +1146,16 @@
         }
       }
     },
+    "Generic equipment" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Equipos genéricos"
+          }
+        }
+      }
+    },
     "Group (optional)" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2025,6 +2035,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Iniciar segunda serie"
+          }
+        }
+      }
+    },
+    "Specific equipment" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Equipos específicos"
           }
         }
       }

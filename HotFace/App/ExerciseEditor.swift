@@ -59,7 +59,7 @@ struct ExerciseEditor: View {
                 }
             }
             Section("Equipment and load") {
-                let assigned = gym.equipment.first { $0.id == exercise.equipmentID }
+                let assigned = gym.equipment(withID: exercise.equipmentID)
                 if exercise.equipmentID != nil && assigned == nil {
                     Label(
                         "Assigned equipment was deleted. Choose a replacement.", systemImage: "exclamationmark.triangle"
@@ -76,7 +76,14 @@ struct ExerciseEditor: View {
                         })
                 ) {
                     Text("None").tag(nil as UUID?)
-                    ForEach(gym.equipment) { Text(verbatim: $0.name).tag(Optional($0.id)) }
+                    Section("Generic equipment") {
+                        ForEach(gym.genericEquipment) { Text($0.kind.title).tag(Optional($0.id)) }
+                    }
+                    if !gym.equipment.isEmpty {
+                        Section("Specific equipment") {
+                            ForEach(gym.equipment) { Text(verbatim: $0.name).tag(Optional($0.id)) }
+                        }
+                    }
                 }
                 if let equipment = assigned {
                     NavigationLink {

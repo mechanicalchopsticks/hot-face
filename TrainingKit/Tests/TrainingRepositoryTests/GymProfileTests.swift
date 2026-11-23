@@ -5,6 +5,60 @@ import TrainingDomain
 import TrainingRepositories
 
 struct GymProfileTests {
+    @Test func usesGenericEquipmentImmediatelyAndCanAssignSpecificEquipmentLater() throws {
+        struct Clock: WorkoutClock {
+            let now = Date(timeIntervalSince1970: 1000)
+        }
+
+        try withTemporaryDirectory { directory in
+            func reopen() -> CoordinatedModelStore { CoordinatedModelStore(trainingDirectory: directory) }
+            let gym = try #require(try reopen().createGym(name: "Gym").gyms.first)
+            #expect(gym.equipment.isEmpty)
+            #expect(gym.genericEquipment.map(\.kind) == EquipmentDescription.Kind.allCases)
+            #expect(Set(gym.genericEquipment.map(\.id)).count == 8)
+            let second = try #require(try reopen().createGym(name: "Other gym").gyms.first { $0.id != gym.id })
+            #expect(Set(gym.genericEquipment.map(\.id)).isDisjoint(with: second.genericEquipment.map(\.id)))
+            let bar = try #require(gym.genericEquipment.first { $0.kind == .barbell })
+            #expect(bar.baseWeight == 45 && bar.unit == .lb)
+            let load = try #require(gym.loadOptions(for: bar.id).first { $0.amount == 15 && $0.unit == .lb })
+
+            var press = ExercisePrescription(name: "Press", segments: [.repetitions(8)])
+            press.equipmentID = bar.id
+            press.load = .confirmed(load)
+            var row = ExercisePrescription(name: "Row", segments: [.repetitions(8)])
+            row.equipmentID = bar.id
+            let day = RoutineDay(name: "A", exercises: [press, row])
+            var draft = ManualRoutine(gymID: gym.id)
+            draft.plan = RoutinePlan(name: "Strength", days: [day])
+            try reopen().saveRoutine(draft)
+
+            var specific = EquipmentDescription(name: "Olympic bar", kind: .barbell, unit: .lb)
+            specific.station = "3"
+            _ = try reopen().saveEquipment(specific, in: gym.id)
+            draft = try #require(try reopen().activeRoutine())
+            draft.plan.days[0].exercises[1].equipmentID = specific.id
+            try reopen().saveRoutine(draft)
+
+            let catalog = try reopen().gymCatalog()
+            let updated = try #require(catalog.gyms.first { $0.id == gym.id })
+            #expect(updated.genericEquipment == gym.genericEquipment && updated.equipment == [specific])
+            let saved = try #require(try reopen().activeRoutine())
+            #expect(saved.plan.days[0].exercises.map(\.equipmentID) == [bar.id, specific.id])
+            #expect(saved.plan.days[0].exercises.first?.load == .confirmed(load))
+            let sessionID = UUID()
+            _ = try reopen().apply(
+                SessionCommand(
+                    sessionID: sessionID,
+                    action: .start(routineID: saved.id, gymID: gym.id, dayID: day.id, cycleID: nil)),
+                clock: Clock())
+            try reopen().withContext { context in
+                let session = try #require(context.fetch(FetchDescriptor<TrainingSchemaV1.Session>()).first)
+                #expect(session.id == sessionID)
+                #expect(try session.prescription.equipment == [specific, bar])
+            }
+        }
+    }
+
     @Test func editsAndSelectsGymsWithoutMixingEquipment() throws {
         try withTemporaryDirectory { directory in
             func reopen() -> CoordinatedModelStore { CoordinatedModelStore(trainingDirectory: directory) }
@@ -107,14 +161,20 @@ struct GymProfileTests {
             let catalog = try reopen().gymCatalog()
             let gym = try #require(catalog.gyms.first)
             #expect(catalog.activeGymID == gym.id)
+            #expect(gym.genericEquipment.map(\.kind) == EquipmentDescription.Kind.allCases)
+            #expect(Set(gym.genericEquipment.map(\.id)).isDisjoint(with: gym.equipment.map(\.id)))
             #expect(gym.inventory.plates == [.init(5, .lb), .init(10, .lb)])
             #expect(gym.inventory.dumbbells == [.init(10, .lb), .init(10, .kg)])
             #expect(gym.inventory.fixedBars == [.init(10, .kg)])
             let bar = try #require(gym.equipment.first { $0.kind == .barbell })
+            let saved = try #require(try reopen().activeRoutine())
+            #expect(saved.plan.days.first?.exercises.first?.equipmentID == bar.id)
             #expect(bar.baseWeight == 35 && bar.availableLoads == [30] && bar.plates.isEmpty)
             #expect(gym.equipment.first { $0.kind == .plateLoadedMachine }?.baseWeight == 12.5)
             _ = try reopen().saveInventory([], for: .plates, in: gym.id)
-            #expect(try reopen().gymCatalog().gyms.first?.inventory.plates == [])
+            let reopened = try #require(reopen().gymCatalog().gyms.first)
+            #expect(reopened.inventory.plates == [])
+            #expect(reopened.genericEquipment == gym.genericEquipment)
             try reopen().withContext { context in
                 let session = try #require(context.fetch(FetchDescriptor<TrainingSchemaV1.Session>()).first)
                 let snapshot = try session.prescription
@@ -150,7 +210,7 @@ struct GymProfileTests {
     func savesAndClearsOptionalMaximumIndependentlyOfBaseWeight(kind: EquipmentDescription.Kind) throws {
         try withTemporaryDirectory { directory in
             func reopen() -> CoordinatedModelStore { CoordinatedModelStore(trainingDirectory: directory) }
-            let gymID = try #require(reopen().createGym(name: "Gym").activeGymID)
+            let gymID = try #require(try reopen().createGym(name: "Gym").activeGymID)
             var item = EquipmentDescription(name: "Station", kind: kind, unit: .lb)
             item.baseWeight = 45
             item.maximumAddedWeightPerSide = 90
@@ -168,7 +228,7 @@ struct GymProfileTests {
         try withTemporaryDirectory { directory in
             func reopen() -> CoordinatedModelStore { CoordinatedModelStore(trainingDirectory: directory) }
 
-            let gymID = try #require(reopen().createGym(name: "Gym").activeGymID)
+            let gymID = try #require(try reopen().createGym(name: "Gym").activeGymID)
             var barbell = EquipmentDescription(name: "Barbell", kind: .barbell, unit: .lb)
             barbell.baseWeight = 45
             var machine = EquipmentDescription(name: "Machine", kind: .plateLoadedMachine, unit: .lb)
@@ -207,11 +267,11 @@ struct GymProfileTests {
     @Test func selectedLoadChangesRepresentationAndKeepsTheStoredBalance() throws {
         try withTemporaryDirectory { directory in
             func reopen() -> CoordinatedModelStore { CoordinatedModelStore(trainingDirectory: directory) }
-            let gymID = try #require(reopen().createGym(name: "Gym A").activeGymID)
+            let gymID = try #require(try reopen().createGym(name: "Gym A").activeGymID)
             let dumbbells = EquipmentDescription(name: "Rack", kind: .dumbbell, unit: .lb)
             _ = try reopen().saveEquipment(dumbbells, in: gymID)
             _ = try reopen().saveInventory([.init(10, .lb), .init(10, .kg)], for: .dumbbells, in: gymID)
-            let otherGym = try #require(reopen().createGym(name: "Gym B").gyms.first { $0.id != gymID })
+            let otherGym = try #require(try reopen().createGym(name: "Gym B").gyms.first { $0.id != gymID })
             #expect(otherGym.loadOptions(for: dumbbells.id).isEmpty)
 
             let gym = try #require(reopen().gymCatalog().gyms.first { $0.id == gymID })
