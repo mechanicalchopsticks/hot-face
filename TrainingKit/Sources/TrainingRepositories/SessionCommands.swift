@@ -13,7 +13,7 @@ public enum SessionCommandError: Error, Equatable {
     case conflictingIdentifier, sessionAlreadyOpen, sessionNotFound, sessionClosed
     case missingRoutine, missingGym, missingCycle, dayUnavailable
     case unknownExercise, skippedExercise, invalidSetNumber, conflictingSet
-    case exerciseNotStarted, conflictingRating
+    case exerciseNotStarted, conflictingRating, missingEquipment
 }
 
 extension CoordinatedModelStore {
@@ -131,8 +131,14 @@ private struct SessionWriter {
                 !cycle.skippedDayIDs.contains(dayID)
             else { throw SessionCommandError.dayUnavailable }
         }
-        context.insert(
-            try V1.Session(id: sessionID, routine: routine, gym: gym, dayID: dayID, cycle: cycle, startedAt: date))
+        let session = try V1.Session(
+            id: sessionID, routine: routine, gym: gym, dayID: dayID, cycle: cycle, startedAt: date)
+        let snapshot = try session.prescription
+        let available = Set(snapshot.equipment.map(\.id))
+        guard snapshot.day.exercises.compactMap(\.equipmentID).allSatisfy(available.contains) else {
+            throw SessionCommandError.missingEquipment
+        }
+        context.insert(session)
     }
 
     private func cycle(with id: UUID) throws -> V1.Cycle {

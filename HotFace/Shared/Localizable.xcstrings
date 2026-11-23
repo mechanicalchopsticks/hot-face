@@ -317,6 +317,16 @@
         }
       }
     },
+    "Assigned equipment was deleted. Choose a replacement." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El equipo asignado se eliminó. Elige un reemplazo."
+          }
+        }
+      }
+    },
     "Audio method" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -532,6 +542,16 @@
         }
       }
     },
+    "Could not delete equipment" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo eliminar el equipo"
+          }
+        }
+      }
+    },
     "Could not delete gym" : {
       "localizations" : {
         "es" : {
@@ -700,6 +720,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Días"
+          }
+        }
+      }
+    },
+    "Delete equipment" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar equipo"
+          }
+        }
+      }
+    },
+    "Delete equipment?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Eliminar equipo?"
           }
         }
       }
@@ -1480,6 +1520,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Prescripción"
+          }
+        }
+      }
+    },
+    "Remove %@ from %@? Replace it in assigned exercises. Shared weights and workout history will be preserved." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Retirar %@ de %@? Reemplázalo en los ejercicios asignados. Se conservarán los pesos compartidos y el historial de entrenamiento."
           }
         }
       }

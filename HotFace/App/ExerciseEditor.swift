@@ -46,10 +46,16 @@ struct ExerciseEditor: View {
                 }
             }
             Section("Equipment and load") {
+                let assigned = gym.equipment.first { $0.id == exercise.equipmentID }
+                if exercise.equipmentID != nil && assigned == nil {
+                    Label(
+                        "Assigned equipment was deleted. Choose a replacement.", systemImage: "exclamationmark.triangle"
+                    )
+                }
                 Picker(
                     "Equipment",
                     selection: Binding(
-                        get: { exercise.equipmentID },
+                        get: { assigned?.id },
                         set: { id in
                             guard exercise.equipmentID != id else { return }
                             exercise.equipmentID = id
@@ -59,7 +65,7 @@ struct ExerciseEditor: View {
                     Text("None").tag(nil as UUID?)
                     ForEach(gym.equipment) { Text(verbatim: $0.name).tag(Optional($0.id)) }
                 }
-                if let equipment = gym.equipment.first(where: { $0.id == exercise.equipmentID }) {
+                if let equipment = assigned {
                     NavigationLink {
                         ExerciseLoadEditor(load: $exercise.load, gym: gym, equipment: equipment)
                     } label: {

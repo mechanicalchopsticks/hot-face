@@ -24,7 +24,7 @@ public struct GymCatalog: Sendable {
 }
 
 public enum GymProfileError: Error, Equatable {
-    case missingGym, emptyName, invalidLoads, invalidReplacement
+    case missingGym, emptyName, invalidLoads, invalidReplacement, missingEquipment
 }
 
 extension CoordinatedModelStore {
@@ -107,7 +107,21 @@ extension CoordinatedModelStore {
         }
     }
 
-    public func saveEquipment(_ equipment: EquipmentDescription, in gymID: UUID) throws -> GymCatalog {
+    public func deleteEquipment(_ equipmentID: UUID, in gymID: UUID) throws -> GymCatalog {
+        try updateGymCatalog { context in
+            let gym = try gym(with: gymID, in: context)
+            var items = try gym.equipment
+            guard let index = items.firstIndex(where: { $0.id == equipmentID }) else {
+                throw GymProfileError.missingEquipment
+            }
+            items.remove(at: index)
+            try gym.replaceEquipment(items)
+        }
+    }
+
+    public func saveEquipment(_ equipment: EquipmentDescription, in gymID: UUID, updatingExisting: Bool = false) throws
+        -> GymCatalog
+    {
         try validateGymName(equipment.name)
         let weights =
             equipment.availableLoads + [equipment.baseWeight, equipment.maximumAddedWeightPerSide].compactMap { $0 }
@@ -125,6 +139,7 @@ extension CoordinatedModelStore {
             if let index = inventory.firstIndex(where: { $0.id == equipment.id }) {
                 inventory[index] = equipment
             } else {
+                guard !updatingExisting else { throw GymProfileError.missingEquipment }
                 inventory.append(equipment)
             }
             try profile.replaceEquipment(inventory)

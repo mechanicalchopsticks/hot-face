@@ -20,6 +20,49 @@ struct CatalogDeletionTests {
         try test(CoordinatedModelStore(trainingDirectory: directory))
     }
 
+    @Test func deletingAssignedEquipmentPreservesTheOpenWorkoutAndSharedWeights() throws {
+        try withFrozenCatalog { store in
+            var routine = try #require(try store.activeRoutine())
+            let catalog = try store.gymCatalog()
+            let gym = try #require(catalog.gyms.first { $0.id == routine.gymID })
+            let other = try #require(catalog.gyms.first { $0.id != gym.id })
+            let item = try #require(gym.equipment.first)
+            let spare = EquipmentDescription(name: "Rack", kind: .dumbbell, unit: .lb)
+            _ = try store.saveEquipment(spare, in: gym.id)
+            _ = try store.saveEquipment(item, in: other.id)
+            let day = try #require(routine.plan.days.first)
+            let exercise = try #require(day.exercises.first)
+            let start = SessionCommand.Action.start(routineID: routine.id, gymID: gym.id, dayID: day.id, cycleID: nil)
+            let session = UUID()
+            func apply(_ action: SessionCommand.Action, to id: UUID) throws {
+                _ = try store.apply(SessionCommand(sessionID: id, action: action), clock: DeletionClock())
+            }
+            try apply(start, to: session)
+            _ = try store.deleteEquipment(item.id, in: gym.id)
+            #expect(throws: GymProfileError.missingEquipment) {
+                try store.saveEquipment(item, in: gym.id, updatingExisting: true)
+            }
+            let saved = try store.gymCatalog()
+            let current = try #require(saved.gyms.first { $0.id == gym.id })
+            #expect(current.inventory == gym.inventory && current.equipment == [spare])
+            #expect(current.loadOptions(for: item.id).isEmpty)
+            #expect(saved.gyms.first { $0.id == other.id }?.equipment == [item])
+            #expect(try store.activeRoutine()?.plan == routine.plan)
+            try apply(
+                .completeSet(exerciseID: exercise.id, number: 1, performance: SetPerformance(asPrescribed: exercise)),
+                to: session)
+            try apply(.finish, to: session)
+            let history = try #require(store.loadHistory(in: gym.id)["Curl"])
+            #expect(history.station == "A7" && history.performedAt == DeletionClock().now)
+            #expect(history.load.amount == 35 && history.load.unit == .kg)
+            #expect(throws: SessionCommandError.missingEquipment) { try apply(start, to: UUID()) }
+            routine.plan.days[0].exercises[0].equipmentID = spare.id
+            routine.plan.days[0].exercises[0].load = .undefined
+            try store.saveRoutine(routine)
+            try apply(start, to: UUID())
+        }
+    }
+
     @Test func deletesGymsWithoutLosingArchivedRoutinesOrTheirHistory() throws {
         try withFrozenCatalog { store in
             let original = try #require(try store.activeRoutine())
