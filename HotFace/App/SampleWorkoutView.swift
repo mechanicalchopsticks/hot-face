@@ -5,8 +5,11 @@ import TrainingInterface
 struct SampleWorkoutView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.locale) private var locale
-    @State private var session = SampleWorkout()
+    private let controller = SampleWorkoutController.shared
+    @State private var showsLiveActivity = true
     @State private var editingSet: SampleWorkout.CompletedSet?
+
+    private var session: SampleWorkout { controller.session }
 
     var body: some View {
         NavigationStack {
@@ -34,7 +37,7 @@ struct SampleWorkoutView: View {
                 if session.phase == .set || session.isResting {
                     ToolbarItem(placement: .primaryAction) {
                         Menu {
-                            Button("Finish workout") { session.finish() }
+                            Button("Finish workout") { controller.finish() }
                         } label: {
                             Label("More", systemImage: "ellipsis.circle")
                         }
@@ -44,13 +47,17 @@ struct SampleWorkoutView: View {
             .safeAreaInset(edge: .bottom) { primaryAction }
             .sheet(item: $editingSet) { record in
                 SampleSetCorrectionView(record: record) { performance in
-                    session.correct(record, with: performance)
+                    controller.correct(record, with: performance)
                 }
             }
         }
     }
 
+    @ViewBuilder
     private var intro: some View {
+        Section {
+            Toggle("Show on Lock Screen", isOn: $showsLiveActivity)
+        }
         Section {
             ForEach(SampleWorkout.exercises) { exercise in
                 VStack(alignment: .leading, spacing: 4) {
@@ -97,6 +104,8 @@ struct SampleWorkoutView: View {
             }
         } header: {
             if session.isResting { Text("Up next") }
+        } footer: {
+            if controller.liveActivityUnavailable { Text("Lock Screen controls are unavailable.") }
         }
     }
 
@@ -177,10 +186,10 @@ struct SampleWorkoutView: View {
     private var primaryAction: some View {
         Group {
             switch session.phase {
-            case .ready: action("Start day") { session.start() }
-            case .set: action("Complete set") { session.completeSet(at: .now) }
+            case .ready: action("Start day") { controller.start(showsLiveActivity: showsLiveActivity) }
+            case .set: action("Complete set") { controller.completeSet() }
             case .rest:
-                action(session.continuesExercise ? "Next set" : "Next exercise") { session.advance() }
+                action(session.continuesExercise ? "Next set" : "Next exercise") { controller.advance() }
             case .summary: action("Done") { dismiss() }
             }
         }
@@ -277,114 +286,5 @@ private struct SampleSetCorrectionView: View {
             performance.load?.amount = amount
         }
         return performance
-    }
-}
-
-private struct SampleWorkout {
-    enum Phase: Equatable {
-        case ready, set
-        case rest(until: Date)
-        case summary
-    }
-
-    struct Exercise: Identifiable {
-        let prescription: ExercisePrescription
-        let equipment: EquipmentDescription.Kind
-        let setCount: Int
-
-        var id: UUID { prescription.id }
-
-        init(
-            _ name: String, equipment: EquipmentDescription.Kind, segment: ExerciseSegment, sets: Int = 4,
-            station: String? = nil, instructions: String? = nil, perSide: Bool = false,
-            load: Int, unit: ExerciseLoad.Unit = .kg, representation: ExerciseLoad.Representation = .combined,
-            implementCount: Int = 1
-        ) {
-            var prescription = ExercisePrescription(name: name, sets: sets, segments: [segment])
-            prescription.station = station
-            prescription.instructions = instructions
-            prescription.perSide = perSide
-            prescription.load = .estimated(
-                .init(
-                    amount: Decimal(load), unit: unit, representation: representation, implementCount: implementCount))
-            self.prescription = prescription
-            self.equipment = equipment
-            self.setCount = sets
-        }
-    }
-
-    struct PlannedSet {
-        let exercise: Exercise
-        let number: Int
-    }
-
-    struct CompletedSet: Identifiable {
-        let id: Int
-        let planned: PlannedSet
-        var performance: SetPerformance
-    }
-
-    // Day 3 of rutina1. The first exercise uses two sets to failure for the walkthrough.
-    static let exercises: [Exercise] = [
-        .init(
-            "Jalón polea abierto", equipment: .selectorizedMachine, segment: .toFailure, sets: 2, station: "23",
-            load: 35),
-        .init(
-            "Remo T", equipment: .plateLoadedMachine, segment: .repetitions(10), station: "24",
-            instructions: "abierto", load: 25, unit: .lb, representation: .totalAdded),
-        .init(
-            "Remo mancuerna", equipment: .dumbbell, segment: .repetitions(10), perSide: true,
-            load: 25, unit: .lb, representation: .perImplement),
-        .init("Face pulls", equipment: .selectorizedMachine, segment: .repetitions(15), station: "18", load: 15),
-        .init(
-            "Curl martillo", equipment: .dumbbell, segment: .repetitions(10), load: 15, unit: .lb,
-            representation: .perImplement, implementCount: 2),
-        .init("Curl barra", equipment: .fixedBar, segment: .repetitions(12), load: 15),
-    ]
-
-    private static let planned = exercises.flatMap { exercise in
-        (1...exercise.setCount).map { PlannedSet(exercise: exercise, number: $0) }
-    }
-
-    private(set) var phase = Phase.ready
-    private(set) var completed: [CompletedSet] = []
-
-    var currentSet: PlannedSet? {
-        guard Self.planned.indices.contains(completed.count) else { return nil }
-        return Self.planned[completed.count]
-    }
-
-    var continuesExercise: Bool { currentSet?.number != 1 }
-
-    var isResting: Bool {
-        if case .rest = phase { return true }
-        return false
-    }
-
-    mutating func start() { phase = .set }
-    mutating func finish() { phase = .summary }
-
-    mutating func completeSet(at date: Date) {
-        guard phase == .set, let currentSet else { return }
-        completed.append(
-            .init(
-                id: completed.count, planned: currentSet,
-                performance: SetPerformance(asPrescribed: currentSet.exercise.prescription)))
-        if self.currentSet != nil {
-            let rest: TimeInterval = continuesExercise ? 105 : 135
-            phase = .rest(until: date.addingTimeInterval(rest))
-        } else {
-            finish()
-        }
-    }
-
-    mutating func correct(_ record: CompletedSet, with performance: SetPerformance) {
-        guard isResting, completed.last?.id == record.id else { return }
-        completed[record.id].performance = performance
-    }
-
-    mutating func advance() {
-        guard isResting else { return }
-        phase = .set
     }
 }

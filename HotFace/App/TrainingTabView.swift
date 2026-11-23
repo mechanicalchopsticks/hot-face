@@ -64,7 +64,9 @@ private struct ActiveRoutineView: View {
             .toolbar {
                 Button("Sample workout") { showSampleWorkout = true }
             }
-            .sheet(isPresented: $showSampleWorkout) { SampleWorkoutView() }
+            .sheet(isPresented: $showSampleWorkout, onDismiss: SampleWorkoutController.shared.close) {
+                SampleWorkoutView()
+            }
         }
         .onAppear(perform: reload)
     }
