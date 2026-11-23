@@ -21,6 +21,7 @@ public struct OpenWorkout: Identifiable, Sendable {
 
     public let id: UUID
     public let prescription: SessionPrescription
+    public let pendingExercises: [ExercisePrescription]
     public let nextSet: PendingSet?
     public let rest: Rest?
 
@@ -32,15 +33,19 @@ public struct OpenWorkout: Identifiable, Sendable {
         let byExercise = Dictionary(grouping: performed, by: \.exerciseID)
         let skipped = Set(session.skippedExerciseIDs)
         var pending: PendingSet?
+        var remaining: [ExercisePrescription] = []
         for exercise in prescription.day.exercises where !skipped.contains(exercise.id) {
             guard let count = exercise.sets, count > 0 else { throw CocoaError(.coderReadCorrupt) }
             let completed = Set(byExercise[exercise.id, default: []].map(\.number))
             if let number = (1...count).first(where: { !completed.contains($0) }) {
                 let equipment = prescription.equipment.first { $0.id == exercise.equipmentID }
-                pending = PendingSet(exercise: exercise, equipment: equipment, number: number, count: count)
-                break
+                remaining.append(exercise)
+                if pending == nil {
+                    pending = PendingSet(exercise: exercise, equipment: equipment, number: number, count: count)
+                }
             }
         }
+        pendingExercises = remaining
         nextSet = pending
 
         // The set's saved timestamp is the start of rest, including when a completion is retried.

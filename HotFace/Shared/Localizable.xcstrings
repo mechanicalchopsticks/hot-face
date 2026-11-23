@@ -1981,6 +1981,16 @@
         }
       }
     },
+    "Postpone exercise" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posponer ejercicio"
+          }
+        }
+      }
+    },
     "Prescription" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2062,6 +2072,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Repeticiones"
+          }
+        }
+      }
+    },
+    "Replace exercise" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sustituir ejercicio"
           }
         }
       }
@@ -2353,6 +2373,16 @@
         }
       }
     },
+    "Select exercise" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seleccionar ejercicio"
+          }
+        }
+      }
+    },
     "Selectorized machine" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2503,6 +2533,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mostrar en la pantalla bloqueada"
+          }
+        }
+      }
+    },
+    "Skip exercise" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Omitir ejercicio"
           }
         }
       }

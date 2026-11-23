@@ -78,6 +78,17 @@ private struct SessionWriter {
                 try V1.PerformedSet(
                     sessionID: sessionID, exerciseID: id, number: number,
                     performedAt: date, performance: performance))
+        case .moveExercise(let id, let toFront):
+            let session = try openSession()
+            var plan = try session.prescription
+            guard let index = plan.day.exercises.firstIndex(where: { $0.id == id }) else {
+                throw SessionCommandError.unknownExercise
+            }
+            let exercise = plan.day.exercises.remove(at: index)
+            plan.day.exercises.insert(exercise, at: toFront ? 0 : plan.day.exercises.endIndex)
+            try session.updatePrescription(plan)
+        case .insertExercise(let sourceID, let replacing, let usual):
+            try insertExercise(sourceID, replacing: replacing, usual: usual, in: openSession(), at: date)
         case .adjust(let id, let sets, let segments, let load, let saveAsUsual):
             let session = try openSession()
             var snapshot = try session.prescription
@@ -167,6 +178,64 @@ private struct SessionWriter {
             session.finish(at: date, partial: partial)
         }
         return .applied
+    }
+
+    private func insertExercise(_ sourceID: UUID, replacing: UUID?, usual: Bool, in session: V1.Session, at date: Date)
+        throws
+    {
+        var snapshot = try session.prescription
+        guard let routine = try activeRoutineRecord(in: snapshot.gymID, context: context),
+            routine.id == snapshot.routineID
+        else { throw SessionCommandError.missingRoutine }
+        var plan = try routine.plan
+        guard let source = plan.days.flatMap(\.exercises).first(where: { $0.id == sourceID }),
+            let d = plan.days.firstIndex(where: { $0.id == snapshot.day.id })
+        else { throw SessionCommandError.unknownExercise }
+        var newExercise = source.copiedForWorkout()
+        newExercise.sets = plan.setCount(for: source)
+        if let equipmentID = newExercise.equipmentID, !snapshot.equipment.contains(where: { $0.id == equipmentID }) {
+            let gymID = snapshot.gymID
+            let gyms = FetchDescriptor<V1.Gym>(predicate: #Predicate { $0.id == gymID })
+            guard let gym = try context.fetch(gyms).first,
+                let equipment = try (gym.equipment + EquipmentDescription.genericOptions(in: gymID)).first(where: {
+                    $0.id == equipmentID
+                })
+            else { throw SessionCommandError.missingEquipment }
+            snapshot.equipment.append(equipment)
+        }
+        if let replacing {
+            guard let index = snapshot.day.exercises.firstIndex(where: { $0.id == replacing }) else {
+                throw SessionCommandError.unknownExercise
+            }
+            let records = FetchDescriptor<V1.PerformedSet>(
+                predicate: #Predicate { $0.sessionID == sessionID && $0.exerciseID == replacing })
+            if try context.fetchCount(records) == 0 {
+                snapshot.day.exercises.remove(at: index)
+            } else {
+                session.skippedExerciseIDs.append(replacing)
+            }
+            snapshot.day.exercises.insert(newExercise, at: index)
+        } else {
+            snapshot.day.exercises.append(newExercise)
+        }
+        if usual {
+            if let replacing {
+                guard let index = plan.days[d].exercises.firstIndex(where: { $0.id == replacing }) else {
+                    throw SessionCommandError.unknownExercise
+                }
+                let old = plan.days[d].exercises[index]
+                plan.days[d].exercises[index] = newExercise
+                context.insert(
+                    try V1.PrescriptionChange(
+                        routineID: routine.id, date: date, origin: "replacement", previous: old, updated: newExercise))
+            } else {
+                plan.days[d].exercises.append(newExercise)
+            }
+            plan.days[d].assignGroup(newExercise.group, to: newExercise.id)
+            try routine.replacePlan(plan)
+            context.insert(V1.Progression(exerciseID: newExercise.id))
+        }
+        try session.updatePrescription(snapshot)
     }
 
     private func start(routineID: UUID, gymID: UUID, dayID: UUID, cycleID: UUID?, at date: Date) throws {

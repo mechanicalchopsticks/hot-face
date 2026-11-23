@@ -67,6 +67,8 @@ public struct ExercisePrescription: Identifiable, Codable, Equatable, Sendable {
         self.segments = segments
     }
 
+    public func copiedForWorkout() -> Self { copied(supersetID: nil) }
+
     fileprivate func copied(supersetID: UUID?) -> Self {
         var copy = self
         copy.id = UUID()

@@ -15,6 +15,8 @@ struct WorkoutSessionView: View {
 
     @State private var adjusting: ExercisePrescription?
 
+    @State private var choosingExercise = false
+
     private var rest: OpenWorkout.Rest? {
         workout.rest.flatMap { $0.id == reviewedRestID ? nil : $0 }
     }
@@ -52,6 +54,7 @@ struct WorkoutSessionView: View {
                 if workout.nextSet != nil {
                     ToolbarItem(placement: .primaryAction) {
                         Menu {
+                            Button("Exercises") { choosingExercise = true }
                             if let next = workout.nextSet { Button("Adjust exercise") { adjusting = next.exercise } }
                             Button("Finish workout") { confirmsFinish = true }
                         } label: {
@@ -59,6 +62,9 @@ struct WorkoutSessionView: View {
                         }
                     }
                 }
+            }
+            .sheet(isPresented: $choosingExercise) {
+                WorkoutExerciseList(workout: workout) { action in try apply(action) }
             }
             .sheet(item: $adjusting) { exercise in
                 WorkoutAdjustmentView(exercise: exercise, workout: workout) { action in try apply(action) }
@@ -384,5 +390,77 @@ private struct WorkoutAdjustmentView: View {
             }
             .alert("Could not update workout", isPresented: $failed) { Button("OK") {} }
         }
+    }
+}
+
+private struct WorkoutExerciseList: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.locale) private var locale
+    let workout: OpenWorkout
+    let apply: (SessionCommand.Action) throws -> Void
+    @State private var plan: RoutinePlan?
+    @State private var usual = false
+    @State private var failed = false
+
+    var body: some View {
+        NavigationStack {
+            List {
+                ForEach(sections(workout.pendingExercises)) { group in
+                    Section {
+                        ForEach(group.exercises) { exercise in
+                            Menu {
+                                Button("Select exercise") { run(.moveExercise(id: exercise.id, toFront: true)) }
+                                Button("Postpone exercise") { run(.moveExercise(id: exercise.id, toFront: false)) }
+                                Button("Skip exercise") { run(.skip(exerciseID: exercise.id)) }
+                            } label: {
+                                Text(verbatim: exercise.name)
+                            }
+                        }
+                    } header: {
+                        if let heading = group.heading(locale: locale) { Text(verbatim: heading) }
+                    }
+                }
+                NavigationLink("Add exercise") { catalog(replacing: nil) }
+                if let next = workout.nextSet {
+                    NavigationLink("Replace exercise") { catalog(replacing: next.exercise.id) }
+                }
+            }
+            .navigationTitle("Exercises")
+            .toolbar { Button("Close") { dismiss() } }
+            .task {
+                do { plan = try TrainingStorage.openStore().activeRoutine()?.plan } catch { failed = true }
+            }
+            .alert("Could not update workout", isPresented: $failed) { Button("OK") {} }
+        }
+    }
+
+    private func sections(_ exercises: [ExercisePrescription]) -> [ExerciseGroupSection] {
+        ExerciseGroupSection.sections(for: RoutineDay(name: "", exercises: exercises))
+    }
+
+    private func catalog(replacing: UUID?) -> some View {
+        List {
+            Toggle("Save as usual", isOn: $usual)
+            ForEach(sections(plan?.days.flatMap(\.exercises) ?? [])) { group in
+                Section {
+                    ForEach(group.exercises) { exercise in
+                        Button {
+                            run(.insertExercise(sourceID: exercise.id, replacing: replacing, saveAsUsual: usual))
+                        } label: {
+                            Text(verbatim: exercise.name)
+                        }
+                    }
+                } header: {
+                    if let heading = group.heading(locale: locale) { Text(verbatim: heading) }
+                }
+            }
+        }
+    }
+
+    private func run(_ action: SessionCommand.Action) {
+        do {
+            try apply(action)
+            dismiss()
+        } catch { failed = true }
     }
 }

@@ -5,6 +5,47 @@ import TrainingDomain
 import TrainingRepositories
 
 struct OpenWorkoutTests {
+    @Test func occupiedStationAndReplacementsRespectSessionScope() throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let store = CoordinatedModelStore(trainingDirectory: directory)
+        let gym = try #require(store.createGym(name: "Gym").activeGymID)
+        func exercise(_ name: String) -> ExercisePrescription {
+            ExercisePrescription(name: name, sets: 2, segments: [.repetitions(10)])
+        }
+        var squat = exercise("Squat")
+        squat.group = "Pierna"
+        let walk = exercise("Walk")
+        var lunge = exercise("Lunge")
+        lunge.group = "Pierna"
+        let day = RoutineDay(name: "Day", exercises: [squat, walk, lunge])
+        var routine = ManualRoutine(gymID: gym)
+        routine.plan = RoutinePlan(name: "Plan", days: [day])
+        try store.saveRoutine(routine)
+        let id = UUID()
+        func apply(_ action: SessionCommand.Action) throws {
+            _ = try store.apply(SessionCommand(sessionID: id, action: action), clock: SetClock(10))
+        }
+        try apply(.start(routineID: routine.id, gymID: gym, dayID: day.id, cycleID: nil))
+        #expect(try store.openWorkout()?.pendingExercises == day.exercises)
+        try apply(.moveExercise(id: squat.id, toFront: false))
+        #expect(try store.openWorkout()?.nextSet?.exercise == walk)
+        try apply(.completeSet(exerciseID: walk.id, number: 1, performance: .init(asPrescribed: walk)))
+        try apply(.moveExercise(id: squat.id, toFront: true))
+        #expect(try store.openWorkout()?.nextSet?.exercise == squat)
+        try apply(.skip(exerciseID: squat.id))
+        #expect(try store.openWorkout()?.nextSet?.number == 2)
+        try apply(.insertExercise(sourceID: squat.id, replacing: nil, saveAsUsual: false))
+        try apply(.insertExercise(sourceID: squat.id, replacing: walk.id, saveAsUsual: false))
+        #expect(try store.openWorkout()?.pendingExercises.count == 3)
+        #expect(try store.activeRoutine()?.plan == routine.plan)
+        try apply(.insertExercise(sourceID: walk.id, replacing: lunge.id, saveAsUsual: true))
+        let usual = try #require(try store.activeRoutine()?.plan.days.first)
+        #expect(usual.exercises.map(\.name) == ["Squat", "Walk", "Walk"])
+        #expect(usual.exercises[2].id != walk.id)
+    }
+
     @Test func completePersistsFailureWithoutCountAndStartsTheApplicableRest() throws {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
