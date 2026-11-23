@@ -130,7 +130,7 @@ func activeRoutineRecord(in gymID: UUID, context: ModelContext) throws -> Traini
     return candidates.count == 1 ? candidates.first : nil
 }
 
-private func validateForEditing(_ plan: RoutinePlan) throws {
+func validateForEditing(_ plan: RoutinePlan) throws {
     func hasName(_ name: String) -> Bool {
         !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }

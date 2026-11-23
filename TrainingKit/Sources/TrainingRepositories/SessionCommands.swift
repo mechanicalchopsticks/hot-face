@@ -78,6 +78,53 @@ private struct SessionWriter {
                 try V1.PerformedSet(
                     sessionID: sessionID, exerciseID: id, number: number,
                     performedAt: date, performance: performance))
+        case .adjust(let id, let sets, let segments, let load, let saveAsUsual):
+            let session = try openSession()
+            var snapshot = try session.prescription
+            guard let index = snapshot.day.exercises.firstIndex(where: { $0.id == id }) else {
+                throw SessionCommandError.unknownExercise
+            }
+            let performed = FetchDescriptor<V1.PerformedSet>(
+                predicate: #Predicate { $0.sessionID == sessionID && $0.exerciseID == id })
+            guard sets > 0, try context.fetch(performed).allSatisfy({ $0.number <= sets }) else {
+                throw SessionCommandError.invalidSetNumber
+            }
+            func adjust(_ exercise: inout ExercisePrescription) {
+                exercise.sets = sets
+                exercise.segments = segments
+                exercise.load = load
+            }
+            adjust(&snapshot.day.exercises[index])
+            try validateForEditing(RoutinePlan(name: snapshot.routineName, days: [snapshot.day]))
+            var temporaryIDs = snapshot.temporaryExerciseIDs ?? []
+            if saveAsUsual {
+                guard let routine = try activeRoutineRecord(in: snapshot.gymID, context: context),
+                    routine.id == snapshot.routineID
+                else { throw SessionCommandError.missingRoutine }
+                var plan = try routine.plan
+                guard let d = plan.days.firstIndex(where: { $0.id == snapshot.day.id }),
+                    let e = plan.days[d].exercises.firstIndex(where: { $0.id == id })
+                else { throw SessionCommandError.unknownExercise }
+                let previous = plan.days[d].exercises[e]
+                adjust(&plan.days[d].exercises[e])
+                if previous != plan.days[d].exercises[e] {
+                    try routine.replacePlan(plan)
+                    context.insert(
+                        try V1.PrescriptionChange(
+                            routineID: routine.id, date: date, origin: "workout", previous: previous,
+                            updated: plan.days[d].exercises[e]))
+                    let query = FetchDescriptor<V1.Progression>(predicate: #Predicate { $0.exerciseID == id })
+                    if let progression = try context.fetch(query).first {
+                        progression.balance = 0
+                        progression.returnRepetitions = nil
+                    }
+                }
+                temporaryIDs.remove(id)
+            } else {
+                temporaryIDs.insert(id)
+            }
+            snapshot.temporaryExerciseIDs = temporaryIDs
+            try session.updatePrescription(snapshot)
         case .correctSet(let id, let performance):
             _ = try openSession()
             let query = FetchDescriptor<V1.PerformedSet>(

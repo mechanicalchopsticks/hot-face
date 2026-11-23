@@ -258,6 +258,16 @@
         }
       }
     },
+    "Adjust exercise" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajustar ejercicio"
+          }
+        }
+      }
+    },
     "After exercise" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2156,6 +2166,16 @@
         }
       }
     },
+    "Reuse previous adjustment" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reutilizar ajuste anterior"
+          }
+        }
+      }
+    },
     "Review previous load" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2287,6 +2307,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Guardar y activar"
+          }
+        }
+      }
+    },
+    "Save as usual" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardar como habitual"
           }
         }
       }

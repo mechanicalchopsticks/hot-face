@@ -66,6 +66,22 @@ public struct OpenWorkout: Identifiable, Sendable {
 }
 
 extension CoordinatedModelStore {
+    public func previousAdjustment(for exerciseID: UUID, in routineID: UUID) throws -> ExercisePrescription? {
+        try withContext { context in
+            let sessions = FetchDescriptor<TrainingSchemaV1.Session>(
+                predicate: #Predicate { $0.finishedAt != nil }, sortBy: [SortDescriptor(\.finishedAt, order: .reverse)])
+            for session in try context.fetch(sessions) {
+                let plan = try session.prescription
+                if plan.routineID == routineID, plan.temporaryExerciseIDs?.contains(exerciseID) == true,
+                    let exercise = plan.day.exercises.first(where: { $0.id == exerciseID })
+                {
+                    return exercise
+                }
+            }
+            return nil
+        }
+    }
+
     public func openWorkout() throws -> OpenWorkout? {
         try withContext { context in
             var sessions = FetchDescriptor<TrainingSchemaV1.Session>(predicate: #Predicate { $0.finishedAt == nil })

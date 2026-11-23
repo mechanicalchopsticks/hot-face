@@ -71,6 +71,35 @@ private struct Fixture {
 }
 
 struct SessionCommandTests {
+    @Test func reusesTemporaryAdjustmentAndExplicitlySavesIt() throws {
+        let f = try Fixture()
+        defer { try? FileManager.default.removeItem(at: f.directory) }
+        _ = try f.store.apply(f.start, clock: FixedClock(1))
+        let plan = try #require(try f.store.openWorkout()?.prescription)
+        func change(_ usual: Bool) -> SessionCommand.Action {
+            .adjust(exerciseID: f.exercise.id, sets: 3, segments: [.seconds(20)], load: .undefined, saveAsUsual: usual)
+        }
+        _ = try f.store.apply(f.command(change(false)), clock: FixedClock(2))
+        #expect(try f.store.openWorkout()?.nextSet?.count == 3)
+        _ = try f.store.apply(f.command(.finish), clock: FixedClock(3))
+        let previous = try #require(try f.store.previousAdjustment(for: f.exercise.id, in: plan.routineID))
+        #expect(previous.segments == [.seconds(20)])
+        let next = UUID()
+        func start(_ id: UUID) throws {
+            _ = try f.store.apply(
+                SessionCommand(
+                    sessionID: id,
+                    action: .start(routineID: plan.routineID, gymID: plan.gymID, dayID: plan.day.id, cycleID: nil)),
+                clock: FixedClock(4))
+        }
+        try start(next)
+        #expect(try f.store.openWorkout()?.nextSet?.exercise == f.exercise)
+        _ = try f.store.apply(SessionCommand(sessionID: next, action: change(true)), clock: FixedClock(5))
+        _ = try f.store.apply(SessionCommand(sessionID: next, action: .finish), clock: FixedClock(6))
+        try start(UUID())
+        #expect(try f.store.openWorkout()?.nextSet?.exercise == previous)
+    }
+
     @Test func sessionKeepsResolvedSetCountsThroughRoutineEditsAndCompletion() throws {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
