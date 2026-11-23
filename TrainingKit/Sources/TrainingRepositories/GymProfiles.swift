@@ -24,7 +24,7 @@ public struct GymCatalog: Sendable {
 }
 
 public enum GymProfileError: Error, Equatable {
-    case missingGym, emptyName, invalidLoads
+    case missingGym, emptyName, invalidLoads, invalidReplacement
 }
 
 extension CoordinatedModelStore {
@@ -35,7 +35,7 @@ extension CoordinatedModelStore {
     public func createGym(name: String) throws -> GymCatalog {
         try validateGymName(name)
         return try updateGymCatalog { context in
-            let isFirstGym = try context.fetchCount(FetchDescriptor<Gym>()) == 0
+            let isFirstGym = try availableGyms(in: context).isEmpty
             let gym = try Gym(name: name)
             context.insert(gym)
             context.insert(try InventoryRecord(gymID: gym.id, inventory: .initial))
@@ -60,6 +60,35 @@ extension CoordinatedModelStore {
                 routine.isArchived = true
             }
             try setActiveGym(gymID, in: context)
+        }
+    }
+
+    public func checkGymDeletion(_ gymID: UUID) throws {
+        try withContext { try requireClosedSession(inGym: gymID, context: $0) }
+    }
+
+    public func deleteGym(_ gymID: UUID, replacingWith replacement: UUID? = nil) throws -> GymCatalog {
+        try updateGymCatalog { context in
+            let gyms = try availableGyms(in: context)
+            guard gyms.contains(where: { $0.id == gymID }) else { throw GymProfileError.missingGym }
+            try requireClosedSession(inGym: gymID, context: context)
+            let selection = try activeGym(in: context)
+            if selection?.gymID == gymID {
+                if gyms.count > 1 {
+                    guard let replacement, replacement != gymID, gyms.contains(where: { $0.id == replacement })
+                    else { throw GymProfileError.invalidReplacement }
+                    selection?.gymID = replacement
+                } else if let selection {
+                    guard replacement == nil else { throw GymProfileError.invalidReplacement }
+                    context.delete(selection)
+                }
+            } else if replacement != nil {
+                throw GymProfileError.invalidReplacement
+            }
+            for routine in try unarchivedRoutines(in: context) where routine.gymID == gymID {
+                routine.isArchived = true
+            }
+            context.insert(TrainingSchemaV5.RetiredGym(gymID: gymID))
         }
     }
 
@@ -112,8 +141,20 @@ extension CoordinatedModelStore {
     }
 }
 
+private func requireClosedSession(inGym gymID: UUID, context: ModelContext) throws {
+    let query = FetchDescriptor<TrainingSchemaV1.Session>(predicate: #Predicate { $0.finishedAt == nil })
+    for session in try context.fetch(query) where try session.prescription.gymID == gymID {
+        throw RoutineEditorError.openSession(session.id)
+    }
+}
+
+private func availableGyms(in context: ModelContext) throws -> [Gym] {
+    let retired = Set(try context.fetch(FetchDescriptor<TrainingSchemaV5.RetiredGym>()).map(\.gymID))
+    return try context.fetch(FetchDescriptor<Gym>()).filter { !retired.contains($0.id) }
+}
+
 private func readGymCatalog(in context: ModelContext) throws -> GymCatalog {
-    let gyms = try context.fetch(FetchDescriptor<Gym>()).map {
+    let gyms = try availableGyms(in: context).map {
         let inventory = try inventoryRecord(for: $0, in: context).inventory
         return try GymProfile(id: $0.id, name: $0.name, inventory: inventory, equipment: $0.equipment)
     }
@@ -121,8 +162,9 @@ private func readGymCatalog(in context: ModelContext) throws -> GymCatalog {
 }
 
 private func gym(with id: UUID, in context: ModelContext) throws -> Gym {
-    let matching = FetchDescriptor<Gym>(predicate: #Predicate { $0.id == id })
-    guard let gym = try context.fetch(matching).first else { throw GymProfileError.missingGym }
+    guard let gym = try availableGyms(in: context).first(where: { $0.id == id }) else {
+        throw GymProfileError.missingGym
+    }
     return gym
 }
 

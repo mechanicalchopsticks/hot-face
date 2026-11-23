@@ -16,10 +16,11 @@ struct GymSettingsView: View {
     let startRoutine: (UUID) -> Void
     @State private var model = GymSettingsModel()
     @State private var addingGym = false
+    @State private var path: [UUID] = []
     @State private var loadFailed = false
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             Group {
                 if let catalog = model.catalog {
                     if catalog.gyms.isEmpty {
@@ -71,7 +72,10 @@ struct GymSettingsView: View {
             .navigationBarTitleDisplayMode(.inline)
             .navigationDestination(for: UUID.self) { gymID in
                 if let gym = model.catalog?.gyms.first(where: { $0.id == gymID }) {
-                    GymProfileView(gym: gym, startRoutine: startRoutine, model: model)
+                    GymProfileView(gym: gym, startRoutine: startRoutine, model: model) { replacement in
+                        path = []
+                        if let replacement { startRoutine(replacement) }
+                    }
                 }
             }
             .sheet(isPresented: $addingGym) {
@@ -95,7 +99,7 @@ struct GymSettingsView: View {
 
 private struct GymProfileView: View {
     enum Editor: Identifiable {
-        case name
+        case name, deleteGym
         case inventory(GymInventory.Kind)
         case equipment(EquipmentDescription?)
 
@@ -103,6 +107,7 @@ private struct GymProfileView: View {
             switch self {
             case .inventory(let kind): "inventory-\(kind)"
             case .name: "name"
+            case .deleteGym: "deleteGym"
             case .equipment(let existing): existing?.id.uuidString ?? "newEquipment"
             }
         }
@@ -116,6 +121,8 @@ private struct GymProfileView: View {
     @Environment(\.locale) private var locale
     @State private var editor: Editor?
     @State private var selectionFailed = false
+    let didDelete: (UUID?) -> Void
+    @State private var deletionFailed = false
 
     var body: some View {
         List {
@@ -153,11 +160,37 @@ private struct GymProfileView: View {
                 }
                 Button("Add equipment", systemImage: "plus") { editor = .equipment(nil) }
             }
+            Section {
+                Button("Delete gym", role: .destructive) {
+                    do {
+                        try TrainingStorage.openStore().checkGymDeletion(gym.id)
+                        editor = .deleteGym
+                    } catch RoutineEditorError.openSession(let id) { openSessionID = id } catch {
+                        deletionFailed = true
+                    }
+                }
+            }
         }
         .navigationTitle(Text(verbatim: gym.name))
         .navigationBarTitleDisplayMode(.inline)
         .sheet(item: $editor) { editor in
             switch editor {
+            case .deleteGym:
+                let replacements =
+                    model.catalog?.activeGymID == gym.id ? (model.catalog?.gyms ?? []).filter { $0.id != gym.id } : []
+                GymDeletionView(gym: gym, replacements: replacements) { replacement in
+                    do {
+                        try model.update { try $0.deleteGym(gym.id, replacingWith: replacement) }
+                        self.editor = nil
+                        didDelete(replacement)
+                    } catch RoutineEditorError.openSession(let id) {
+                        self.editor = nil
+                        openSessionID = id
+                    } catch {
+                        self.editor = nil
+                        deletionFailed = true
+                    }
+                }
             case .name:
                 GymNameEditor(title: "Rename gym", name: gym.name) { name in
                     try model.update { try $0.renameGym(gym.id, name: name) }
@@ -179,6 +212,7 @@ private struct GymProfileView: View {
             Text("Your active routine will be archived. Start a new routine in the selected gym.")
         }
         .resolveOpenSession($openSessionID)
+        .alert("Could not delete gym", isPresented: $deletionFailed) { Button("OK") {} }
         .alert("Could not select gym", isPresented: $selectionFailed) {
             Button("OK", role: .cancel) {}
         }
@@ -192,6 +226,37 @@ private struct GymProfileView: View {
             openSessionID = id
         } catch {
             selectionFailed = true
+        }
+    }
+}
+
+private struct GymDeletionView: View {
+    @Environment(\.dismiss) private var dismiss
+    let gym: GymProfile
+    let replacements: [GymProfile]
+    let confirm: (UUID?) -> Void
+    @State private var replacement: UUID?
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Text(
+                    "Remove \(gym.name) from training? Its routines will be archived and its history will be preserved."
+                )
+                if !replacements.isEmpty {
+                    Picker("Replacement gym", selection: $replacement) {
+                        Text("Choose a gym").tag(nil as UUID?)
+                        ForEach(replacements) { Text(verbatim: $0.name).tag(Optional($0.id)) }
+                    }
+                }
+                Button("Delete gym", role: .destructive) { confirm(replacement) }
+                    .disabled(!replacements.isEmpty && replacement == nil)
+            }
+            .navigationTitle("Delete gym")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
+            }
         }
     }
 }
