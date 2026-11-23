@@ -49,6 +49,8 @@ Continue 3.1 with 3.11 (model and migration) and 3.12 (Settings). Use the result
 
 - [ ] 3.21 Retain the exercise's usual load when switching between generic or specific equipment of the same type. Test an exact match after saving and reopening, including its unit, representation and estimated or confirmed state. Verify selection of the closest available weight when the exact load is unavailable, including a tie resolved to the lighter weight. Check that an undefined load remains undefined.
 
+- [ ] 3.22 Group the set count and both rest controls in one exercise editor section. Move the exercise-wide “Per side” toggle into the segments section. In both languages, verify that each override can be set independently and that a multi-segment exercise shows one toggle and retains its settings after reopening.
+
 ## 4. End-to-end basic training
 
 ### First delivery after group 3
