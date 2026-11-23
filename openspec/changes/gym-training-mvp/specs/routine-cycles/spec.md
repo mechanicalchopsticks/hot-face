@@ -45,7 +45,7 @@ The editor SHALL suggest the current month and year in the interface language, c
 - **AND** the first day added to another new routine starts as “Día 1”
 
 ### Requirement: Exercise editor sections
-The exercise editor SHALL group the controls for set count, rest between sets and rest after the exercise in one section. Each control SHALL allow an independent choice between the routine default and an exercise override. The editor SHALL place a single “Per side” toggle in the section listing the segments in each set. The toggle SHALL apply to the whole exercise.
+The exercise editor SHALL group the controls for set count, rest between sets and rest after the exercise in the final “Sets and rest” section. Each control SHALL allow an independent choice between the routine default and an exercise override. The editor SHALL place a single “Per side” toggle in the section listing the segments in each set. The toggle SHALL apply to the whole exercise.
 
 #### Scenario: Edit a multi-segment exercise
 - **WHEN** the user opens an exercise with two segments
@@ -90,11 +90,16 @@ Each day SHALL own its named groups. When creating or editing an exercise, the u
 - **AND** blank labels are unassigned, and saving and reopening preserves the original exercise sequence and group assignments
 
 ### Requirement: Routine set count and exercise overrides
-The routine editor SHALL offer a default set count alongside the rest settings. A new routine SHALL start with a default of 4 sets. Each new manual exercise SHALL inherit the current routine default. The exercise editor SHALL show the effective count and allow the user to set an individual override or return to the routine default. Both the default and the override SHALL be positive whole numbers.
+The routine editor SHALL offer a default set count alongside the rest settings. A new routine SHALL start with 4 sets, and each new manual exercise SHALL inherit the current routine default. In “Sets and rest”, the exercise editor SHALL show the numeric set count and its adjustment controls only while “Custom set count” is on. Both the default and the override SHALL be positive whole numbers.
+
+#### Scenario: Enable a custom set count
+- **WHEN** the exercise inherits 4 sets and the user turns on “Custom set count”
+- **THEN** the editor reveals the count at 4 with controls to increase or decrease it
+- **AND** increasing it to 5 changes only this exercise's set count
 
 #### Scenario: Change the routine default across training days
 - **WHEN** the user changes the routine default from 3 sets to 4
-- **THEN** every exercise that inherits the default shows 4 sets across all days, including exercises already in the routine
+- **THEN** every exercise that inherits the default uses 4 sets across all days, including exercises already in the routine
 - **AND** an exercise with an individual override of 5 sets keeps 5 after saving and reopening the routine
 
 #### Scenario: Keep an explicit override even when it matches the default
@@ -103,7 +108,7 @@ The routine editor SHALL offer a default set count alongside the rest settings. 
 
 #### Scenario: Return an exercise to the routine default
 - **WHEN** the user clears an exercise override while the routine default is 4 sets
-- **THEN** the exercise immediately shows 4 sets
+- **THEN** the editor immediately hides the numeric row, leaves the toggle off and the exercise uses 4 sets
 - **AND** after saving and reopening the routine, the exercise follows subsequent changes to the default
 
 #### Scenario: Open a routine saved before set inheritance was available
