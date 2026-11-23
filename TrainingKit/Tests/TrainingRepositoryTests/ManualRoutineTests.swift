@@ -4,6 +4,36 @@ import TrainingDomain
 import TrainingRepositories
 
 struct ManualRoutineTests {
+    @Test func reopeningPreservesBandColorsAndLegacyNumericResistance() throws {
+        let directory = try temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: directory) }
+        func reopen() -> CoordinatedModelStore { CoordinatedModelStore(trainingDirectory: directory) }
+        let fixture = try #require(
+            Bundle.module.url(forResource: "pre-band-color", withExtension: "json", subdirectory: "Fixtures"))
+        let legacy = try JSONDecoder().decode(ExercisePrescription.self, from: Data(contentsOf: fixture))
+        #expect(legacy.bandColor == nil)
+        let load = ExerciseLoad(amount: 12.5, unit: .lb, representation: .combined, implementCount: 1)
+        #expect(legacy.load == .confirmed(load))
+        let gym = try #require(try reopen().createGym(name: "Gym").gyms.first)
+        var band = EquipmentDescription(id: try #require(legacy.equipmentID), name: "Band", kind: .band, unit: .lb)
+        band.availableLoads = [12.5]
+        _ = try reopen().saveEquipment(band, in: gym.id)
+        let generic = try #require(gym.genericEquipment.first { $0.kind == .band })
+        let colored = [ResistanceBandColor.pink, .lightBlue].map { color in
+            var exercise = ExercisePrescription(name: "Pull", segments: [.repetitions(8)])
+            exercise.equipmentID = generic.id
+            exercise.bandColor = color
+            return exercise
+        }
+        var draft = ManualRoutine(gymID: gym.id)
+        draft.plan = RoutinePlan(name: "Training", days: [RoutineDay(name: "A", exercises: colored + [legacy])])
+        try reopen().saveRoutine(draft)
+        let saved = try #require(try reopen().activeRoutine())
+        #expect(saved.plan.days[0].exercises.map(\.bandColor) == [.pink, .lightBlue, nil])
+        #expect(saved.plan.days[0].exercises.map(\.load) == [.undefined, .undefined, .confirmed(load)])
+        #expect(saved.plan.days[0].exercises.map(\.equipmentID) == [generic.id, generic.id, band.id])
+    }
+
     @Test func reopensGroupsFromAFreeTextRoutineAndKeepsEmptyGroups() throws {
         let directory = try temporaryDirectory()
         defer { try? FileManager.default.removeItem(at: directory) }

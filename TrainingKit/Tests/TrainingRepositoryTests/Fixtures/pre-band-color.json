@@ -1,0 +1,24 @@
+{
+  "equipmentID" : "DEB049A3-6978-4BCA-902B-C22928ADFB63",
+  "id" : "8060EA02-2BF7-4335-8ED7-8AA4C2AFE8D2",
+  "load" : {
+    "confirmed" : {
+      "_0" : {
+        "amount" : 12.5,
+        "implementCount" : 1,
+        "representation" : "combined",
+        "unit" : "lb"
+      }
+    }
+  },
+  "name" : "Band curl",
+  "perSide" : false,
+  "segments" : [
+    {
+      "repetitions" : {
+        "_0" : 8
+      }
+    }
+  ],
+  "sets" : 3
+}

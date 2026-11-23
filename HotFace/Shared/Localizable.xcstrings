@@ -1,6 +1,16 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "No band selected" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin banda seleccionada"
+          }
+        }
+      }
+    },
     "No group" : {
       "localizations" : {
         "es" : {
@@ -414,6 +424,16 @@
         }
       }
     },
+    "Band color" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Color de banda"
+          }
+        }
+      }
+    },
     "Barbell with plates" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -458,6 +478,26 @@
         }
       }
     },
+    "Black" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Negro"
+          }
+        }
+      }
+    },
+    "Blue" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Azul"
+          }
+        }
+      }
+    },
     "Bodyweight" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -465,6 +505,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Peso corporal"
+          }
+        }
+      }
+    },
+    "Brown" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Café"
           }
         }
       }
@@ -751,6 +801,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Personalizar número de series"
+          }
+        }
+      }
+    },
+    "Dark gray" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gris oscuro"
           }
         }
       }
@@ -1156,6 +1216,16 @@
         }
       }
     },
+    "Green" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verde"
+          }
+        }
+      }
+    },
     "Group (optional)" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1306,6 +1376,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dejar sin definir"
+          }
+        }
+      }
+    },
+    "Light blue" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Celeste"
+          }
+        }
+      }
+    },
+    "Light gray" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gris claro"
           }
         }
       }
@@ -1473,6 +1563,16 @@
         }
       }
     },
+    "Orange" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Naranja"
+          }
+        }
+      }
+    },
     "Pause" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1550,6 +1650,16 @@
         }
       }
     },
+    "Pink" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rosado"
+          }
+        }
+      }
+    },
     "Plate inventory" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1612,6 +1722,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Entrenamiento anterior"
+          }
+        }
+      }
+    },
+    "Purple" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Morado"
+          }
+        }
+      }
+    },
+    "Red" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rojo"
           }
         }
       }
@@ -2308,6 +2438,16 @@
         }
       }
     },
+    "White" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Blanco"
+          }
+        }
+      }
+    },
     "Workout in progress" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2315,6 +2455,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Entrenamiento en curso"
+          }
+        }
+      }
+    },
+    "Yellow" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Amarillo"
           }
         }
       }
