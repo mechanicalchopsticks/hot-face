@@ -12,6 +12,31 @@ The app SHALL support manually creating, editing and copying routines with reord
 - **THEN** the copy retains its structure and settings and starts with a fresh history and new progression balances
 - **AND** the original remains intact and the previously active routine is archived with its history
 
+### Requirement: Editable default names for routines and days
+When the user adds a routine, the editor SHALL prefill its name with the current month and year in the interface language. When the user copies a routine, the editor SHALL prefill the copy's name with the localized prefix “Copy of ” (“Copia de ” in Spanish) followed by the original name. Each routine SHALL number its added days in order starting at one, using “Day {number}” in English and “Día {number}” in Spanish. The user SHALL be able to accept or edit each suggested name before saving.
+
+#### Scenario: Add a routine in November 2026
+- **WHEN** the user opens Add Routine in November 2026
+- **THEN** the name field contains “noviembre de 2026” in Spanish or “November 2026” in English
+- **AND** saving with the suggested name retains that name
+
+#### Scenario: Copy a named routine
+- **WHEN** the user copies a routine named “Fuerza”
+- **THEN** the name field contains “Copia de Fuerza” in Spanish or “Copy of Fuerza” in English
+
+#### Scenario: Add days after renaming the first day
+- **WHEN** the user adds the first day to a routine in Spanish, renames “Día 1” to “Pierna” and adds a second day
+- **THEN** the second day's name field contains “Día 2” and the first day keeps the name “Pierna”
+- **AND** the first day added to another new routine starts as “Día 1”
+
+### Requirement: Exercise segments prescribed to failure
+For each exercise segment, the editor SHALL offer “To failure” (“Fallo” in Spanish) alongside repetitions and seconds. This option SHALL prescribe as many repetitions as possible without a numeric target.
+
+#### Scenario: Prescribe a segment to failure
+- **WHEN** the user selects “Fallo” for an exercise segment in Spanish
+- **THEN** the user can save the prescription without entering a quantity for that segment
+- **AND** reopening the exercise shows “Fallo” for that segment
+
 ### Requirement: Exercise groups in the day editor
 The day editor SHALL group the day's exercises by their optional group and preserve their manual order within each group. Exercises without an assigned group SHALL count as one group. The list SHALL show a heading for each group only when at least two groups are visible. Named groups SHALL use their user-entered names. The unassigned group SHALL use the localized heading “Ungrouped” (“Sin grupo” in Spanish).
 

@@ -18,6 +18,14 @@ One tap on Complete Set SHALL record the displayed values and start the applicab
 - **WHEN** the user finishes 10 repetitions on each side and taps Complete Set
 - **THEN** the app records one set of 10 repetitions per side and starts the rest
 
+### Requirement: Optional repetition count for sets performed to failure
+For a set prescribed to failure, one tap on Complete Set SHALL mark the set complete and start the applicable rest without requiring a repetition count. During rest, the user SHALL be able to enter the actual repetitions for that set. The workout history SHALL retain each completed set, with its count left unspecified when the user omits it.
+
+#### Scenario: Record repetitions for only one of two completed sets
+- **WHEN** the user completes two sets prescribed to failure, enters 12 repetitions during the first rest and leaves the second count blank
+- **THEN** the history shows both sets as complete, with 12 repetitions for the first and no recorded count for the second
+- **AND** the exercise remains prescribed to failure
+
 ### Requirement: Session adjustments
 The app SHALL allow the user to change the weight, set count, repetitions, duration or exercise, reuse previous temporary adjustments and add exercises from any group. Adjustments SHALL apply only to the session unless the user explicitly saves them as usual settings.
 
