@@ -13,6 +13,8 @@ struct WorkoutSessionView: View {
 
     @State private var correcting: OpenWorkout.Rest?
 
+    @State private var adjusting: ExercisePrescription?
+
     private var rest: OpenWorkout.Rest? {
         workout.rest.flatMap { $0.id == reviewedRestID ? nil : $0 }
     }
@@ -50,12 +52,16 @@ struct WorkoutSessionView: View {
                 if workout.nextSet != nil {
                     ToolbarItem(placement: .primaryAction) {
                         Menu {
+                            if let next = workout.nextSet { Button("Adjust exercise") { adjusting = next.exercise } }
                             Button("Finish workout") { confirmsFinish = true }
                         } label: {
                             Label("More", systemImage: "ellipsis.circle")
                         }
                     }
                 }
+            }
+            .sheet(item: $adjusting) { exercise in
+                WorkoutAdjustmentView(exercise: exercise, workout: workout) { action in try apply(action) }
             }
             .sheet(item: $correcting) { record in
                 SetCorrectionView(record: record) { performance in
@@ -105,6 +111,12 @@ struct WorkoutSessionView: View {
         Button(action: perform) {
             Text(title).frame(maxWidth: .infinity, minHeight: 32)
         }
+    }
+
+    private func apply(_ action: SessionCommand.Action) throws {
+        let store = try TrainingStorage.openStore()
+        _ = try store.apply(SessionCommand(sessionID: workout.id, action: action), clock: SystemWorkoutClock())
+        if let updated = try store.openWorkout(), updated.id == workout.id { workout = updated }
     }
 
     private func complete(_ set: OpenWorkout.PendingSet) {
@@ -302,5 +314,75 @@ private struct SetCorrectionView: View {
             result.load?.amount = amount
         }
         return result
+    }
+}
+
+private struct WorkoutAdjustmentView: View {
+    @Environment(\.dismiss) private var dismiss
+    @State var exercise: ExercisePrescription
+    let workout: OpenWorkout
+    let save: (SessionCommand.Action) throws -> Void
+    @State private var previous: ExercisePrescription?
+    @State private var gym: GymProfile?
+    @State private var usual = false
+    @State private var failed = false
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                if let previous {
+                    Button("Reuse previous adjustment") {
+                        exercise.sets = previous.sets
+                        exercise.segments = previous.segments
+                        exercise.load = previous.load
+                    }
+                }
+                Stepper(
+                    "Sets: \(exercise.sets ?? 1)",
+                    value: Binding(get: { exercise.sets ?? 1 }, set: { exercise.sets = $0 }), in: 1...Int.max)
+                ForEach(exercise.segments.indices, id: \.self) { index in
+                    switch exercise.segments[index] {
+                    case .toFailure: Text("To failure")
+                    case .seconds(let count), .repetitions(let count):
+                        let seconds = exercise.segments[index] == .seconds(count)
+                        Stepper(
+                            value: Binding(
+                                get: { count },
+                                set: { exercise.segments[index] = seconds ? .seconds($0) : .repetitions($0) }),
+                            in: 1...Int.max
+                        ) {
+                            if seconds { Text("\(count) s") } else { Text("\(count) reps") }
+                        }
+                    }
+                }
+                if let gym, let equipment = gym.equipment(withID: exercise.equipmentID) {
+                    NavigationLink("Load") { ExerciseLoadEditor(load: $exercise.load, gym: gym, equipment: equipment) }
+                }
+                Toggle("Save as usual", isOn: $usual)
+            }
+            .navigationTitle("Adjust exercise")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") {
+                        do {
+                            try save(
+                                .adjust(
+                                    exerciseID: exercise.id, sets: exercise.sets ?? 1, segments: exercise.segments,
+                                    load: exercise.load, saveAsUsual: usual))
+                            dismiss()
+                        } catch { failed = true }
+                    }
+                }
+            }
+            .task {
+                do {
+                    let store = try TrainingStorage.openStore()
+                    gym = try store.gymCatalog().gyms.first { $0.id == workout.prescription.gymID }
+                    previous = try store.previousAdjustment(for: exercise.id, in: workout.prescription.routineID)
+                } catch { failed = true }
+            }
+            .alert("Could not update workout", isPresented: $failed) { Button("OK") {} }
+        }
     }
 }

@@ -112,6 +112,10 @@ public enum TrainingSchemaV1: VersionedSchema {
             get throws { try JSONDecoder().decode(SessionPrescription.self, from: prescriptionData) }
         }
 
+        func updatePrescription(_ value: SessionPrescription) throws {
+            prescriptionData = try JSONEncoder().encode(value)
+        }
+
         public func finish(at date: Date, partial: Bool) {
             finishedAt = date
             isPartial = partial
