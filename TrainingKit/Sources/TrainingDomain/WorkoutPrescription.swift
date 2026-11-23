@@ -38,7 +38,7 @@ public enum ExerciseSegment: Codable, Equatable, Sendable {
 }
 
 public struct ExercisePrescription: Identifiable, Codable, Equatable, Sendable {
-    public let id: UUID
+    public private(set) var id: UUID
     public var name: String
     public var group: String?
     public var variant: String?
@@ -60,6 +60,14 @@ public struct ExercisePrescription: Identifiable, Codable, Equatable, Sendable {
         self.sets = sets
         self.segments = segments
     }
+
+    fileprivate func copied(supersetID: UUID?) -> Self {
+        var copy = self
+        copy.id = UUID()
+        copy.supersetID = supersetID
+        return copy
+    }
+
 }
 
 public struct RoutineDay: Identifiable, Codable, Equatable, Sendable {
@@ -99,6 +107,25 @@ public struct RoutinePlan: Codable, Equatable, Sendable {
         defaultSets = try values.decodeIfPresent(Int.self, forKey: .defaultSets) ?? 1
         restBetweenSets = try values.decode(TimeInterval.self, forKey: .restBetweenSets)
         restBetweenExercises = try values.decode(TimeInterval.self, forKey: .restBetweenExercises)
+    }
+
+    public func copiedForNewRoutine() -> RoutinePlan {
+        var copy = self
+        var supersets: [UUID: UUID] = [:]
+        copy.days = days.map { day in
+            RoutineDay(
+                name: day.name,
+                exercises: day.exercises.map { exercise in
+                    let group = exercise.supersetID.map { id in
+                        if let existing = supersets[id] { return existing }
+                        let newID = UUID()
+                        supersets[id] = newID
+                        return newID
+                    }
+                    return exercise.copied(supersetID: group)
+                })
+        }
+        return copy
     }
 
     public func setCount(for exercise: ExercisePrescription) -> Int {

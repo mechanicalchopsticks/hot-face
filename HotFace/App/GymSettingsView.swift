@@ -13,6 +13,7 @@ private final class GymSettingsModel {
 }
 
 struct GymSettingsView: View {
+    let startRoutine: (UUID) -> Void
     @State private var model = GymSettingsModel()
     @State private var addingGym = false
     @State private var loadFailed = false
@@ -70,7 +71,7 @@ struct GymSettingsView: View {
             .navigationBarTitleDisplayMode(.inline)
             .navigationDestination(for: UUID.self) { gymID in
                 if let gym = model.catalog?.gyms.first(where: { $0.id == gymID }) {
-                    GymProfileView(gym: gym, model: model)
+                    GymProfileView(gym: gym, startRoutine: startRoutine, model: model)
                 }
             }
             .sheet(isPresented: $addingGym) {
@@ -108,6 +109,9 @@ private struct GymProfileView: View {
     }
 
     let gym: GymProfile
+    let startRoutine: (UUID) -> Void
+    @State private var openSessionID: UUID?
+    @State private var confirmingSelection = false
     let model: GymSettingsModel
     @Environment(\.locale) private var locale
     @State private var editor: Editor?
@@ -119,7 +123,7 @@ private struct GymProfileView: View {
                 if model.catalog?.activeGymID == gym.id {
                     Label("Active gym", systemImage: "checkmark.circle.fill")
                 } else {
-                    Button("Set as active gym", action: selectGym)
+                    Button("Set as active gym") { confirmingSelection = true }
                 }
                 Button("Rename gym") { editor = .name }
             }
@@ -169,6 +173,12 @@ private struct GymProfileView: View {
                 }
             }
         }
+        .confirmationDialog("Switch gyms?", isPresented: $confirmingSelection, titleVisibility: .visible) {
+            Button("Set as active gym", action: selectGym)
+        } message: {
+            Text("Your active routine will be archived. Start a new routine in the selected gym.")
+        }
+        .resolveOpenSession($openSessionID)
         .alert("Could not select gym", isPresented: $selectionFailed) {
             Button("OK", role: .cancel) {}
         }
@@ -177,6 +187,9 @@ private struct GymProfileView: View {
     private func selectGym() {
         do {
             try model.update { try $0.selectGym(gym.id) }
+            startRoutine(gym.id)
+        } catch RoutineEditorError.openSession(let id) {
+            openSessionID = id
         } catch {
             selectionFailed = true
         }
