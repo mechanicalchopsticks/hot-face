@@ -40,6 +40,10 @@ Continue 3.1 with 3.11 (model and migration) and 3.12 (Settings). Use the result
 - [x] 3.14 Implement equipment deletion in the repository, Settings and pickers. Show a deleted assignment in the routine editor and allow replacement. After reopening, verify that shared inventories and equipment in other gyms retain their values, that an open session can finish and that history retains the station, loads and units.
 - [x] 3.15 Test confirmation and cancellation of both deletion flows in the simulator in Spanish and English. Check the item name, its gym when applicable, the stated effects and that cancellation preserves the original selection, routine and assignments.
 
+- [ ] 3.16 Add day-owned groups and a group picker to the exercise editor. Verify creating, reusing and clearing a group, matching names regardless of case or surrounding whitespace, and retaining an empty group in the picker after reopening. Reopen a frozen routine from the free-text editor and verify deduplication within each day, independent groups across days, exercise order and heading visibility.
+- [ ] 3.17 Offer one generic option for each of the eight equipment types in new and existing gyms. In the exercise editor, choose a load using the gym's inventory, add specific equipment and assign it to just one exercise. Reopen a frozen pre-change gym and verify that all eight options appear once and that custom equipment, edited weights, existing assignments and historical sessions are preserved.
+- [ ] 3.18 Add the 13-color resistance band picker for generic and specific bands, with a swatch and localized name for each color. Save different colors for two exercises using the same equipment and verify both after reopening in English and Spanish. Check that older prescriptions with numeric resistance retain their load and have no preselected color.
+
 ## 4. End-to-end basic training
 
 ### First delivery after group 3

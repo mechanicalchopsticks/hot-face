@@ -23,6 +23,23 @@ The day editor SHALL group the day's exercises by their optional group and prese
 - **WHEN** a day contains a squat and a lunge assigned to “Pierna” and an unassigned walk
 - **THEN** the Spanish editor shows the squat and lunge under “Pierna” in their manual order and the walk under “Sin grupo”
 
+### Requirement: Reusable groups within a training day
+Each day SHALL own its named groups. When creating or editing an exercise, the user SHALL be able to leave it unassigned, select an existing group from that day or create a group and assign it immediately. Name matching SHALL ignore capitalization and surrounding whitespace and preserve the existing group's display name. A group with no exercises SHALL remain available in that day's picker and SHALL be omitted from the exercise list and its visible group count.
+
+#### Scenario: Reuse a group while editing another exercise
+- **WHEN** one exercise belongs to “Pierna” and the user selects that group for another exercise or enters “ pierna ” as a new group name
+- **THEN** both exercises belong to the existing “Pierna” group and the picker lists it once
+
+#### Scenario: Reassign the last member
+- **WHEN** the user moves the last member of “Core” to the unassigned group and reopens the routine
+- **THEN** “Core” is absent from the exercise list but can be selected again in that day's exercise editor
+- **AND** an independently created group with the same name on another day retains its members
+
+#### Scenario: Open a day saved with free-text groups
+- **WHEN** a previously saved day has exercises labeled “Pierna” and “ pierna ” interleaved with an unassigned exercise
+- **THEN** the editor offers a single “Pierna” group for that day, using the first matching name in exercise order with surrounding whitespace removed
+- **AND** blank labels are unassigned, and saving and reopening preserves the original exercise sequence and group assignments
+
 ### Requirement: Routine set count and exercise overrides
 The routine editor SHALL offer a default set count alongside the rest settings. A new routine SHALL start with a default of 4 sets. Each new manual exercise SHALL inherit the current routine default. The exercise editor SHALL show the effective count and allow the user to set an individual override or return to the routine default. Both the default and the override SHALL be positive whole numbers.
 
