@@ -23,6 +23,57 @@ public struct GymProfile: Identifiable, Sendable {
         guard let item = equipment(withID: equipmentID) else { return [] }
         return inventory.loadOptions(for: item, dumbbellCount: dumbbellCount)
     }
+
+    public func assignEquipment(_ id: UUID?, to exercise: inout ExercisePrescription) {
+        guard exercise.equipmentID != id else { return }
+        let previous = equipment(withID: exercise.equipmentID)
+        let replacement = equipment(withID: id)
+        exercise.equipmentID = id
+        if replacement?.kind != .band { exercise.bandColor = nil }
+        guard let previous, let replacement, previous.kind == replacement.kind, let current = exercise.load.value else {
+            exercise.load = .undefined
+            return
+        }
+
+        // A machine with no recorded base weight can only show the added weight.
+        let reference: ExerciseLoad
+        if current.representation == .includingEquipment, replacement.baseWeight == nil {
+            let base = previous.baseWeight.map { previous.unit.converted($0, to: current.unit) }
+            guard let added = try? current.displayed(as: .perSide, equipmentWeightInLoadUnit: base) else {
+                exercise.load = .undefined
+                return
+            }
+            reference = added
+        } else {
+            reference = current
+        }
+        let target = reference.unit.converted(reference.amount, to: .kg)
+        let candidates = inventory.loadOptions(for: replacement, dumbbellCount: reference.implementCount).compactMap {
+            option -> (load: ExerciseLoad, kilograms: Decimal)? in
+            let base = replacement.baseWeight.map { replacement.unit.converted($0, to: option.unit) }
+            guard let load = try? option.displayed(as: reference.representation, equipmentWeightInLoadUnit: base) else {
+                return nil
+            }
+            return (load, load.unit.converted(load.amount, to: .kg))
+        }
+        guard
+            let nearest = candidates.min(by: { lhs, rhs in
+                let leftDistance = abs(lhs.kilograms - target)
+                let rightDistance = abs(rhs.kilograms - target)
+                return leftDistance == rightDistance ? lhs.kilograms < rhs.kilograms : leftDistance < rightDistance
+            })
+        else {
+            exercise.load = .undefined
+            return
+        }
+        let load = nearest.kilograms == target ? reference : nearest.load
+        if case .estimated = exercise.load {
+            exercise.load = .estimated(load)
+        } else {
+            exercise.load = .confirmed(load)
+        }
+    }
+
 }
 
 public struct GymCatalog: Sendable {

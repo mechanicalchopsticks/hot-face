@@ -6,6 +6,7 @@ import TrainingRepositories
 
 struct RoutinesView: View {
     @Binding var newRoutineGymID: UUID?
+    @Environment(\.locale) private var locale
     @State private var archived: [ManualRoutine] = []
     @State private var archiveCandidate: ManualRoutine?
     @State private var openSessionID: UUID?
@@ -28,21 +29,26 @@ struct RoutinesView: View {
                     List {
                         Section {
                             ForEach(routines) { routine in
-                                HStack {
-                                    Button {
-                                        draft = routine
-                                    } label: {
-                                        Text(verbatim: routine.plan.name)
-                                    }
-                                    Spacer()
-                                    Menu("Routine actions", systemImage: "ellipsis.circle") {
-                                        Button("Copy routine") { draft = routine.copy() }
-                                        Button("Archive routine") { archiveCandidate = routine }
-                                    }
+                                Button {
+                                    draft = routine
+                                } label: {
+                                    Text(verbatim: routine.plan.name)
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                        .contentShape(Rectangle())
+                                        .foregroundStyle(.primary)
                                 }
-                                .buttonStyle(.borderless)
+                                .swipeActions(allowsFullSwipe: false) {
+                                    Button("Archive routine", systemImage: "archivebox") {
+                                        archiveCandidate = routine
+                                    }
+                                    .tint(.orange)
+                                    Button("Copy routine", systemImage: "document.on.document") {
+                                        draft = namedCopy(of: routine, locale: locale)
+                                    }
+                                    .tint(.blue)
+                                }
                             }
-                            Button("Add routine", systemImage: "plus") { draft = ManualRoutine(gymID: gym.id) }
+                            Button("Add routine", systemImage: "plus") { draft = newRoutine(in: gym.id) }
                         } header: {
                             Text(verbatim: gym.name)
                         }
@@ -50,7 +56,7 @@ struct RoutinesView: View {
                             Section("Archived routines") {
                                 ForEach(archived) { routine in
                                     LabeledContent {
-                                        Button("Copy routine") { draft = routine.copy() }
+                                        Button("Copy routine") { draft = namedCopy(of: routine, locale: locale) }
                                     } label: {
                                         Text(verbatim: routine.plan.name)
                                     }
@@ -69,16 +75,17 @@ struct RoutinesView: View {
             .onChange(of: newRoutineGymID, initial: true) {
                 guard let id = newRoutineGymID else { return }
                 reload()
-                if gym?.id == id { draft = ManualRoutine(gymID: id) }
+                if gym?.id == id { draft = newRoutine(in: id) }
                 newRoutineGymID = nil
             }
-            .confirmationDialog(
+            .alert(
                 "Archive routine?",
                 isPresented: Binding(
                     get: { archiveCandidate != nil }, set: { if !$0 { archiveCandidate = nil } }),
-                titleVisibility: .visible, presenting: archiveCandidate
+                presenting: archiveCandidate
             ) { routine in
-                Button("Archive routine") {
+                Button("Cancel", role: .cancel) {}
+                Button("Archive routine", role: .destructive) {
                     do {
                         try TrainingStorage.openStore().archiveRoutine(routine)
                         reload()
@@ -99,6 +106,24 @@ struct RoutinesView: View {
         }
     }
 
+    private func newRoutine(in gymID: UUID) -> ManualRoutine {
+        var routine = ManualRoutine(gymID: gymID)
+        let monthAndYear = Self.namingDate.formatted(.dateTime.month(.wide).year().locale(locale))
+        routine.plan.name = monthAndYear.prefix(1).uppercased(with: locale) + monthAndYear.dropFirst()
+        return routine
+    }
+
+    private static var namingDate: Date {
+        #if DEBUG && targetEnvironment(simulator)
+            if let timestamp = ProcessInfo.processInfo.environment["HOTFACE_UI_TEST_ROUTINE_DATE"],
+                let date = try? Date(timestamp, strategy: .iso8601)
+            {
+                return date
+            }
+        #endif
+        return SystemWorkoutClock().now
+    }
+
     private func reload() {
         do {
             let store = try TrainingStorage.openStore()
@@ -109,6 +134,12 @@ struct RoutinesView: View {
             loadFailed = false
         } catch { loadFailed = true }
     }
+}
+
+private func namedCopy(of routine: ManualRoutine, locale: Locale) -> ManualRoutine {
+    var copy = routine.copy()
+    copy.plan.name = String(localized: LocalizedStringResource("Copy of \(routine.plan.name)", locale: locale))
+    return copy
 }
 
 private enum EditorRoute: Hashable {
@@ -136,7 +167,7 @@ private struct RoutineEditor: View {
                     Menu("Copy from routine") {
                         ForEach(templates) { routine in
                             Button {
-                                draft = routine.copy()
+                                draft = namedCopy(of: routine, locale: locale)
                             } label: {
                                 Text(verbatim: routine.plan.name)
                             }
@@ -153,7 +184,9 @@ private struct RoutineEditor: View {
                     .onMove { draft.plan.days.move(fromOffsets: $0, toOffset: $1) }
                     .onDelete { draft.plan.days.remove(atOffsets: $0) }
                     Button("Add day", systemImage: "plus") {
-                        let day = RoutineDay(name: "", exercises: [])
+                        let number = draft.plan.days.count + 1
+                        let name = String(localized: LocalizedStringResource("Day \(number)", locale: locale))
+                        let day = RoutineDay(name: name, exercises: [])
                         draft.plan.days.append(day)
                         path.append(.day(day.id))
                     }

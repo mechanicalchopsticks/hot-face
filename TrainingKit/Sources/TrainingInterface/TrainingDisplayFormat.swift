@@ -2,11 +2,16 @@ import Foundation
 import TrainingDomain
 
 public enum TrainingDisplayFormat {
+    public static func toFailure(locale: Locale) -> LocalizedStringResource {
+        LocalizedStringResource("To failure", locale: locale, bundle: .atURL(Bundle.module.bundleURL))
+    }
+
     public static func prescription(_ exercise: ExercisePrescription, sets: Int, locale: Locale) -> String {
         let segments = exercise.segments.map { segment in
             switch segment {
             case .repetitions(let reps): reps.formatted(.number.locale(locale))
             case .seconds(let seconds): seconds.formatted(.number.locale(locale)) + " s"
+            case .toFailure: String(localized: toFailure(locale: locale))
             }
         }
         let sequence = segments.joined(separator: "+")

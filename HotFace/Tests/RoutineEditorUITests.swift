@@ -1,0 +1,214 @@
+import XCTest
+
+@MainActor
+final class RoutineEditorUITests: XCTestCase {
+    func testSuggestedNamesInEnglish() { verifySuggestedNames(spanish: false) }
+    func testSuggestedNamesInSpanish() { verifySuggestedNames(spanish: true) }
+
+    func testFailureSegmentReopensInBothLanguages() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchEnvironment["HOTFACE_UI_TEST_STORE_ID"] = UUID().uuidString
+        app.launchEnvironment["HOTFACE_UI_TEST_ROUTINE_DATE"] = "2026-11-15T12:00:00Z"
+        func press(_ title: String) { tap(button(title, in: app)) }
+        func failureOption(spanish: Bool) -> XCUIElement {
+            let option = app.segmentedControls.buttons[spanish ? "Fallo" : "To failure"]
+            for _ in 0..<4 where !option.exists || !option.isHittable { app.swipeUp() }
+            XCTAssertTrue(option.waitForExistence(timeout: 5))
+            return option
+        }
+
+        launch(app, spanish: false)
+        press("Settings")
+        press("Add gym")
+        enter("Gym", in: app.textFields["Gym name"])
+        press("Save")
+        press("Routines")
+        press("Add routine")
+        press("Add day")
+        press("Add exercise")
+        enter("Push-up", in: app.textFields["Exercise name"])
+        let option = failureOption(spanish: false)
+        tap(option)
+        XCTAssertTrue(option.isSelected)
+        XCTAssertFalse(app.staticTexts["Reps: 8"].exists)
+        tap(app.navigationBars["Edit exercise"].buttons["BackButton"])
+        tap(app.navigationBars["Edit day"].buttons["BackButton"])
+        let activate = button("Save and activate", in: app)
+        if !activate.exists { tap(app.navigationBars.buttons["More"]) }
+        tap(activate)
+
+        func verifySavedFailure(spanish: Bool) {
+            press("November 2026")
+            press("Day 1")
+            press("Push-up")
+            XCTAssertTrue(failureOption(spanish: spanish).isSelected)
+            XCTAssertFalse(app.staticTexts[spanish ? "Repeticiones: 8" : "Reps: 8"].exists)
+        }
+
+        verifySavedFailure(spanish: false)
+        app.terminate()
+        launch(app, spanish: true)
+        press("Rutinas")
+        verifySavedFailure(spanish: true)
+    }
+
+    private func launch(_ app: XCUIApplication, spanish: Bool) {
+        app.launchArguments = [
+            "-AppleLanguages", spanish ? "(es)" : "(en)", "-AppleLocale", spanish ? "es_CR" : "en_US",
+        ]
+        app.launch()
+    }
+
+    private func tap(_ element: XCUIElement, file: StaticString = #filePath, line: UInt = #line) {
+        XCTAssertTrue(element.exists || element.waitForExistence(timeout: 8), file: file, line: line)
+        element.tap()
+    }
+
+    private func button(_ title: String, in app: XCUIApplication) -> XCUIElement {
+        app.buttons.matching(NSPredicate(format: "label == %@ OR label BEGINSWITH %@", title, title + ","))
+            .firstMatch
+    }
+
+    private func enter(_ text: String, in field: XCUIElement, replacing existing: String = "") {
+        tap(field)
+        if !existing.isEmpty {
+            field.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: existing.count))
+        }
+        field.typeText(text + "\n")
+    }
+
+    private func verifySuggestedNames(spanish: Bool) {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchEnvironment["HOTFACE_UI_TEST_STORE_ID"] = UUID().uuidString
+        app.launchEnvironment["HOTFACE_UI_TEST_ROUTINE_DATE"] = "2026-11-15T12:00:00Z"
+        func label(_ english: String, _ spanishLabel: String) -> String { spanish ? spanishLabel : english }
+        func press(_ title: String) { tap(button(title, in: app)) }
+        let routineName = app.textFields[label("Routine name", "Nombre de la rutina")]
+        let dayName = app.textFields[label("Day name", "Nombre del día")]
+        let exerciseName = app.textFields[label("Exercise name", "Nombre del ejercicio")]
+        let editDay = label("Edit day", "Editar día")
+        let editExercise = label("Edit exercise", "Editar ejercicio")
+        let addRoutine = label("Add routine", "Añadir rutina")
+        let addDay = label("Add day", "Añadir día")
+        let save = label("Save", "Guardar")
+        let month = label("November 2026", "Noviembre de 2026")
+        let dayOne = label("Day 1", "Día 1")
+        let dayTwo = label("Day 2", "Día 2")
+        let setCount = app.switches[label("Custom set count", "Personalizar número de series")]
+        let restBetween = app.switches[label("Custom rest between sets", "Personalizar descanso entre series")]
+        let restAfter = app.switches[label("Custom rest after exercise", "Personalizar descanso tras el ejercicio")]
+        let perSide = app.switches[label("Per side", "Por lado")]
+        let addSegment = button(label("Add segment", "Añadir segmento"), in: app)
+        func reveal(_ element: XCUIElement) {
+            for _ in 0..<6 where !element.exists || !element.isHittable {
+                app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.79)).press(
+                    forDuration: 0.05,
+                    thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.54)))
+            }
+            XCTAssertTrue(element.exists && element.isHittable, app.debugDescription)
+        }
+        func enable(_ toggle: XCUIElement) {
+            toggle.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.5)).tap()
+            XCTAssertEqual(toggle.value as? String, "1")
+        }
+        func configureSegmentsAndOverrides() {
+            reveal(setCount)
+            XCTAssertTrue(app.staticTexts[label("Sets and rest", "Series y descansos")].exists)
+            reveal(restBetween)
+            enable(restBetween)
+            XCTAssertEqual(setCount.value as? String, "0")
+            reveal(restAfter)
+            XCTAssertEqual(restAfter.value as? String, "0")
+            enable(restAfter)
+            XCTAssertEqual(restBetween.value as? String, "1")
+            for _ in 0..<4 where !setCount.isHittable { app.swipeDown() }
+            enable(setCount)
+            reveal(perSide)
+            enable(perSide)
+            reveal(addSegment)
+            tap(addSegment)
+            XCTAssertEqual(app.segmentedControls.count, 2)
+            XCTAssertEqual(app.switches.matching(identifier: label("Per side", "Por lado")).count, 1)
+        }
+        func finishDay(_ exercise: String) {
+            press(label("Add exercise", "Añadir ejercicio"))
+            enter(exercise, in: exerciseName)
+            if exercise == "Squat" { configureSegmentsAndOverrides() }
+            tap(app.navigationBars[editExercise].buttons["BackButton"])
+            tap(app.navigationBars[editDay].buttons["BackButton"])
+        }
+        func saveAndActivate() {
+            let activate = button(label("Save and activate", "Guardar y activar"), in: app)
+            if !activate.exists { tap(app.navigationBars.buttons[label("More", "Más")]) }
+            tap(activate)
+        }
+
+        launch(app, spanish: spanish)
+        press(label("Settings", "Ajustes"))
+        press(label("Add gym", "Añadir gimnasio"))
+        enter("Gym", in: app.textFields[label("Gym name", "Nombre del gimnasio")])
+        press(save)
+        press(label("Routines", "Rutinas"))
+        press(addRoutine)
+        XCTAssertEqual(routineName.value as? String, month)
+        press(addDay)
+        XCTAssertEqual(dayName.value as? String, dayOne)
+        enter("Pierna", in: dayName, replacing: dayOne)
+        finishDay("Squat")
+        press(addDay)
+        XCTAssertEqual(dayName.value as? String, dayTwo)
+        finishDay("Curl")
+        saveAndActivate()
+
+        app.terminate()
+        launch(app, spanish: spanish)
+        press(label("Routines", "Rutinas"))
+        press(month)
+        XCTAssertTrue(button("Pierna", in: app).exists)
+        XCTAssertTrue(button(dayTwo, in: app).exists)
+        press("Pierna")
+        press("Squat")
+        for toggle in [setCount, restBetween, restAfter, perSide] {
+            reveal(toggle)
+            XCTAssertEqual(toggle.value as? String, "1")
+        }
+        reveal(addSegment)
+        XCTAssertEqual(app.segmentedControls.count, 2)
+        tap(app.navigationBars[editExercise].buttons["BackButton"])
+        tap(app.navigationBars[editDay].buttons["BackButton"])
+        let mixedCaseName = "fuerza A con un nombre de rutina bastante largo"
+        enter(mixedCaseName, in: routineName, replacing: month)
+        press(save)
+
+        press(addRoutine)
+        press(addDay)
+        XCTAssertEqual(dayName.value as? String, dayOne)
+        tap(app.navigationBars[editDay].buttons["BackButton"])
+        press(label("Cancel", "Cancelar"))
+
+        let original = button(mixedCaseName, in: app)
+        XCTAssertTrue(original.waitForExistence(timeout: 8))
+        XCTAssertGreaterThan(original.frame.width, app.frame.width * 0.75)
+        XCTAssertFalse(button(label("Routine actions", "Acciones de la rutina"), in: app).exists)
+        original.swipeLeft()
+        press(label("Archive routine", "Archivar rutina"))
+        XCTAssertTrue(app.staticTexts[label("Archive routine?", "¿Archivar la rutina?")].exists)
+        press(label("Cancel", "Cancelar"))
+        tap(original)
+        XCTAssertEqual(routineName.value as? String, mixedCaseName)
+        press(label("Cancel", "Cancelar"))
+        original.swipeLeft()
+        press(label("Copy routine", "Copiar rutina"))
+        let copyName = label("Copy of ", "Copia de ") + mixedCaseName
+        XCTAssertEqual(routineName.value as? String, copyName)
+        saveAndActivate()
+
+        app.terminate()
+        launch(app, spanish: spanish)
+        press(label("Routines", "Rutinas"))
+        press(copyName)
+        XCTAssertEqual(routineName.value as? String, copyName)
+    }
+}

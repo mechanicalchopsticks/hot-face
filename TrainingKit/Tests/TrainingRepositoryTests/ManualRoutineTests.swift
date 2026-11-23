@@ -4,6 +4,28 @@ import TrainingDomain
 import TrainingRepositories
 
 struct ManualRoutineTests {
+    @Test func reopensFailureAndOlderNumericSegments() throws {
+        let directory = try temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: directory) }
+        func reopen() -> CoordinatedModelStore { CoordinatedModelStore(trainingDirectory: directory) }
+
+        let fixture = try #require(
+            Bundle.module.url(forResource: "pre-failure-segment", withExtension: "json", subdirectory: "Fixtures"))
+        let gymID = try #require(try reopen().createGym(name: "Gym").activeGymID)
+        var draft = ManualRoutine(gymID: gymID)
+        draft.plan = try JSONDecoder().decode(RoutinePlan.self, from: Data(contentsOf: fixture))
+        try reopen().saveRoutine(draft)
+
+        var saved = try #require(try reopen().activeRoutine())
+        let legacySegments = try #require(saved.plan.days.first?.exercises.first?.segments)
+        #expect(legacySegments == [.repetitions(8), .seconds(30)])
+        saved.plan.days[0].exercises.append(ExercisePrescription(name: "Push-up", segments: [.toFailure]))
+        try reopen().saveRoutine(saved)
+
+        let reopened = try #require(try reopen().activeRoutine())
+        #expect(reopened.plan.days[0].exercises.map(\.segments) == [legacySegments, [.toFailure]])
+    }
+
     @Test func reopeningPreservesBandColorsAndLegacyNumericResistance() throws {
         let directory = try temporaryDirectory()
         defer { try? FileManager.default.removeItem(at: directory) }

@@ -32,7 +32,7 @@ struct ExerciseEditor: View {
                 TextField("Instructions (optional)", text: text($exercise.instructions), axis: .vertical)
                 TextField("Station (optional)", text: text($exercise.station))
             }
-            Section("Prescription") {
+            Section("Sets and rest") {
                 Toggle(
                     "Custom set count",
                     isOn: Binding(
@@ -46,9 +46,15 @@ struct ExerciseEditor: View {
                 } else {
                     Text("Sets: \(defaults.setCount(for: exercise))")
                 }
-                Toggle("Per side", isOn: $exercise.perSide)
+                optionalRest(
+                    "Custom rest between sets", title: "Between sets", value: $exercise.restBetweenSets,
+                    inherited: defaults.restBetweenSets)
+                optionalRest(
+                    "Custom rest after exercise", title: "After exercise", value: $exercise.restAfterExercise,
+                    inherited: defaults.restBetweenExercises)
             }
             Section("Segments in each set") {
+                Toggle("Per side", isOn: $exercise.perSide)
                 ForEach(exercise.segments.indices, id: \.self) { index in
                     segmentRow(index)
                 }
@@ -69,12 +75,7 @@ struct ExerciseEditor: View {
                     "Equipment",
                     selection: Binding(
                         get: { assigned?.id },
-                        set: { id in
-                            guard exercise.equipmentID != id else { return }
-                            exercise.equipmentID = id
-                            exercise.load = .undefined
-                            if gym.equipment(withID: id)?.kind != .band { exercise.bandColor = nil }
-                        })
+                        set: { gym.assignEquipment($0, to: &exercise) })
                 ) {
                     Text("None").tag(nil as UUID?)
                     Section("Generic equipment") {
@@ -123,14 +124,7 @@ struct ExerciseEditor: View {
                     }
                 }
             }
-            Section("Exercise rest") {
-                optionalRest(
-                    "Custom rest between sets", title: "Between sets", value: $exercise.restBetweenSets,
-                    inherited: defaults.restBetweenSets)
-                optionalRest(
-                    "Custom rest after exercise", title: "After exercise", value: $exercise.restAfterExercise,
-                    inherited: defaults.restBetweenExercises)
-            }
+
         }
         .alert("Create group", isPresented: $creatingGroup) {
             TextField("Group name", text: $groupName)
@@ -150,38 +144,52 @@ struct ExerciseEditor: View {
         Binding(get: { value.wrappedValue ?? "" }, set: { value.wrappedValue = $0.isEmpty ? nil : $0 })
     }
 
+    private enum SegmentKind {
+        case repetitions, seconds, toFailure
+
+        func segment(quantity: Int?) -> ExerciseSegment {
+            switch self {
+            case .repetitions: .repetitions(quantity ?? 8)
+            case .seconds: .seconds(quantity ?? 30)
+            case .toFailure: .toFailure
+            }
+        }
+    }
+
     private func segmentRow(_ index: Int) -> some View {
-        let segment = exercise.segments[index]
-        let timed: Bool
-        let quantity: Int
-        switch segment {
+        let kind: SegmentKind
+        let quantity: Int?
+        switch exercise.segments[index] {
         case .repetitions(let count):
-            timed = false
+            kind = .repetitions
             quantity = count
         case .seconds(let seconds):
-            timed = true
+            kind = .seconds
             quantity = seconds
+        case .toFailure:
+            kind = .toFailure
+            quantity = nil
         }
         return VStack {
             Picker(
                 "Segment type",
                 selection: Binding(
-                    get: { timed },
-                    set: { isTimed in
-                        exercise.segments[index] = isTimed ? .seconds(quantity) : .repetitions(quantity)
-                    })
+                    get: { kind },
+                    set: { exercise.segments[index] = $0.segment(quantity: quantity) })
             ) {
-                Text("Repetitions").tag(false)
-                Text("Seconds").tag(true)
+                Text("Repetitions").tag(SegmentKind.repetitions)
+                Text("Seconds").tag(SegmentKind.seconds)
+                Text(TrainingDisplayFormat.toFailure(locale: locale)).tag(SegmentKind.toFailure)
             }.pickerStyle(.segmented)
-            Stepper(
-                value: Binding(
-                    get: { quantity },
-                    set: { newValue in
-                        exercise.segments[index] = timed ? .seconds(newValue) : .repetitions(newValue)
-                    }), in: 1...Int.max
-            ) {
-                if timed { Text("\(quantity) s") } else { Text("Reps: \(quantity)") }
+            if let quantity {
+                Stepper(
+                    value: Binding(
+                        get: { quantity },
+                        set: { exercise.segments[index] = kind.segment(quantity: $0) }),
+                    in: 1...Int.max
+                ) {
+                    if kind == .seconds { Text("\(quantity) s") } else { Text("Reps: \(quantity)") }
+                }
             }
         }
     }
