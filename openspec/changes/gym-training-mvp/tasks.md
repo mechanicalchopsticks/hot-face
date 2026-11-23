@@ -53,6 +53,8 @@ Continue 3.1 with 3.11 (model and migration) and 3.12 (Settings). Use the result
 
 - [x] 3.23 Move Copy and Archive into left-swipe actions on editable routine rows. Verify that a long name uses the space previously occupied by the actions label, tapping it opens the original, Copy opens a new draft and Archive requires confirmation. Update the month-name expectation from 3.19 to “Noviembre de 2026” in Spanish and verify “November 2026” in English. Save and reopen a user-entered name with mixed capitalization.
 
+- [ ] 3.24 Show the numeric set count and its adjustment controls only when “Custom set count” is on in the final “Sets and rest” section. In English and Spanish, verify that enabling it starts at the current routine default, the controls change the exercise count, and disabling it hides the row and restores inheritance after saving and reopening.
+
 ## 4. End-to-end basic training
 
 ### First delivery after group 3
