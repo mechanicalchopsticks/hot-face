@@ -103,6 +103,13 @@ struct OpenWorkoutTests {
         #expect(afterFirst.rest?.completedSetNumber == 1 && afterFirst.rest?.betweenExercises == false)
         #expect(afterFirst.rest?.endsAt == SetClock(65).now)
 
+        try command(
+            .adjust(
+                exerciseID: curl.id, sets: 2, segments: [.seconds(20), .repetitions(5)], load: curl.load,
+                saveAsUsual: false), at: 31)
+        #expect(try reopen().openWorkout()?.rest?.prescribedSegments == [.toFailure])
+        try command(
+            .adjust(exerciseID: curl.id, sets: 2, segments: [.toFailure], load: curl.load, saveAsUsual: false), at: 32)
         let rest = try #require(afterFirst.rest)
         var corrected = rest.performance
         corrected.segments = [.repetitions(12)]

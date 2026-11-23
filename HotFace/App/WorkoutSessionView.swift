@@ -316,10 +316,10 @@ private struct SetCorrectionView: View {
         NavigationStack {
             Form {
                 ForEach(values.indices, id: \.self) { index in
-                    let seconds = if case .seconds = record.exercise.segments[index] { true } else { false }
+                    let seconds = if case .seconds = record.prescribedSegments[index] { true } else { false }
                     TextField(seconds ? "Seconds" : "Actual repetitions", text: $values[index]).keyboardType(.numberPad)
                 }
-                if record.exercise.segments.contains(.toFailure) {
+                if record.prescribedSegments.contains(.toFailure) {
                     Text("Leave repetitions blank if you did not count them.")
                 }
                 if record.performance.perSide { Text("Enter repetitions per side.") }
@@ -359,9 +359,9 @@ private struct SetCorrectionView: View {
 
     private var corrected: SetPerformance? {
         var result = record.performance
-        guard values.count == record.exercise.segments.count else { return nil }
+        guard values.count == record.prescribedSegments.count else { return nil }
         result.segments = []
-        for (value, prescribed) in zip(values, record.exercise.segments) {
+        for (value, prescribed) in zip(values, record.prescribedSegments) {
             if value.isEmpty && prescribed == .toFailure {
                 result.segments.append(.toFailure)
                 continue

@@ -40,6 +40,17 @@ public struct SessionPrescription: Codable, Equatable, Sendable {
     public let routineRevision: Int
     public let routineName: String
     public var day: RoutineDay
+    public struct RestPrescription: Codable, Equatable, Sendable {
+        public let setID: UUID
+        public let segments: [ExerciseSegment]
+
+        public init(setID: UUID, segments: [ExerciseSegment]) {
+            self.setID = setID
+            self.segments = segments
+        }
+    }
+
+    public var restPrescription: RestPrescription?
     public var temporaryExerciseIDs: Set<UUID>?
     public var equipment: [EquipmentDescription]
     public let restBetweenSets: TimeInterval

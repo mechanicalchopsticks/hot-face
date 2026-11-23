@@ -13,7 +13,7 @@ public struct OpenWorkout: Identifiable, Sendable {
     public struct Rest: Identifiable, Sendable {
         public let id: UUID
         public let performance: SetPerformance
-        public let exercise: ExercisePrescription
+        public let prescribedSegments: [ExerciseSegment]
         public let completedSetNumber: Int
         public let endsAt: Date
         public let betweenExercises: Bool
@@ -57,10 +57,15 @@ public struct OpenWorkout: Identifiable, Sendable {
                 betweenExercises
                 ? exercise.restAfterExercise ?? prescription.restBetweenExercises
                 : exercise.restBetweenSets ?? prescription.restBetweenSets
+            let performance = try last.performance
+            let original = prescription.restPrescription
+            let segments = original?.setID == last.id ? original?.segments : exercise.segments
+            let prescribedSegments = segments?.count == performance.segments.count ? segments : nil
             rest =
                 seconds > 0
                 ? Rest(
-                    id: last.id, performance: try last.performance, exercise: exercise, completedSetNumber: last.number,
+                    id: last.id, performance: performance,
+                    prescribedSegments: prescribedSegments ?? performance.segments, completedSetNumber: last.number,
                     endsAt: last.performedAt.addingTimeInterval(seconds),
                     betweenExercises: betweenExercises)
                 : nil
