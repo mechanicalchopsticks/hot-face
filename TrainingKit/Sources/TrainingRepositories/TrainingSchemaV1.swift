@@ -98,7 +98,7 @@ public enum TrainingSchemaV1: VersionedSchema {
             }
             let prescription = try SessionPrescription(
                 gymID: gym.id, gymName: gym.name, routineID: routine.id, routineRevision: routine.revision,
-                plan: plan, day: day, equipment: gym.equipment
+                plan: plan, day: day, equipment: gym.equipment + EquipmentDescription.genericOptions(in: gym.id)
             )
             self.prescriptionData = try JSONEncoder().encode(prescription)
             self.id = id
