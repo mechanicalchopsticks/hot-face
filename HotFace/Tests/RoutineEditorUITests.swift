@@ -121,6 +121,71 @@ final class RoutineEditorUITests: XCTestCase {
         verifySavedFailure(spanish: true)
     }
 
+    func testTrainCompletesSavedSetToFailureWithOneTap() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchEnvironment["HOTFACE_UI_TEST_STORE_ID"] = UUID().uuidString
+        func press(_ title: String) { tap(button(title, in: app)) }
+        func reveal(_ element: XCUIElement) {
+            for _ in 0..<5 where !element.exists || !element.isHittable { app.swipeUp() }
+            XCTAssertTrue(element.exists && element.isHittable, app.debugDescription)
+        }
+        func containsText(_ value: String) -> XCUIElement {
+            app.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", value)).firstMatch
+        }
+
+        launch(app, spanish: false)
+        press("Settings")
+        press("Add gym")
+        enter("Workout Gym", in: app.textFields["Gym name"])
+        press("Save")
+        press("Routines")
+        press("Add routine")
+        press("Add day")
+        press("Add exercise")
+        enter("Push-up", in: app.textFields["Exercise name"])
+        let instructions = app.descendants(matching: .any).matching(identifier: "Instructions (optional)")
+            .matching(
+                NSPredicate(
+                    format: "elementType IN %@",
+                    [XCUIElement.ElementType.textField.rawValue, XCUIElement.ElementType.textView.rawValue])
+            )
+            .firstMatch
+        reveal(instructions)
+        instructions.tap()
+        instructions.typeText("Slow lowering")
+        enter("A7", in: app.textFields["Station (optional)"])
+        reveal(app.segmentedControls.buttons["To failure"])
+        tap(app.segmentedControls.buttons["To failure"])
+        reveal(button("Equipment", in: app))
+        press("Equipment")
+        reveal(button("Bodyweight", in: app))
+        press("Bodyweight")
+        tap(app.navigationBars["Edit exercise"].buttons["BackButton"])
+        tap(app.navigationBars["Edit day"].buttons["BackButton"])
+        let activate = button("Save and activate", in: app)
+        if !activate.exists { tap(app.navigationBars.buttons["More"]) }
+        tap(activate)
+
+        press("Train")
+        press("Day 1")
+        for text in ["Push-up", "A7", "Bodyweight", "Slow lowering", "To failure", "Set 1 of 4"] {
+            XCTAssertTrue(containsText(text).waitForExistence(timeout: 5), app.debugDescription)
+        }
+        press("Complete set")
+        XCTAssertTrue(containsText("Set 1 completed").waitForExistence(timeout: 5), app.debugDescription)
+        XCTAssertTrue(containsText("Set 2 of 4").exists)
+        XCTAssertTrue(containsText("Rest").exists)
+        XCTAssertTrue(button("Next set", in: app).exists)
+        XCTAssertFalse(app.textFields["Actual repetitions"].exists)
+        XCTAssertFalse(button("Complete set", in: app).exists)
+
+        press("Close")
+        press("Continue workout")
+        XCTAssertTrue(containsText("Set 1 completed").waitForExistence(timeout: 5), app.debugDescription)
+        XCTAssertTrue(containsText("Set 2 of 4").exists)
+    }
+
     private func launch(_ app: XCUIApplication, spanish: Bool) {
         app.launchArguments = [
             "-AppleLanguages", spanish ? "(es)" : "(en)", "-AppleLocale", spanish ? "es_CR" : "en_US",

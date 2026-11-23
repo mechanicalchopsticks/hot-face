@@ -286,6 +286,16 @@
         }
       }
     },
+    "All sets completed" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todas las series completadas"
+          }
+        }
+      }
+    },
     "Allow alarms in Settings to run the test." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -556,6 +566,16 @@
         }
       }
     },
+    "Check your routine and try again." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Revisa tu rutina e inténtalo de nuevo."
+          }
+        }
+      }
+    },
     "Choose a gym" : {
       "localizations" : {
         "es" : {
@@ -611,6 +631,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Confirmar carga"
+          }
+        }
+      }
+    },
+    "Continue workout" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continuar entrenamiento"
           }
         }
       }
@@ -803,6 +833,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No se pudo seleccionar el gimnasio"
+          }
+        }
+      }
+    },
+    "Could not start workout" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo iniciar el entrenamiento"
+          }
+        }
+      }
+    },
+    "Could not update workout" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo actualizar el entrenamiento"
           }
         }
       }
@@ -1548,6 +1598,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Actividades en vivo"
+          }
+        }
+      }
+    },
+    "Load" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Carga"
           }
         }
       }
@@ -2743,6 +2803,16 @@
         }
       }
     },
+    "Variant" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Variante"
+          }
+        }
+      }
+    },
     "Variant (optional)" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2825,6 +2895,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Se archivará tu rutina activa y podrás crear una en el gimnasio seleccionado."
+          }
+        }
+      }
+    },
+    "Your completed sets will be kept." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se conservarán las series realizadas."
           }
         }
       }

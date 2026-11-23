@@ -2,6 +2,10 @@ import CryptoKit
 import Foundation
 
 extension EquipmentDescription {
+    public func isGeneric(in gymID: UUID) -> Bool {
+        id == Self.genericID(in: gymID, kind: kind)
+    }
+
     package static func genericOptions(in gymID: UUID) -> [Self] {
         Kind.allCases.map { kind in
             let name: String

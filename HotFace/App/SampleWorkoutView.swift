@@ -81,14 +81,7 @@ struct SampleWorkoutView: View {
         let exercise = current.exercise
         let prescription = exercise.prescription
         return Section {
-            VStack(alignment: .leading, spacing: 8) {
-                Text(verbatim: prescription.name)
-                    .font(.title2.bold())
-                Text("Set \(current.number) of \(exercise.setCount)")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .accessibilityIdentifier("sample-current-set")
-            }
+            WorkoutSetHeader(name: prescription.name, number: current.number, count: exercise.setCount)
             LabeledContent("Repetitions") {
                 performanceRepetitions(SetPerformance(asPrescribed: prescription), awaitingCount: false)
             }
@@ -111,18 +104,7 @@ struct SampleWorkoutView: View {
 
     private func rest(until end: Date, after record: SampleWorkout.CompletedSet) -> some View {
         Section {
-            TimelineView(.periodic(from: .now, by: 1)) { timeline in
-                let remaining = max(0, Int(ceil(end.timeIntervalSince(timeline.date))))
-                if remaining > 0 {
-                    Text(verbatim: Duration.seconds(remaining).formatted(.time(pattern: .minuteSecond).locale(locale)))
-                        .font(.largeTitle.monospacedDigit().bold())
-                        .accessibilityLabel(Text("Rest remaining"))
-                        .accessibilityValue(
-                            Text(verbatim: Duration.seconds(remaining).formatted(.units().locale(locale))))
-                } else {
-                    Text("Rest complete").font(.title2.bold())
-                }
-            }
+            WorkoutRestCountdown(end: end)
             completedSet(record)
             Button("Correct set") { editingSet = record }
         } header: {

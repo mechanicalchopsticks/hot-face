@@ -1,4 +1,6 @@
 import SwiftUI
+import TrainingAdapters
+import TrainingDomain
 import TrainingRepositories
 
 struct TrainingTabView: View {
@@ -33,7 +35,11 @@ struct TrainingTabView: View {
 
 private struct ActiveRoutineView: View {
     @State private var active: ManualRoutine?
+    @State private var cycle: RoutineCycle?
+    @State private var openWorkout: OpenWorkout?
+    @State private var presentedWorkout: OpenWorkout?
     @State private var loadFailed = false
+    @State private var startError: LocalizedStringKey?
     @State private var showSampleWorkout = false
 
     var body: some View {
@@ -45,10 +51,26 @@ private struct ActiveRoutineView: View {
                     } actions: {
                         Button("Try again", action: reload)
                     }
-                } else if let active {
+                } else if let openWorkout {
                     List {
                         Section {
-                            ForEach(active.plan.days) { day in Text(verbatim: day.name) }
+                            Button("Continue workout") { presentedWorkout = openWorkout }
+                        } header: {
+                            Text(verbatim: openWorkout.prescription.day.name)
+                        }
+                    }
+                } else if let active, let cycle {
+                    List {
+                        Section {
+                            ForEach(cycle.availableDayIDs, id: \.self) { id in
+                                if let day = active.plan.days.first(where: { $0.id == id }) {
+                                    Button {
+                                        start(day: day, routine: active, cycle: cycle)
+                                    } label: {
+                                        Text(verbatim: day.name)
+                                    }
+                                }
+                            }
                         } header: {
                             Text(verbatim: active.plan.name)
                         }
@@ -64,8 +86,20 @@ private struct ActiveRoutineView: View {
             .toolbar {
                 Button("Sample workout") { showSampleWorkout = true }
             }
+            .sheet(item: $presentedWorkout, onDismiss: reload) { workout in
+                WorkoutSessionView(workout: workout)
+            }
             .sheet(isPresented: $showSampleWorkout, onDismiss: SampleWorkoutController.shared.close) {
                 SampleWorkoutView()
+            }
+            .alert(
+                "Could not start workout",
+                isPresented: Binding(get: { startError != nil }, set: { if !$0 { startError = nil } }),
+                presenting: startError
+            ) { _ in
+                Button("OK") {}
+            } message: { message in
+                Text(message)
             }
         }
         .onAppear(perform: reload)
@@ -73,9 +107,33 @@ private struct ActiveRoutineView: View {
 
     private func reload() {
         do {
-            active = try TrainingStorage.openStore().activeRoutine()
+            let store = try TrainingStorage.openStore()
+            let workout = try store.openWorkout()
+            let routine = try workout == nil ? store.activeRoutine() : nil
+            cycle = try routine.map { try store.currentCycle(for: $0.id) }
+            active = routine
+            openWorkout = workout
             loadFailed = false
         } catch { loadFailed = true }
+    }
+
+    private func start(day: RoutineDay, routine: ManualRoutine, cycle: RoutineCycle) {
+        do {
+            let store = try TrainingStorage.openStore()
+            _ = try store.apply(
+                SessionCommand(
+                    sessionID: UUID(),
+                    action: .start(routineID: routine.id, gymID: routine.gymID, dayID: day.id, cycleID: cycle.id)),
+                clock: SystemWorkoutClock())
+            let workout = try store.openWorkout()
+            openWorkout = workout
+            presentedWorkout = workout
+        } catch SessionCommandError.missingEquipment {
+            startError = "Assigned equipment was deleted. Choose a replacement."
+        } catch {
+            reload()
+            startError = "Check your routine and try again."
+        }
     }
 }
 
