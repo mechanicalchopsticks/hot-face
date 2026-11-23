@@ -41,7 +41,7 @@ public struct SessionPrescription: Codable, Equatable, Sendable {
     public let routineName: String
     public var day: RoutineDay
     public var temporaryExerciseIDs: Set<UUID>?
-    public let equipment: [EquipmentDescription]
+    public var equipment: [EquipmentDescription]
     public let restBetweenSets: TimeInterval
     public let restBetweenExercises: TimeInterval
 
