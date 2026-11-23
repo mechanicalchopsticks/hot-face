@@ -47,6 +47,7 @@
 		000000000000000000000063 /* TrainingKit in Frameworks */ = {isa = PBXBuildFile; productRef = 000000000000000000000061 /* TrainingKit */; };
 		000000000000000000000081 /* CatalogDeletionUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000080 /* CatalogDeletionUITests.swift */; };
 		000000000000000000000092 /* BandColorUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000091 /* BandColorUITests.swift */; };
+		000000000000000000000094 /* RoutineEditorUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000093 /* RoutineEditorUITests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -108,6 +109,7 @@
 		000000000000000000000080 /* CatalogDeletionUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests/CatalogDeletionUITests.swift; sourceTree = "<group>"; };
 		000000000000000000000082 /* HotFaceUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HotFaceUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		000000000000000000000091 /* BandColorUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests/BandColorUITests.swift; sourceTree = "<group>"; };
+		000000000000000000000093 /* RoutineEditorUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests/RoutineEditorUITests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -184,6 +186,7 @@
 				00000000000000000000000A /* Products */,
 				000000000000000000000080 /* CatalogDeletionUITests.swift */,
 				000000000000000000000091 /* BandColorUITests.swift */,
+				000000000000000000000093 /* RoutineEditorUITests.swift */,
 			);
 			sourceTree = "<group>";
 		};
@@ -313,7 +316,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		000000000000000000000085 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (000000000000000000000081 /* CatalogDeletionUITests.swift in Sources */, 000000000000000000000092 /* BandColorUITests.swift in Sources */, ); runOnlyForDeploymentPostprocessing = 0; };
+		000000000000000000000085 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (000000000000000000000081 /* CatalogDeletionUITests.swift in Sources */, 000000000000000000000092 /* BandColorUITests.swift in Sources */, 000000000000000000000094 /* RoutineEditorUITests.swift in Sources */, ); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */

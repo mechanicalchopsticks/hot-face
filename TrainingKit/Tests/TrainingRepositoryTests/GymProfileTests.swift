@@ -5,6 +5,60 @@ import TrainingDomain
 import TrainingRepositories
 
 struct GymProfileTests {
+    @Test func reassignmentKeepsExactLoadsAndChoosesTheClosestAvailableWeight() throws {
+        try withTemporaryDirectory { directory in
+            func reopen() -> CoordinatedModelStore { CoordinatedModelStore(trainingDirectory: directory) }
+            let gym = try #require(try reopen().createGym(name: "Gym").gyms.first)
+            let generic = try #require(gym.genericEquipment.first { $0.kind == .dumbbell })
+            let specific = EquipmentDescription(name: "Dumbbells", kind: .dumbbell, unit: .kg)
+            var source = EquipmentDescription(name: "Original band", kind: .band, unit: .kg)
+            source.availableLoads = [32, 32.5, 34]
+            var replacement = EquipmentDescription(name: "Replacement band", kind: .band, unit: .kg)
+            replacement.availableLoads = [30, 35]
+            var pounds = EquipmentDescription(name: "Pound band", kind: .band, unit: .lb)
+            pounds.availableLoads = [70, 75]
+            for item in [specific, source, replacement, pounds] {
+                _ = try reopen().saveEquipment(item, in: gym.id)
+            }
+            let profile = try #require(try reopen().gymCatalog().gyms.first)
+
+            func bandLoad(_ amount: Decimal) -> ExerciseLoad {
+                ExerciseLoad(amount: amount, unit: .kg, representation: .combined, implementCount: 1)
+            }
+            var curl = ExercisePrescription(name: "Curl", segments: [.repetitions(8)])
+            curl.equipmentID = generic.id
+            let exact = ExerciseLoad(amount: 10, unit: .kg, representation: .perImplement, implementCount: 2)
+            curl.load = .estimated(exact)
+            profile.assignEquipment(specific.id, to: &curl)
+            #expect(curl.load == .estimated(exact))
+
+            var presses = [32, 32.5, 34].map { (amount: Decimal) in
+                var press = ExercisePrescription(name: "Press", segments: [.repetitions(8)])
+                press.equipmentID = source.id
+                press.load = .confirmed(bandLoad(amount))
+                profile.assignEquipment(replacement.id, to: &press)
+                return press
+            }
+            #expect(
+                presses.map(\.load) == [.confirmed(bandLoad(30)), .confirmed(bandLoad(30)), .confirmed(bandLoad(35))])
+            var press = ExercisePrescription(name: "Mixed units", segments: [.repetitions(8)])
+            press.equipmentID = source.id
+            press.load = .confirmed(bandLoad(32))
+            profile.assignEquipment(pounds.id, to: &press)
+            #expect(press.load.value?.amount == 70 && press.load.value?.unit == .lb)
+            press.load = .undefined
+            profile.assignEquipment(source.id, to: &press)
+            #expect(press.load == .undefined)
+            presses.append(press)
+
+            var draft = ManualRoutine(gymID: gym.id)
+            draft.plan = RoutinePlan(name: "Strength", days: [RoutineDay(name: "Day 1", exercises: [curl] + presses)])
+            try reopen().saveRoutine(draft)
+            let saved = try #require(try reopen().activeRoutine())
+            #expect(saved.plan.days[0].exercises == [curl] + presses)
+        }
+    }
+
     @Test func usesGenericEquipmentImmediatelyAndCanAssignSpecificEquipmentLater() throws {
         struct Clock: WorkoutClock {
             let now = Date(timeIntervalSince1970: 1000)

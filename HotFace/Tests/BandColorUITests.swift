@@ -29,6 +29,11 @@ final class BandColorUITests: XCTestCase {
         func enter(_ field: String, _ value: String) {
             let input = app.textFields[field]
             tap(input)
+            if field == "Routine name" || field == "Day name",
+                let existing = input.value as? String
+            {
+                input.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: existing.count))
+            }
             input.typeText(value + "\n")
         }
         func back(from title: String) {

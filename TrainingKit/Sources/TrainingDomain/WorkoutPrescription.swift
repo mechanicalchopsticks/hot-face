@@ -35,6 +35,7 @@ public enum PrescribedLoad: Codable, Equatable, Sendable {
 public enum ExerciseSegment: Codable, Equatable, Sendable {
     case repetitions(Int)
     case seconds(Int)
+    case toFailure
 }
 
 public enum ResistanceBandColor: String, Codable, CaseIterable, Sendable {

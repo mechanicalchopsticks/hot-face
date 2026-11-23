@@ -81,6 +81,16 @@
         }
       }
     },
+    "To failure" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fallo"
+          }
+        }
+      }
+    },
     "Ungrouped" : {
       "localizations" : {
         "en" : {

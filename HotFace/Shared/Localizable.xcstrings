@@ -573,6 +573,17 @@
         }
       }
     },
+    "Copy of %@" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copia de %@"
+          }
+        }
+      }
+    },
     "Copy routine" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -789,6 +800,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Fecha"
+          }
+        }
+      }
+    },
+    "Day %lld" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Día %lld"
           }
         }
       }
@@ -2087,6 +2109,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Define el peso propio del equipo en Ajustes para ver el peso total con el equipo."
+          }
+        }
+      }
+    },
+    "Sets and rest" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Series y descansos"
           }
         }
       }

@@ -1,0 +1,39 @@
+{
+  "days" : [
+    {
+      "exercises" : [
+        {
+          "id" : "807080D1-138F-4446-8BCC-9AE99DFB6BFF",
+          "load" : {
+            "undefined" : {
+
+            }
+          },
+          "name" : "Mixed segments",
+          "perSide" : false,
+          "segments" : [
+            {
+              "repetitions" : {
+                "_0" : 8
+              }
+            },
+            {
+              "seconds" : {
+                "_0" : 30
+              }
+            }
+          ]
+        }
+      ],
+      "groupNames" : [
+
+      ],
+      "id" : "DED79B41-F36C-4E92-92AF-C729814441CC",
+      "name" : "Day 1"
+    }
+  ],
+  "defaultSets" : 4,
+  "name" : "Previous routine",
+  "restBetweenExercises" : 135,
+  "restBetweenSets" : 105
+}

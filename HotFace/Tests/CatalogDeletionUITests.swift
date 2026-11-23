@@ -33,6 +33,11 @@ final class CatalogDeletionUITests: XCTestCase {
         func enter(_ field: String, _ value: String) {
             let input = app.textFields[field]
             tap(input)
+            if field == label("Routine name", "Nombre de la rutina") || field == label("Day name", "Nombre del día"),
+                let existing = input.value as? String
+            {
+                input.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: existing.count))
+            }
             input.typeText(value + "\n")
         }
         func returnFrom(_ title: String, to destination: String) {

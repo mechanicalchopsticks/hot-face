@@ -150,6 +150,8 @@ private func validateForEditing(_ plan: RoutinePlan) throws {
                 switch segment {
                 case .seconds(let value), .repetitions(let value):
                     guard value > 0 else { throw RoutineEditorError.incompletePlan }
+                case .toFailure:
+                    break
                 }
             }
         }
