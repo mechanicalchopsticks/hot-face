@@ -1,6 +1,17 @@
 # HotFace
 Gym companion app
 
+## Crear la primera rutina con el inventario del gimnasio
+
+Puedes ingresar la rutina directamente en la app, sin preparar ni importar un archivo Markdown.
+
+1. En **Ajustes → Añadir gimnasio**, escribe un nombre y guarda. El primer gimnasio queda activo. Abre su ficha.
+2. En **Pesos compartidos** encontrarás tres inventarios iniciales editables: **Tamaños de disco**, **Mancuernas individuales** y **Barras fijas (peso total)**. En **Tamaños de disco → Añadir carga**, agrega un disco de **1,25 lb** y guarda. Conserva los discos iniciales para este ejemplo.
+3. En la misma ficha, toca **Añadir equipo**. Crea una **Barra con discos** y una **Máquina de discos**, asigna un nombre a cada una y elige **lb** en ambas. Los dos equipos usan los discos que acabas de editar.
+4. En **Rutinas → Añadir rutina**, escribe un nombre. Toca **Añadir día**, nombra el día y usa **Añadir ejercicio** para crear un curl. En **Equipo y carga**, elige la barra. Abre **Carga habitual** y selecciona **6,25 lb** en **Añadido por lado** (un disco de 5 y uno de 1,25 por lado).
+5. Vuelve al día y añade un press. Elige la máquina y selecciona **11,25 lb** por lado (10 + 1,25). Vuelve a la rutina y toca **Guardar y activar**.
+6. Reabre la rutina desde **Rutinas**. Comprueba que el curl conserva **6,25 lb** por lado y el press **11,25 lb** por lado. Cada ejercicio guarda su propia carga habitual.
+
 ## Pruebas
 
 Desde la raíz del repositorio, ejecuta las pruebas de TrainingKit en macOS y el mismo lint que usa CI.

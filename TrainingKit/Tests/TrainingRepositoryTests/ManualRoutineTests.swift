@@ -15,19 +15,24 @@ struct ManualRoutineTests {
         defer { try? FileManager.default.removeItem(at: directory) }
         func reopen() -> CoordinatedModelStore { CoordinatedModelStore(trainingDirectory: directory) }
 
-        let gymID = try #require(reopen().createGym(name: "Gym A").activeGymID)
+        let initial = try reopen().createGym(name: "Gym A")
+        let gymID = try #require(initial.activeGymID)
+        let newGym = try #require(initial.gyms.first { $0.id == gymID })
+        let plates = newGym.inventory.plates + [InventoryWeight(1.25, .lb)]
+        _ = try reopen().saveInventory(plates, for: .plates, in: gymID)
         let secondGym = try #require(reopen().createGym(name: "Gym B").gyms.first { $0.id != gymID })
         let bar = EquipmentDescription(name: "Bar", kind: .barbell, unit: .lb)
         let machine = EquipmentDescription(name: "Press", kind: .plateLoadedMachine, unit: .lb)
         _ = try reopen().saveEquipment(bar, in: gymID)
         _ = try reopen().saveEquipment(machine, in: gymID)
-        let catalog = try reopen().saveInventory([InventoryWeight(7, .lb)], for: .plates, in: gymID)
+        let catalog = try reopen().gymCatalog()
         let gym = try #require(catalog.gyms.first { $0.id == gymID })
         let barOptions = gym.loadOptions(for: bar.id)
         let machineOptions = gym.loadOptions(for: machine.id)
         #expect(barOptions == machineOptions)
-        let light = try #require(barOptions.first { $0.amount == 7 })
-        let heavy = try #require(machineOptions.first { $0.amount == 14 })
+        let light = try #require(barOptions.first { $0.amount == 6.25 && $0.unit == .lb })
+        let heavy = try #require(machineOptions.first { $0.amount == 11.25 && $0.unit == .lb })
+        #expect(light.representation == .perSide && heavy.representation == .perSide)
 
         let hold = ExercisePrescription(name: "Plank", sets: 2, segments: [.seconds(30)])
         var unilateral = ExercisePrescription(name: "Press", sets: 3, segments: [.repetitions(8)])
@@ -50,6 +55,7 @@ struct ManualRoutineTests {
                     name: "B", exercises: [ExercisePrescription(name: "Walk", sets: 1, segments: [.seconds(60)])]),
             ], restBetweenSets: 90, restBetweenExercises: 150)
         try reopen().saveRoutine(draft)
+        #expect(try reopen().activeRoutine()?.id == draft.id)
         var saved = try #require(reopen().editableRoutines(in: gymID).first)
         #expect(saved.plan == draft.plan)
         #expect(try reopen().editableRoutines(in: secondGym.id).isEmpty)
