@@ -6,6 +6,10 @@ import TrainingRepositories
 struct EquipmentEditor: View {
     @Environment(\.dismiss) private var dismiss
     let existing: EquipmentDescription?
+    let gymName: String
+    let onDelete: (UUID) throws -> Void
+    @State private var confirmingDeletion = false
+    @State private var deletionFailed = false
     let locale: Locale
     let onSave: (EquipmentDescription) throws -> Void
     @State private var name: String
@@ -22,7 +26,12 @@ struct EquipmentEditor: View {
         var weight = ""
     }
 
-    init(existing: EquipmentDescription?, locale: Locale, onSave: @escaping (EquipmentDescription) throws -> Void) {
+    init(
+        existing: EquipmentDescription?, gymName: String, locale: Locale,
+        onSave: @escaping (EquipmentDescription) throws -> Void, onDelete: @escaping (UUID) throws -> Void
+    ) {
+        self.gymName = gymName
+        self.onDelete = onDelete
         self.existing = existing
         self.locale = locale
         self.onSave = onSave
@@ -78,7 +87,24 @@ struct EquipmentEditor: View {
                         }
                     }
                 }
+                if existing != nil {
+                    Section { Button("Delete equipment", role: .destructive) { confirmingDeletion = true } }
+                }
             }
+            .alert("Delete equipment?", isPresented: $confirmingDeletion, presenting: existing) { item in
+                Button("Cancel", role: .cancel) {}
+                Button("Delete equipment", role: .destructive) {
+                    do {
+                        try onDelete(item.id)
+                        dismiss()
+                    } catch { deletionFailed = true }
+                }
+            } message: { item in
+                Text(
+                    "Remove \(item.name) from \(gymName)? Replace it in assigned exercises. Shared weights and workout history will be preserved."
+                )
+            }
+            .alert("Could not delete equipment", isPresented: $deletionFailed) { Button("OK") {} }
             .onChange(of: kind) { previous, selected in
                 if existing == nil && selected == .barbell && baseWeight.isEmpty {
                     unit = .lb

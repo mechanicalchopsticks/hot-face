@@ -201,8 +201,10 @@ private struct GymProfileView: View {
                     self.editor = nil
                 }
             case .equipment(let existing):
-                EquipmentEditor(existing: existing, locale: locale) { item in
-                    try model.update { try $0.saveEquipment(item, in: gym.id) }
+                EquipmentEditor(existing: existing, gymName: gym.name, locale: locale) { item in
+                    try model.update { try $0.saveEquipment(item, in: gym.id, updatingExisting: existing != nil) }
+                } onDelete: { id in
+                    try model.update { try $0.deleteEquipment(id, in: gym.id) }
                 }
             }
         }
