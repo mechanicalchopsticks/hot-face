@@ -438,6 +438,16 @@
         }
       }
     },
+    "Choose a gym" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elegir gimnasio"
+          }
+        }
+      }
+    },
     "Clear load" : {
       "localizations" : {
         "es" : {
@@ -518,6 +528,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No se pudo archivar la rutina"
+          }
+        }
+      }
+    },
+    "Could not delete gym" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo eliminar el gimnasio"
           }
         }
       }
@@ -680,6 +700,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Días"
+          }
+        }
+      }
+    },
+    "Delete gym" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar gimnasio"
           }
         }
       }
@@ -1454,6 +1484,16 @@
         }
       }
     },
+    "Remove %@ from training? Its routines will be archived and its history will be preserved." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Retirar %@ de los entrenamientos? Sus rutinas se archivarán y se conservará su historial."
+          }
+        }
+      }
+    },
     "Rename gym" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1471,6 +1511,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Repeticiones"
+          }
+        }
+      }
+    },
+    "Replacement gym" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gimnasio de reemplazo"
           }
         }
       }
