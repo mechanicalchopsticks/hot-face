@@ -51,6 +51,21 @@ The exercise equipment picker SHALL offer one generic option for each of the eig
 - **WHEN** the user reopens a previously saved gym with custom equipment and edited weights
 - **THEN** the picker offers each generic type once alongside the existing equipment, and existing assignments, inventories and historical sessions are preserved
 
+### Requirement: Retain the usual load when switching equipment of the same type
+When switching between generic or specific equipment of the same type, the editor SHALL retain the exercise's usual load if available. Otherwise it SHALL select the nearest available weight, comparing equivalent units in the same load representation and choosing the lighter weight in a tie. An undefined load SHALL remain undefined.
+
+#### Scenario: Exact load available
+- **WHEN** an exercise uses an estimated 10 kg per dumbbell and the user switches from generic dumbbells to specific dumbbells that support 10 kg
+- **THEN** the exercise retains its estimated 10 kg per dumbbell after saving and reopening the routine
+
+#### Scenario: Nearest available weight
+- **WHEN** an exercise uses 32 kg and the user switches to equipment of the same type whose closest available weights are 30 kg and 35 kg
+- **THEN** the editor selects 30 kg
+
+#### Scenario: Two available weights are equally close
+- **WHEN** the previous load is 32.5 kg and the nearest available weights on the replacement of the same type are 30 kg and 35 kg
+- **THEN** the editor selects 30 kg
+
 ### Requirement: Selecting resistance bands by color
 For generic and specific resistance band equipment, the exercise editor SHALL let the user select a band by color without registering each color as equipment. The selector SHALL show a swatch and a localized name for each color: red, orange, yellow, green, blue, purple, brown, pink, light blue, white, light gray, dark gray and black. The selected color SHALL be saved per exercise, independently of numeric load.
 

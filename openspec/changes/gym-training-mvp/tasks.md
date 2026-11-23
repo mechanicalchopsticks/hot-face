@@ -47,6 +47,8 @@ Continue 3.1 with 3.11 (model and migration) and 3.12 (Settings). Use the result
 - [ ] 3.19 Prefill editable names for new routines, copies and days in both interface languages. With the clock set to November 2026, verify “November 2026” and “noviembre de 2026”. Copy “Fuerza” and verify “Copy of Fuerza” and “Copia de Fuerza”. Rename the first day, add a second and check that numbering continues with “Day 2” or “Día 2” and starts at one in another routine. Save and reopen routines with both suggested and edited names.
 - [ ] 3.20 Add “To failure” (“Fallo”) alongside repetitions and seconds in the exercise segment editor. Allow saving it without a numeric target and verify the selected option after reopening in both languages. Reopen a frozen routine from the previous format and verify its repetition and timed segments.
 
+- [ ] 3.21 Retain the exercise's usual load when switching between generic or specific equipment of the same type. Test an exact match after saving and reopening, including its unit, representation and estimated or confirmed state. Verify selection of the closest available weight when the exact load is unavailable, including a tie resolved to the lighter weight. Check that an undefined load remains undefined.
+
 ## 4. End-to-end basic training
 
 ### First delivery after group 3
