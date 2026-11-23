@@ -4,17 +4,30 @@ import TrainingInterface
 import TrainingRepositories
 
 struct ExerciseEditor: View {
+    @Binding var day: RoutineDay
     @Binding var exercise: ExercisePrescription
     let gym: GymProfile
     let defaults: RoutinePlan
     let history: GymLoadHistory?
     @Environment(\.locale) private var locale
+    @State private var creatingGroup = false
+    @State private var groupName = ""
 
     var body: some View {
         Form {
             Section {
                 TextField("Exercise name", text: $exercise.name)
-                TextField("Group (optional)", text: text($exercise.group))
+                Picker(
+                    "Exercise group",
+                    selection: Binding(get: { exercise.group }, set: { day.assignGroup($0, to: exercise.id) })
+                ) {
+                    Text("No group").tag(nil as String?)
+                    ForEach(day.groupNames, id: \.self) { Text(verbatim: $0).tag(Optional($0)) }
+                }
+                Button("Create group…") {
+                    groupName = ""
+                    creatingGroup = true
+                }
                 TextField("Variant (optional)", text: text($exercise.variant))
                 TextField("Instructions (optional)", text: text($exercise.instructions), axis: .vertical)
                 TextField("Station (optional)", text: text($exercise.station))
@@ -100,6 +113,15 @@ struct ExerciseEditor: View {
                 optionalRest(
                     "Custom rest after exercise", title: "After exercise", value: $exercise.restAfterExercise,
                     inherited: defaults.restBetweenExercises)
+            }
+        }
+        .alert("Create group", isPresented: $creatingGroup) {
+            TextField("Group name", text: $groupName)
+            Button("Cancel", role: .cancel) {}
+            Button("Save") {
+                if !groupName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    day.assignGroup(groupName, to: exercise.id)
+                }
             }
         }
         .navigationTitle("Edit exercise")
