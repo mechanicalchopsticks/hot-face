@@ -44,24 +44,27 @@ Continue 3.1 with 3.11 (model and migration) and 3.12 (Settings). Use the result
 - [x] 3.17 Offer one generic option for each of the eight equipment types in new and existing gyms. In the exercise editor, choose a load using the gym's inventory, add specific equipment and assign it to just one exercise. Reopen a frozen pre-change gym and verify that all eight options appear once and that custom equipment, edited weights, existing assignments and historical sessions are preserved.
 - [x] 3.18 Add the 13-color resistance band picker for generic and specific bands, with a swatch and localized name for each color. Save different colors for two exercises using the same equipment and verify both after reopening in English and Spanish. Check that older prescriptions with numeric resistance retain their load and have no preselected color.
 
+- [ ] 3.19 Prefill editable names for new routines, copies and days in both interface languages. With the clock set to November 2026, verify “November 2026” and “noviembre de 2026”. Copy “Fuerza” and verify “Copy of Fuerza” and “Copia de Fuerza”. Rename the first day, add a second and check that numbering continues with “Day 2” or “Día 2” and starts at one in another routine. Save and reopen routines with both suggested and edited names.
+- [ ] 3.20 Add “To failure” (“Fallo”) alongside repetitions and seconds in the exercise segment editor. Allow saving it without a numeric target and verify the selected option after reopening in both languages. Reopen a frozen routine from the previous format and verify its repetition and timed segments.
+
 ## 4. End-to-end basic training
 
 ### First delivery after group 3
 
 From this point, start each new tab flow with an interactive prototype using sample data. Test it with the user, refine the UI and then integrate the logic and storage. Apply the same approach when an existing tab gains functionality such as progression suggestions or export.
 
-- [ ] 4.0.1 Create the interactive Train flow for an unlocked iPhone. Preload one day from rutina1 or rutina3 in memory with sample loads. On iPhone, start the day, inspect the load and prescription, complete a set with one tap, correct it during rest, advance to the next exercise and verify the correction in the summary. Refine the UI with the user after the walkthrough.
+- [ ] 4.0.1 Create the interactive Train flow for an unlocked iPhone. Preload one day from rutina1 or rutina3 in memory with sample loads. On iPhone, start the day, inspect the load and prescription, complete a set with one tap, correct it during rest, advance to the next exercise and verify the correction in the summary. Try two sets prescribed to failure, entering a count during the first rest and leaving the second count blank. Refine the UI with the user after the walkthrough.
 - [ ] 4.0.2 Once the unlocked flow is defined, test the lock-screen experience with the user using the same sample session. Complete a set, check the rest timer and return to the app to see which set is next. Refine visible information and controls before integration in 5.6.
 
 ### Workout integration
 
 Once both flows are defined, connect the agreed screens to the domain, persistence and timers through tasks 4.1–4.7 and the corresponding tasks in group 5.
 
-- [ ] 4.1 Implement the set screen with exercise name, station, equipment and instructions. Verify that Complete records the values and starts rest with one tap.
-- [ ] 4.2 Implement set correction during rest and sets that include both sides. Verify that corrections preserve the usual routine and do not duplicate sets.
+- [ ] 4.1 Implement the set screen with exercise name, station, equipment and instructions. Verify that Complete records the values and starts rest with one tap. For a set prescribed to failure, show the prescription and verify that the same tap completes the set and starts the applicable rest without prompting for a repetition count.
+- [ ] 4.2 Implement set correction during rest and sets that include both sides. During rest after a set performed to failure, allow entry of the actual repetitions for that set. Reopen a session with two completed sets and verify that a count entered for one persists while the other count remains unspecified. Verify that corrections preserve the usual routine and do not duplicate sets.
 - [ ] 4.3 Implement temporary changes, reuse of adjustments and explicit saving as usual settings. Verify persistence only within the chosen scope.
 - [ ] 4.4 Implement adding, replacing, postponing, selecting and skipping exercises. Test an occupied station, returning to the exercise and preserving the usual order. Verify that the Train exercise list uses the day editor’s group headings, including the unassigned group and single-group rule, and that opening the grouped list preserves the next exercise in session order.
-- [ ] 4.5 Implement full and partial session completion and the summary. Verify retention of sets and ratings, pending exercises recorded as unperformed, the day marked complete and no final rest.
+- [ ] 4.5 Implement full and partial session completion and the summary. Verify retention of sets and ratings, pending exercises recorded as unperformed, the day marked complete and no final rest. In the summary, verify that two sets performed to failure both appear as completed when only one has a recorded repetition count.
 - [ ] 4.6 Implement open-session recovery. Test unexpected termination and reopening on another date with options to continue or finish.
 - [ ] 4.7 Complete a cycle offline and review history. Deliver an integration test and a short guide distinguishing a partially completed session from an open session.
 
@@ -88,7 +91,7 @@ Once both flows are defined, connect the agreed screens to the domain, persisten
 ## 7. History, notes and CSV
 
 - [ ] 7.0 First test the History flow using fixtures for one complete and one partial session. Open a session and review its sets and loads with the user. Refine the UI before connecting the queries and actions in group 7.
-- [ ] 7.1 Implement queries for sessions, progress and personal records with explicit units. Verify partial sessions and comparisons that distinguish equipment and gyms.
+- [ ] 7.1 Implement queries for sessions, progress and personal records with explicit units. Verify partial sessions and comparisons that distinguish equipment and gyms. Open a past workout with two sets performed to failure and verify that history shows both as complete, one with its recorded repetitions and the other with an unspecified count.
 - [ ] 7.2 Record changes to usual prescriptions with their date and previous and new values. Test edited suggestions, replacements and archiving while preserving historical records.
 - [ ] 7.3 Implement dated notes with editing, deletion, undo and redo. Verify the scope of undo during editing.
 - [ ] 7.4 Implement CSV export of workouts and changes. Test special characters, multiline text, mixed units, zero versus missing values and relationships between rows.
