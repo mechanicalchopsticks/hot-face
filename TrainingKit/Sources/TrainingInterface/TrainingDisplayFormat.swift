@@ -2,6 +2,16 @@ import Foundation
 import TrainingDomain
 
 public enum TrainingDisplayFormat {
+    public static func prescription(_ exercise: ExercisePrescription, sets: Int, locale: Locale) -> String {
+        let segments = exercise.segments.map { segment in
+            switch segment {
+            case .repetitions(let reps): reps.formatted(.number.locale(locale))
+            case .seconds(let seconds): seconds.formatted(.number.locale(locale)) + " s"
+            }
+        }
+        let sequence = segments.joined(separator: "+")
+        return "\(sets.formatted(.number.locale(locale))) × " + (segments.count > 1 ? "(\(sequence))" : sequence)
+    }
     public static func load(_ load: ExerciseLoad, locale: Locale) -> String {
         let amount = load.amount.formatted(.number.locale(locale))
         return "\(amount) \(load.unit.rawValue)"

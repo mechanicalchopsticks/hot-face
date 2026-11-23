@@ -60,5 +60,18 @@ struct GymLoadHistoryTests {
         #expect(curl.station == "12" && curl.exercise.instructions == "Slow return")
         #expect(history["Press"]?.load.amount == 0)
         #expect(history["Row"] == nil)
+
+        var exercise = ExercisePrescription(name: "Curl", sets: 3, segments: [.repetitions(8)])
+        let suggestion = try #require(history.suggestion(for: exercise))
+        #expect(exercise.load == .undefined)
+        #expect(suggestion.confirmed(amount: 35) == .confirmed(curl.load))
+        exercise.load = suggestion.confirmed(amount: 30)
+        #expect(
+            exercise.load
+                == .confirmed(ExerciseLoad(amount: 30, unit: .kg, representation: .combined, implementCount: 1)))
+        let copied = RoutinePlan(name: "Copy", days: [RoutineDay(name: "Day", exercises: [exercise])])
+            .copiedForNewRoutine()
+        let copiedExercise = try #require(copied.days.first?.exercises.first)
+        #expect(history.suggestion(for: copiedExercise) == nil && copiedExercise.load == exercise.load)
     }
 }

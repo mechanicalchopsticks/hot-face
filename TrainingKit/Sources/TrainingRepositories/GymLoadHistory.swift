@@ -7,6 +7,12 @@ public struct HistoricalLoad: Sendable {
     public let performedAt: Date
     public let exercise: ExercisePrescription
     public let station: String?
+
+    public func confirmed(amount: Decimal) -> PrescribedLoad {
+        var edited = load
+        edited.amount = amount
+        return .confirmed(edited)
+    }
 }
 
 public struct GymLoadHistory: Sendable {
@@ -14,6 +20,10 @@ public struct GymLoadHistory: Sendable {
 
     public subscript(exerciseName: String) -> HistoricalLoad? {
         latest[Self.key(exerciseName)]
+    }
+
+    public func suggestion(for exercise: ExercisePrescription) -> HistoricalLoad? {
+        exercise.load == .undefined ? self[exercise.name] : nil
     }
 
     fileprivate static func key(_ name: String) -> String {

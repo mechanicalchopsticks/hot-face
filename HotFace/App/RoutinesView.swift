@@ -125,6 +125,8 @@ private struct RoutineEditor: View {
     let activates: Bool
     @State private var openSessionID: UUID?
     @State private var path: [EditorRoute] = []
+    @State private var history: GymLoadHistory?
+    @State private var historyFailed = false
     @State private var errorMessage: LocalizedStringKey?
 
     var body: some View {
@@ -162,6 +164,11 @@ private struct RoutineEditor: View {
                     RestStepper(title: "Between exercises", seconds: $draft.plan.restBetweenExercises)
                 }
             }
+            .task {
+                guard draft.revision == 0 else { return }
+                do { history = try TrainingStorage.openStore().loadHistory(in: gym.id) } catch { historyFailed = true }
+            }
+            .alert("Could not load previous weights", isPresented: $historyFailed) { Button("OK") {} }
             .navigationTitle("Edit routine")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -181,7 +188,7 @@ private struct RoutineEditor: View {
                     if let day = $draft.plan.days.first(where: { $0.wrappedValue.id == dayID }),
                         let exercise = day.exercises.first(where: { $0.wrappedValue.id == exerciseID })
                     {
-                        ExerciseEditor(exercise: exercise, gym: gym, defaults: draft.plan)
+                        ExerciseEditor(exercise: exercise, gym: gym, defaults: draft.plan, history: history)
                     }
                 }
             }

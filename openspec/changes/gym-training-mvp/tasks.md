@@ -32,7 +32,7 @@ Continue 3.1 with 3.11 (model and migration) and 3.12 (Settings). Use the result
 - [x] 3.7 Implement cycles and temporary or usual day order. Test skipped days, different dates, cycle completion and availability in the next cycle.
 - [x] 3.8 Document and verify the flow from editable initial gym inventories to choosing a load per exercise in the first routine without importing Markdown.
 - [x] 3.9 Query the last actual load locally by gym and exercise name. Test multiple archived routines, a partial session, a later skip, a zero load and a newer record from another gym.
-- [ ] 3.10 Integrate the suggestion into the new-routine editor. Verify the comparison of 4 × (7+7+7) with 3 × 8, the date, load, unit and available station and instructions, omitting the gym name. Test confirming, editing, leaving the load undefined and keeping a copied load.
+- [x] 3.10 Integrate the suggestion into the new-routine editor. Verify the comparison of 4 × (7+7+7) with 3 × 8, the date, load, unit and available station and instructions, omitting the gym name. Test confirming, editing, leaving the load undefined and keeping a copied load.
 - [x] 3.11 Persist the three shared inventories per gym with units per entry and initial values from gym-equipment. Migrate the catalogs from 3.1. Reopen a frozen V3 store with two equipment items sharing sizes and verify deduplication, units, base weights, gym selection and history. Retain earlier fixtures.
 - [x] 3.12 Update Settings to edit the three inventories once per gym, the barbell base weight (initially 45 lb) and the optional per-side maximum for barbells and plate-loaded machines. Verify mixed-unit editing in Spanish and English, that removed weights stay absent after reopening and that another gym keeps its values.
 
