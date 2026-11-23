@@ -40,7 +40,6 @@ private struct ActiveRoutineView: View {
     @State private var presentedWorkout: OpenWorkout?
     @State private var loadFailed = false
     @State private var startError: LocalizedStringKey?
-    @State private var showSampleWorkout = false
 
     var body: some View {
         NavigationStack {
@@ -83,14 +82,8 @@ private struct ActiveRoutineView: View {
             }
             .navigationTitle("Train")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                Button("Sample workout") { showSampleWorkout = true }
-            }
             .sheet(item: $presentedWorkout, onDismiss: reload) { workout in
                 WorkoutSessionView(workout: workout)
-            }
-            .sheet(isPresented: $showSampleWorkout, onDismiss: SampleWorkoutController.shared.close) {
-                SampleWorkoutView()
             }
             .alert(
                 "Could not start workout",
