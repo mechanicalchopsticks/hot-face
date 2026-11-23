@@ -23,7 +23,8 @@ struct OpenWorkoutTests {
         curl.instructions = "Slow lowering"
         curl.restBetweenSets = 45
         curl.restAfterExercise = 90
-        let row = ExercisePrescription(name: "Row", sets: 1, segments: [.repetitions(10)])
+        var row = ExercisePrescription(name: "Row", sets: 1, segments: [.repetitions(10)])
+        row.perSide = true
         let day = RoutineDay(name: "Day", exercises: [curl, row])
         var routine = ManualRoutine(gymID: gymID)
         routine.plan = RoutinePlan(name: "Routine", days: [day], defaultSets: 2)
@@ -61,6 +62,12 @@ struct OpenWorkoutTests {
         #expect(afterFirst.rest?.completedSetNumber == 1 && afterFirst.rest?.betweenExercises == false)
         #expect(afterFirst.rest?.endsAt == SetClock(65).now)
 
+        let rest = try #require(afterFirst.rest)
+        var corrected = rest.performance
+        corrected.segments = [.repetitions(12)]
+        try command(.correctSet(id: rest.id, performance: corrected), at: 35)
+        #expect(try reopen().openWorkout()?.rest?.endsAt == rest.endsAt)
+        #expect(try reopen().activeRoutine()?.plan == routine.plan)
         _ = try completeDisplayedSet(at: 75)
         let afterSecond = try #require(try reopen().openWorkout())
         #expect(afterSecond.nextSet?.exercise.id == row.id && afterSecond.nextSet?.number == 1)
@@ -75,10 +82,12 @@ struct OpenWorkoutTests {
             let failureSets = sets.filter { $0.exerciseID == curl.id }
             #expect(failureSets.map(\.number).sorted() == [1, 2])
             for set in failureSets {
-                #expect(try set.performance == SetPerformance(segments: [.toFailure], load: load))
+                #expect(
+                    try set.performance
+                        == (set.number == 1 ? corrected : SetPerformance(segments: [.toFailure], load: load)))
             }
             let rowSet = try #require(sets.first { $0.exerciseID == row.id })
-            #expect(try rowSet.performance == SetPerformance(segments: [.repetitions(10)]))
+            #expect(try rowSet.performance == SetPerformance(segments: [.repetitions(10)], perSide: true))
         }
     }
 }

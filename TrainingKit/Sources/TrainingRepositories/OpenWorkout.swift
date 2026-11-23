@@ -12,6 +12,8 @@ public struct OpenWorkout: Identifiable, Sendable {
 
     public struct Rest: Identifiable, Sendable {
         public let id: UUID
+        public let performance: SetPerformance
+        public let exercise: ExercisePrescription
         public let completedSetNumber: Int
         public let endsAt: Date
         public let betweenExercises: Bool
@@ -53,7 +55,8 @@ public struct OpenWorkout: Identifiable, Sendable {
             rest =
                 seconds > 0
                 ? Rest(
-                    id: last.id, completedSetNumber: last.number, endsAt: last.performedAt.addingTimeInterval(seconds),
+                    id: last.id, performance: try last.performance, exercise: exercise, completedSetNumber: last.number,
+                    endsAt: last.performedAt.addingTimeInterval(seconds),
                     betweenExercises: betweenExercises)
                 : nil
         } else {

@@ -5,6 +5,7 @@ public struct SessionCommand: Codable, Equatable, Sendable {
     public enum Action: Codable, Equatable, Sendable {
         case start(routineID: UUID, gymID: UUID, dayID: UUID, cycleID: UUID?)
         case completeSet(exerciseID: UUID, number: Int, performance: SetPerformance)
+        case correctSet(id: UUID, performance: SetPerformance)
         case rate(exerciseID: UUID, effort: Effort)
         case skip(exerciseID: UUID)
         case finish
