@@ -74,11 +74,41 @@ public struct RoutineDay: Identifiable, Codable, Equatable, Sendable {
     public let id: UUID
     public var name: String
     public var exercises: [ExercisePrescription]
+    public private(set) var groupNames: [String]
 
-    public init(id: UUID = UUID(), name: String, exercises: [ExercisePrescription]) {
+    public init(id: UUID = UUID(), name: String, exercises: [ExercisePrescription], groupNames: [String] = []) {
         self.id = id
         self.name = name
         self.exercises = exercises
+        self.groupNames = groupNames
+        for index in self.exercises.indices {
+            let group = registerGroup(exercises[index].group)
+            self.exercises[index].group = group
+        }
+    }
+
+    public init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        self.init(
+            id: try values.decode(UUID.self, forKey: .id),
+            name: try values.decode(String.self, forKey: .name),
+            exercises: try values.decode([ExercisePrescription].self, forKey: .exercises),
+            groupNames: try values.decodeIfPresent([String].self, forKey: .groupNames) ?? [])
+    }
+
+    public mutating func assignGroup(_ name: String?, to exerciseID: UUID) {
+        guard let index = exercises.firstIndex(where: { $0.id == exerciseID }) else { return }
+        let group = registerGroup(name)
+        exercises[index].group = group
+    }
+
+    private mutating func registerGroup(_ name: String?) -> String? {
+        guard let name = name?.trimmingCharacters(in: .whitespacesAndNewlines), !name.isEmpty else { return nil }
+        if let existing = groupNames.first(where: { $0.compare(name, options: .caseInsensitive) == .orderedSame }) {
+            return existing
+        }
+        groupNames.append(name)
+        return name
     }
 }
 
@@ -123,7 +153,7 @@ public struct RoutinePlan: Codable, Equatable, Sendable {
                         return newID
                     }
                     return exercise.copied(supersetID: group)
-                })
+                }, groupNames: day.groupNames)
         }
         return copy
     }

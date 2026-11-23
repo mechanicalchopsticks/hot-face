@@ -188,7 +188,7 @@ private struct RoutineEditor: View {
                     if let day = $draft.plan.days.first(where: { $0.wrappedValue.id == dayID }),
                         let exercise = day.exercises.first(where: { $0.wrappedValue.id == exerciseID })
                     {
-                        ExerciseEditor(exercise: exercise, gym: gym, defaults: draft.plan, history: history)
+                        ExerciseEditor(day: day, exercise: exercise, gym: gym, defaults: draft.plan, history: history)
                     }
                 }
             }

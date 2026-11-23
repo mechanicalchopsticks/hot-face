@@ -16,7 +16,10 @@ struct ExerciseGroupSectionTests {
     @Test(arguments: ["en", "es"])
     func singleVisibleGroup(language: String) throws {
         for group in [nil, "Pierna"] as [String?] {
-            let day = day(groups: [group, group])
+            var day = day(groups: [group, group])
+            let exercise = try #require(day.exercises.first)
+            day.assignGroup("Empty group", to: exercise.id)
+            day.assignGroup(group, to: exercise.id)
             let sections = ExerciseGroupSection.sections(for: day)
             #expect(sections.count == 1)
             let section = try #require(sections.first)

@@ -4,6 +4,32 @@ import TrainingDomain
 import TrainingRepositories
 
 struct ManualRoutineTests {
+    @Test func reopensGroupsFromAFreeTextRoutineAndKeepsEmptyGroups() throws {
+        let directory = try temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: directory) }
+        func reopen() -> CoordinatedModelStore { CoordinatedModelStore(trainingDirectory: directory) }
+        let fixture = try #require(
+            Bundle.module.url(forResource: "free-text-groups", withExtension: "json", subdirectory: "Fixtures"))
+        let gymID = try #require(reopen().createGym(name: "Gym").activeGymID)
+        var draft = ManualRoutine(gymID: gymID)
+        draft.plan = try JSONDecoder().decode(RoutinePlan.self, from: Data(contentsOf: fixture))
+        #expect(draft.plan.days[0].groupNames == ["Pierna"])
+        #expect(draft.plan.days[0].exercises.map(\.group) == ["Pierna", nil, "Pierna", nil])
+        let ids = draft.plan.days[0].exercises.map(\.id)
+        draft.plan.days[0].assignGroup(" pIERNA ", to: ids[1])
+        draft.plan.days[0].assignGroup("Core", to: ids[3])
+        draft.plan.days[0].assignGroup(nil, to: ids[3])
+        try reopen().saveRoutine(draft)
+
+        let plan = try #require(reopen().editableRoutines(in: gymID).first).plan
+        #expect(plan.days[0].exercises.map(\.id) == ids)
+        #expect(plan.days[0].exercises.map(\.group) == ["Pierna", "Pierna", "Pierna", nil])
+        #expect(plan.days[0].groupNames == ["Pierna", "Core"])
+        #expect(plan.days[1].groupNames == ["Pierna"])
+        #expect(plan.days[1].exercises.first?.group == "Pierna")
+        #expect(plan.copiedForNewRoutine().days[0].groupNames == ["Pierna", "Core"])
+    }
+
     private func temporaryDirectory() throws -> URL {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)

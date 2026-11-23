@@ -1,0 +1,114 @@
+{
+  "days" : [
+    {
+      "exercises" : [
+        {
+          "group" : "Pierna",
+          "id" : "B0259D09-8119-472D-B708-EC413D60144E",
+          "load" : {
+            "undefined" : {
+
+            }
+          },
+          "name" : "Squat",
+          "perSide" : false,
+          "segments" : [
+            {
+              "repetitions" : {
+                "_0" : 8
+              }
+            }
+          ],
+          "sets" : 3
+        },
+        {
+          "id" : "D19DD515-F75B-41BA-A25E-53A8F04EE34C",
+          "load" : {
+            "undefined" : {
+
+            }
+          },
+          "name" : "Walk",
+          "perSide" : false,
+          "segments" : [
+            {
+              "repetitions" : {
+                "_0" : 8
+              }
+            }
+          ],
+          "sets" : 3
+        },
+        {
+          "group" : " pierna ",
+          "id" : "48749EC8-C4E5-4DA2-ABF5-15D02EF5491F",
+          "load" : {
+            "undefined" : {
+
+            }
+          },
+          "name" : "Lunge",
+          "perSide" : false,
+          "segments" : [
+            {
+              "repetitions" : {
+                "_0" : 8
+              }
+            }
+          ],
+          "sets" : 3
+        },
+        {
+          "group" : "   ",
+          "id" : "49596983-4281-40EF-A6B5-772DC42FACBD",
+          "load" : {
+            "undefined" : {
+
+            }
+          },
+          "name" : "Stretch",
+          "perSide" : false,
+          "segments" : [
+            {
+              "repetitions" : {
+                "_0" : 8
+              }
+            }
+          ],
+          "sets" : 3
+        }
+      ],
+      "id" : "914E2658-5EC1-4E6B-9197-FCD96D3DD9A6",
+      "name" : "A"
+    },
+    {
+      "exercises" : [
+        {
+          "group" : "Pierna",
+          "id" : "F05AF068-D496-4181-BE39-6ED463CF9642",
+          "load" : {
+            "undefined" : {
+
+            }
+          },
+          "name" : "Press",
+          "perSide" : false,
+          "segments" : [
+            {
+              "repetitions" : {
+                "_0" : 8
+              }
+            }
+          ],
+          "sets" : 3
+        }
+      ],
+      "id" : "49A3C1AB-9292-400E-891D-99334C3EFA63",
+      "name" : "B"
+    }
+  ],
+  "defaultSets" : 4,
+  "name" : "Training",
+  "restBetweenExercises" : 135,
+  "restBetweenSets" : 105
+}
