@@ -34,17 +34,18 @@ struct TrainingTabView: View {
 private struct ActiveRoutineView: View {
     @State private var active: ManualRoutine?
     @State private var loadFailed = false
+    @State private var showSampleWorkout = false
 
     var body: some View {
-        Group {
-            if loadFailed {
-                ContentUnavailableView {
-                    Label("Could not load routines", systemImage: "exclamationmark.triangle")
-                } actions: {
-                    Button("Try again", action: reload)
-                }
-            } else if let active {
-                NavigationStack {
+        NavigationStack {
+            Group {
+                if loadFailed {
+                    ContentUnavailableView {
+                        Label("Could not load routines", systemImage: "exclamationmark.triangle")
+                    } actions: {
+                        Button("Try again", action: reload)
+                    }
+                } else if let active {
                     List {
                         Section {
                             ForEach(active.plan.days) { day in Text(verbatim: day.name) }
@@ -52,14 +53,18 @@ private struct ActiveRoutineView: View {
                             Text(verbatim: active.plan.name)
                         }
                     }
-                    .navigationTitle("Train")
-                    .navigationBarTitleDisplayMode(.inline)
+                } else {
+                    EmptySectionContent(
+                        heading: "No active routine", systemImage: "figure.strengthtraining.traditional",
+                        message: "Your training days will appear here when a routine is active.")
                 }
-            } else {
-                EmptySection(
-                    "Train", heading: "No active routine", systemImage: "figure.strengthtraining.traditional",
-                    message: "Your training days will appear here when a routine is active.")
             }
+            .navigationTitle("Train")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                Button("Sample workout") { showSampleWorkout = true }
+            }
+            .sheet(isPresented: $showSampleWorkout) { SampleWorkoutView() }
         }
         .onAppear(perform: reload)
     }
@@ -87,19 +92,29 @@ private struct EmptySection: View {
 
     var body: some View {
         NavigationStack {
-            GeometryReader { viewport in
-                ScrollView {
-                    ContentUnavailableView {
-                        Label(heading, systemImage: systemImage)
-                    } description: {
-                        Text(message)
-                    }
-                    .frame(maxWidth: .infinity, minHeight: viewport.size.height)
+            EmptySectionContent(heading: heading, systemImage: systemImage, message: message)
+                .navigationTitle(title)
+                .navigationBarTitleDisplayMode(.inline)
+        }
+    }
+}
+
+private struct EmptySectionContent: View {
+    let heading: LocalizedStringKey
+    let systemImage: String
+    let message: LocalizedStringKey
+
+    var body: some View {
+        GeometryReader { viewport in
+            ScrollView {
+                ContentUnavailableView {
+                    Label(heading, systemImage: systemImage)
+                } description: {
+                    Text(message)
                 }
-                .defaultScrollAnchor(.top, for: .initialOffset)
+                .frame(maxWidth: .infinity, minHeight: viewport.size.height)
             }
-            .navigationTitle(title)
-            .navigationBarTitleDisplayMode(.inline)
+            .defaultScrollAnchor(.top, for: .initialOffset)
         }
     }
 }

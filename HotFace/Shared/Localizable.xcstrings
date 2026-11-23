@@ -1,12 +1,52 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%@ added" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ añadidos"
+          }
+        }
+      }
+    },
+    "%@ per dumbbell" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ por mancuerna"
+          }
+        }
+      }
+    },
     "%@ s" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ s"
+          }
+        }
+      }
+    },
+    "%lld reps" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld repeticiones"
+          }
+        }
+      }
+    },
+    "%lld reps per side" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld repeticiones por lado"
           }
         }
       }
@@ -85,6 +125,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Actividad"
+          }
+        }
+      }
+    },
+    "Actual load" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Carga utilizada"
+          }
+        }
+      }
+    },
+    "Actual repetitions" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repeticiones realizadas"
           }
         }
       }
@@ -517,6 +577,16 @@
         }
       }
     },
+    "Close" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerrar"
+          }
+        }
+      }
+    },
     "Complete set" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -591,6 +661,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Copiar rutina"
+          }
+        }
+      }
+    },
+    "Correct set" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Corregir serie"
           }
         }
       }
@@ -815,6 +895,16 @@
         }
       }
     },
+    "Day 3" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Día 3"
+          }
+        }
+      }
+    },
     "Day name" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -898,6 +988,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Desactivadas"
+          }
+        }
+      }
+    },
+    "Done" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Listo"
           }
         }
       }
@@ -1035,6 +1135,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Introduce un peso válido."
+          }
+        }
+      }
+    },
+    "Enter repetitions per side." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ingresa las repeticiones por lado."
           }
         }
       }
@@ -1382,6 +1492,16 @@
         }
       }
     },
+    "Leave repetitions blank if you did not count them." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deja las repeticiones en blanco si no las contaste."
+          }
+        }
+      }
+    },
     "Leave undefined" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1464,6 +1584,16 @@
         }
       }
     },
+    "More" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Más"
+          }
+        }
+      }
+    },
     "Name the routine, each day and each exercise. Add at least one day, an exercise per day and a segment per exercise." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1482,6 +1612,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nueva prescripción"
+          }
+        }
+      }
+    },
+    "Next exercise" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siguiente ejercicio"
+          }
+        }
+      }
+    },
+    "Next set" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siguiente serie"
           }
         }
       }
@@ -1862,6 +2012,26 @@
         }
       }
     },
+    "Rest" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descanso"
+          }
+        }
+      }
+    },
+    "Rest complete" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descanso terminado"
+          }
+        }
+      }
+    },
     "Rest complete · Next set ready" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1875,6 +2045,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Descanso terminado · Siguiente serie en espera"
+          }
+        }
+      }
+    },
+    "Rest remaining" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tiempo de descanso restante"
           }
         }
       }
@@ -1968,6 +2148,26 @@
         }
       }
     },
+    "Sample load" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Carga de ejemplo"
+          }
+        }
+      }
+    },
+    "Sample loads and progress are for this walkthrough only." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las cargas y el avance son solo para esta prueba."
+          }
+        }
+      }
+    },
     "Sample squat" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1975,6 +2175,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sentadilla de prueba"
+          }
+        }
+      }
+    },
+    "Sample workout" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entrenamiento de ejemplo"
           }
         }
       }
@@ -2071,6 +2281,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Serie %lld"
+          }
+        }
+      }
+    },
+    "Set %lld completed" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serie %lld completada"
+          }
+        }
+      }
+    },
+    "Set %lld of %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serie %lld de %lld"
           }
         }
       }
@@ -2207,6 +2437,16 @@
         }
       }
     },
+    "Start day" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Iniciar día"
+          }
+        }
+      }
+    },
     "Start last hold" : {
       "localizations" : {
         "es" : {
@@ -2304,6 +2544,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "La rutina ha cambiado. Vuelve a abrirla para editar la versión más reciente."
+          }
+        }
+      }
+    },
+    "To failure · Reps unspecified" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fallo · Repeticiones sin registrar"
           }
         }
       }
@@ -2431,6 +2681,16 @@
         }
       }
     },
+    "Up next" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A continuación"
+          }
+        }
+      }
+    },
     "Use 90 s holds for reboot test" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2504,6 +2764,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Entrenamiento en curso"
+          }
+        }
+      }
+    },
+    "Workout summary" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resumen del entrenamiento"
           }
         }
       }

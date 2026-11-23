@@ -61,7 +61,7 @@ Continue 3.1 with 3.11 (model and migration) and 3.12 (Settings). Use the result
 
 From this point, start each new tab flow with an interactive prototype using sample data. Test it with the user, refine the UI and then integrate the logic and storage. Apply the same approach when an existing tab gains functionality such as progression suggestions or export.
 
-- [ ] 4.0.1 Create the interactive Train flow for an unlocked iPhone. Preload one day from rutina1 or rutina3 in memory with sample loads. On iPhone, start the day, inspect the load and prescription, complete a set with one tap, correct it during rest, advance to the next exercise and verify the correction in the summary. Try two sets prescribed to failure, entering a count during the first rest and leaving the second count blank. Refine the UI with the user after the walkthrough.
+- [x] 4.0.1 Create the interactive Train flow for an unlocked iPhone. Preload one day from rutina1 or rutina3 in memory with sample loads. On iPhone, start the day, inspect the load and prescription, complete a set with one tap, correct it during rest, advance to the next exercise and verify the correction in the summary. Try two sets prescribed to failure, entering a count during the first rest and leaving the second count blank. Refine the UI with the user after the walkthrough.
 - [ ] 4.0.2 Once the unlocked flow is defined, test the lock-screen experience with the user using the same sample session. Complete a set, check the rest timer and return to the app to see which set is next. Refine visible information and controls before integration in 5.6.
 
 ### Workout integration
