@@ -1,29 +1,74 @@
 import SwiftUI
+import TrainingRepositories
 
 struct TrainingTabView: View {
+    private enum Destination { case train, routines, history, settings }
+    @State private var selectedTab = Destination.train
+    @State private var newRoutineGymID: UUID?
+
     var body: some View {
-        TabView {
-            Tab("Train", systemImage: "figure.strengthtraining.traditional") {
-                EmptySection(
-                    "Train",
-                    heading: "No active routine",
-                    systemImage: "figure.strengthtraining.traditional",
-                    message: "Your training days will appear here when a routine is active.")
+        TabView(selection: $selectedTab) {
+            Tab("Train", systemImage: "figure.strengthtraining.traditional", value: .train) {
+                ActiveRoutineView()
             }
-            Tab("Routines", systemImage: "list.bullet.clipboard") {
-                RoutinesView()
+            Tab("Routines", systemImage: "list.bullet.clipboard", value: .routines) {
+                RoutinesView(newRoutineGymID: $newRoutineGymID)
             }
-            Tab("History", systemImage: "clock") {
+            Tab("History", systemImage: "clock", value: .history) {
                 EmptySection(
                     "History",
                     heading: "No workouts yet",
                     systemImage: "clock",
                     message: "Your finished workouts will appear here.")
             }
-            Tab("Settings", systemImage: "gearshape") {
-                GymSettingsView()
+            Tab("Settings", systemImage: "gearshape", value: .settings) {
+                GymSettingsView { gymID in
+                    newRoutineGymID = gymID
+                    selectedTab = .routines
+                }
             }
         }
+    }
+}
+
+private struct ActiveRoutineView: View {
+    @State private var active: ManualRoutine?
+    @State private var loadFailed = false
+
+    var body: some View {
+        Group {
+            if loadFailed {
+                ContentUnavailableView {
+                    Label("Could not load routines", systemImage: "exclamationmark.triangle")
+                } actions: {
+                    Button("Try again", action: reload)
+                }
+            } else if let active {
+                NavigationStack {
+                    List {
+                        Section {
+                            ForEach(active.plan.days) { day in Text(verbatim: day.name) }
+                        } header: {
+                            Text(verbatim: active.plan.name)
+                        }
+                    }
+                    .navigationTitle("Train")
+                    .navigationBarTitleDisplayMode(.inline)
+                }
+            } else {
+                EmptySection(
+                    "Train", heading: "No active routine", systemImage: "figure.strengthtraining.traditional",
+                    message: "Your training days will appear here when a routine is active.")
+            }
+        }
+        .onAppear(perform: reload)
+    }
+
+    private func reload() {
+        do {
+            active = try TrainingStorage.openStore().activeRoutine()
+            loadFailed = false
+        } catch { loadFailed = true }
     }
 }
 

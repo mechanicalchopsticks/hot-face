@@ -287,6 +287,36 @@
         }
       }
     },
+    "Archive routine" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Archivar rutina"
+          }
+        }
+      }
+    },
+    "Archive routine?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Archivar la rutina?"
+          }
+        }
+      }
+    },
+    "Archived routines" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rutinas archivadas"
+          }
+        }
+      }
+    },
     "Audio method" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -438,6 +468,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Controlar la serie de prueba"
+          }
+        }
+      }
+    },
+    "Copy from routine" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copiar de una rutina"
+          }
+        }
+      }
+    },
+    "Copy routine" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copiar rutina"
+          }
+        }
+      }
+    },
+    "Could not archive routine" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo archivar la rutina"
+          }
+        }
+      }
+    },
+    "Could not finish workout" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo finalizar el entrenamiento"
           }
         }
       }
@@ -829,6 +899,26 @@
         }
       }
     },
+    "Finish the workout before changing gyms or routines. Your completed sets will be kept." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finaliza el entrenamiento antes de cambiar de gimnasio o de rutina. Se conservarán las series realizadas."
+          }
+        }
+      }
+    },
+    "Finish workout" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finalizar entrenamiento"
+          }
+        }
+      }
+    },
     "First hold" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -962,6 +1052,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Indicaciones (opcional)"
+          }
+        }
+      }
+    },
+    "Keep training" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seguir entrenando"
           }
         }
       }
@@ -1381,6 +1481,16 @@
         }
       }
     },
+    "Routine actions" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acciones de la rutina"
+          }
+        }
+      }
+    },
     "Routine defaults" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1432,6 +1542,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Guardar"
+          }
+        }
+      }
+    },
+    "Save and activate" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardar y activar"
           }
         }
       }
@@ -1681,6 +1801,16 @@
         }
       }
     },
+    "Switch gyms?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Cambiar de gimnasio?"
+          }
+        }
+      }
+    },
     "System alarms" : {
       "localizations" : {
         "es" : {
@@ -1876,6 +2006,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Unidad de peso"
+          }
+        }
+      }
+    },
+    "Workout in progress" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entrenamiento en curso"
+          }
+        }
+      }
+    },
+    "Your active routine will be archived. Start a new routine in the selected gym." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se archivará tu rutina activa y podrás crear una en el gimnasio seleccionado."
           }
         }
       }

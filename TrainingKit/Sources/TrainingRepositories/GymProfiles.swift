@@ -53,6 +53,12 @@ extension CoordinatedModelStore {
     public func selectGym(_ gymID: UUID) throws -> GymCatalog {
         try updateGymCatalog { context in
             _ = try gym(with: gymID, in: context)
+            let previousID = try selectedGymID(in: context)
+            guard previousID != gymID else { return }
+            try requireClosedSession(in: context)
+            for routine in try unarchivedRoutines(in: context) where previousID != nil || routine.gymID != gymID {
+                routine.isArchived = true
+            }
             try setActiveGym(gymID, in: context)
         }
     }
@@ -118,6 +124,10 @@ private func gym(with id: UUID, in context: ModelContext) throws -> Gym {
     let matching = FetchDescriptor<Gym>(predicate: #Predicate { $0.id == id })
     guard let gym = try context.fetch(matching).first else { throw GymProfileError.missingGym }
     return gym
+}
+
+func selectedGymID(in context: ModelContext) throws -> UUID? {
+    try activeGym(in: context)?.gymID
 }
 
 private func activeGym(in context: ModelContext) throws -> GymSelection? {

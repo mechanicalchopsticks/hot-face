@@ -1,9 +1,15 @@
 import SwiftUI
+import TrainingAdapters
 import TrainingDomain
 import TrainingInterface
 import TrainingRepositories
 
 struct RoutinesView: View {
+    @Binding var newRoutineGymID: UUID?
+    @State private var archived: [ManualRoutine] = []
+    @State private var archiveCandidate: ManualRoutine?
+    @State private var openSessionID: UUID?
+    @State private var archiveFailed = false
     @State private var gym: GymProfile?
     @State private var routines: [ManualRoutine] = []
     @State private var draft: ManualRoutine?
@@ -22,15 +28,34 @@ struct RoutinesView: View {
                     List {
                         Section {
                             ForEach(routines) { routine in
-                                Button {
-                                    draft = routine
-                                } label: {
-                                    Text(verbatim: routine.plan.name)
+                                HStack {
+                                    Button {
+                                        draft = routine
+                                    } label: {
+                                        Text(verbatim: routine.plan.name)
+                                    }
+                                    Spacer()
+                                    Menu("Routine actions", systemImage: "ellipsis.circle") {
+                                        Button("Copy routine") { draft = routine.copy() }
+                                        Button("Archive routine") { archiveCandidate = routine }
+                                    }
                                 }
+                                .buttonStyle(.borderless)
                             }
                             Button("Add routine", systemImage: "plus") { draft = ManualRoutine(gymID: gym.id) }
                         } header: {
                             Text(verbatim: gym.name)
+                        }
+                        if !archived.isEmpty {
+                            Section("Archived routines") {
+                                ForEach(archived) { routine in
+                                    LabeledContent {
+                                        Button("Copy routine") { draft = routine.copy() }
+                                    } label: {
+                                        Text(verbatim: routine.plan.name)
+                                    }
+                                }
+                            }
                         }
                     }
                 } else {
@@ -41,9 +66,34 @@ struct RoutinesView: View {
             }
             .navigationTitle("Routines")
             .onAppear(perform: reload)
+            .onChange(of: newRoutineGymID, initial: true) {
+                guard let id = newRoutineGymID else { return }
+                reload()
+                if gym?.id == id { draft = ManualRoutine(gymID: id) }
+                newRoutineGymID = nil
+            }
+            .confirmationDialog(
+                "Archive routine?",
+                isPresented: Binding(
+                    get: { archiveCandidate != nil }, set: { if !$0 { archiveCandidate = nil } }),
+                titleVisibility: .visible, presenting: archiveCandidate
+            ) { routine in
+                Button("Archive routine") {
+                    do {
+                        try TrainingStorage.openStore().archiveRoutine(routine)
+                        reload()
+                    } catch RoutineEditorError.openSession(let id) { openSessionID = id } catch { archiveFailed = true }
+                }
+            } message: { routine in
+                Text(verbatim: routine.plan.name)
+            }
+            .alert("Could not archive routine", isPresented: $archiveFailed) { Button("OK") {} }
+            .resolveOpenSession($openSessionID)
             .sheet(item: $draft, onDismiss: reload) { draft in
                 if let gym {
-                    RoutineEditor(draft: draft, gym: gym)
+                    RoutineEditor(
+                        draft: draft, gym: gym, templates: routines + archived,
+                        activates: draft.revision == 0 || routines.count > 1)
                 }
             }
         }
@@ -55,6 +105,7 @@ struct RoutinesView: View {
             let catalog = try store.gymCatalog()
             gym = catalog.gyms.first { $0.id == catalog.activeGymID }
             routines = try gym.map { try store.editableRoutines(in: $0.id) } ?? []
+            archived = try gym.map { try store.archivedRoutines(in: $0.id) } ?? []
             loadFailed = false
         } catch { loadFailed = true }
     }
@@ -70,12 +121,26 @@ private struct RoutineEditor: View {
     @Environment(\.locale) private var locale
     @State var draft: ManualRoutine
     let gym: GymProfile
+    let templates: [ManualRoutine]
+    let activates: Bool
+    @State private var openSessionID: UUID?
     @State private var path: [EditorRoute] = []
     @State private var errorMessage: LocalizedStringKey?
 
     var body: some View {
         NavigationStack(path: $path) {
             Form {
+                if draft.revision == 0 && draft.plan.days.isEmpty && !templates.isEmpty {
+                    Menu("Copy from routine") {
+                        ForEach(templates) { routine in
+                            Button {
+                                draft = routine.copy()
+                            } label: {
+                                Text(verbatim: routine.plan.name)
+                            }
+                        }
+                    }
+                }
                 TextField("Routine name", text: $draft.plan.name)
                 Section("Days") {
                     ForEach(draft.plan.days) { day in
@@ -102,7 +167,9 @@ private struct RoutineEditor: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
                 ToolbarItem(placement: .primaryAction) { EditButton() }
-                ToolbarItem(placement: .confirmationAction) { Button("Save", action: save) }
+                ToolbarItem(placement: .confirmationAction) {
+                    if activates { Button("Save and activate", action: save) } else { Button("Save", action: save) }
+                }
             }
             .navigationDestination(for: EditorRoute.self) { route in
                 switch route {
@@ -118,6 +185,7 @@ private struct RoutineEditor: View {
                     }
                 }
             }
+            .resolveOpenSession($openSessionID)
             .alert(
                 "Could not save routine",
                 isPresented: Binding(
@@ -167,6 +235,8 @@ private struct RoutineEditor: View {
         do {
             try TrainingStorage.openStore().saveRoutine(draft)
             dismiss()
+        } catch RoutineEditorError.openSession(let id) {
+            openSessionID = id
         } catch RoutineEditorError.incompletePlan {
             errorMessage =
                 "Name the routine, each day and each exercise. Add at least one day, an exercise per day and a segment per exercise."
@@ -175,5 +245,36 @@ private struct RoutineEditor: View {
         } catch {
             errorMessage = "Try saving the routine again."
         }
+    }
+}
+
+extension View {
+    func resolveOpenSession(_ sessionID: Binding<UUID?>) -> some View {
+        modifier(OpenSessionAlert(sessionID: sessionID))
+    }
+}
+
+private struct OpenSessionAlert: ViewModifier {
+    @Binding var sessionID: UUID?
+    @State private var finishFailed = false
+
+    func body(content: Content) -> some View {
+        content.alert(
+            "Workout in progress",
+            isPresented: Binding(
+                get: { sessionID != nil }, set: { if !$0 { sessionID = nil } }), presenting: sessionID
+        ) { id in
+            Button("Keep training", role: .cancel) {}
+            Button("Finish workout") {
+                do {
+                    _ = try TrainingStorage.openStore().apply(
+                        SessionCommand(sessionID: id, action: .finish), clock: SystemWorkoutClock())
+                } catch { finishFailed = true }
+            }
+        } message: {
+            _ in
+            Text("Finish the workout before changing gyms or routines. Your completed sets will be kept.")
+        }
+        .alert("Could not finish workout", isPresented: $finishFailed) { Button("OK") {} }
     }
 }

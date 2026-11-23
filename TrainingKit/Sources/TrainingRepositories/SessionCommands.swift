@@ -119,8 +119,10 @@ private struct SessionWriter {
     private func start(routineID: UUID, gymID: UUID, dayID: UUID, cycleID: UUID?, at date: Date) throws {
         let open = FetchDescriptor<V1.Session>(predicate: #Predicate { $0.finishedAt == nil })
         guard try context.fetchCount(open) == 0 else { throw SessionCommandError.sessionAlreadyOpen }
-        let routines = FetchDescriptor<V1.Routine>(predicate: #Predicate { $0.id == routineID })
-        guard let routine = try context.fetch(routines).first else { throw SessionCommandError.missingRoutine }
+        guard let routine = try activeRoutineRecord(in: gymID, context: context), routine.id == routineID else {
+            throw SessionCommandError.missingRoutine
+        }
+        if let selected = try selectedGymID(in: context), selected != gymID { throw SessionCommandError.missingGym }
         let gyms = FetchDescriptor<V1.Gym>(predicate: #Predicate { $0.id == gymID })
         guard let gym = try context.fetch(gyms).first else { throw SessionCommandError.missingGym }
         let cycle = try cycleID.map(cycle(with:))

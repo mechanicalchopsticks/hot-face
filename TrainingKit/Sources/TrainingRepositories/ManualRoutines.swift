@@ -15,6 +15,12 @@ public struct ManualRoutine: Identifiable {
         self.plan = RoutinePlan(name: "", days: [])
     }
 
+    public func copy() -> ManualRoutine {
+        var draft = ManualRoutine(gymID: gymID)
+        draft.plan = plan.copiedForNewRoutine()
+        return draft
+    }
+
     fileprivate init(_ record: TrainingSchemaV1.Routine) throws {
         self.id = record.id
         self.gymID = record.gymID
@@ -23,15 +29,31 @@ public struct ManualRoutine: Identifiable {
     }
 }
 
-public enum RoutineEditorError: Error {
+public enum RoutineEditorError: Error, Equatable {
     case incompletePlan, changedRoutine
+    case openSession(UUID)
 }
 
 extension CoordinatedModelStore {
+    public func activeRoutine() throws -> ManualRoutine? {
+        try withContext { context in
+            guard let gymID = try selectedGymID(in: context) else { return nil }
+            return try activeRoutineRecord(in: gymID, context: context).map(ManualRoutine.init)
+        }
+    }
+
     public func editableRoutines(in gymID: UUID) throws -> [ManualRoutine] {
+        try routines(in: gymID, archived: false)
+    }
+
+    public func archivedRoutines(in gymID: UUID) throws -> [ManualRoutine] {
+        try routines(in: gymID, archived: true)
+    }
+
+    private func routines(in gymID: UUID, archived: Bool) throws -> [ManualRoutine] {
         try withContext { context in
             let query = FetchDescriptor<TrainingSchemaV1.Routine>(
-                predicate: #Predicate { $0.gymID == gymID && !$0.isArchived })
+                predicate: #Predicate { $0.gymID == gymID && $0.isArchived == archived })
             return try context.fetch(query).map(ManualRoutine.init).sorted {
                 $0.plan.name.localizedStandardCompare($1.plan.name) == .orderedAscending
             }
@@ -43,23 +65,69 @@ extension CoordinatedModelStore {
         try validateForEditing(plan)
 
         try withContext { context in
+            guard try selectedGymID(in: context) == draft.gymID else { throw RoutineEditorError.changedRoutine }
             let id = draft.id
             let query = FetchDescriptor<TrainingSchemaV1.Routine>(predicate: #Predicate { $0.id == id })
-            if let record = try context.fetch(query).first {
+            let existing = try context.fetch(query).first
+            if let record = existing {
                 guard record.gymID == draft.gymID, !record.isArchived, record.revision == draft.revision else {
                     throw RoutineEditorError.changedRoutine
                 }
-                try record.replacePlan(plan)
-            } else {
-                guard draft.revision == 0 else { throw RoutineEditorError.changedRoutine }
-                let gymID = draft.gymID
-                let gym = FetchDescriptor<TrainingSchemaV1.Gym>(predicate: #Predicate { $0.id == gymID })
-                guard try context.fetchCount(gym) == 1 else { throw GymProfileError.missingGym }
-                context.insert(try TrainingSchemaV1.Routine(id: id, gymID: gymID, plan: plan))
+            } else if draft.revision != 0 {
+                throw RoutineEditorError.changedRoutine
             }
+
+            let others = try unarchivedRoutines(in: context).filter { $0.id != id }
+            if existing == nil || !others.isEmpty { try requireClosedSession(in: context) }
+            let previousPlan = try existing?.plan
+            let previousIDs = Set((previousPlan?.days ?? []).flatMap(\.exercises).map(\.id))
+            let addedIDs = plan.days.flatMap(\.exercises).map(\.id).filter { !previousIDs.contains($0) }
+            if !addedIDs.isEmpty {
+                let conflicts = FetchDescriptor<TrainingSchemaV1.Progression>(
+                    predicate: #Predicate { addedIDs.contains($0.exerciseID) })
+                guard try context.fetchCount(conflicts) == 0 else { throw RoutineEditorError.changedRoutine }
+                for id in addedIDs { context.insert(TrainingSchemaV1.Progression(exerciseID: id)) }
+            }
+            if let existing {
+                try existing.replacePlan(plan)
+            } else {
+                context.insert(try TrainingSchemaV1.Routine(id: id, gymID: draft.gymID, plan: plan))
+            }
+            for other in others { other.isArchived = true }
             try context.save()
         }
     }
+
+    public func archiveRoutine(_ routine: ManualRoutine) throws {
+        try withContext { context in
+            let id = routine.id
+            let query = FetchDescriptor<TrainingSchemaV1.Routine>(predicate: #Predicate { $0.id == id })
+            guard let record = try context.fetch(query).first, record.revision == routine.revision,
+                try selectedGymID(in: context) == routine.gymID
+            else { throw RoutineEditorError.changedRoutine }
+            guard !record.isArchived else { return }
+            try requireClosedSession(in: context)
+            record.isArchived = true
+            try context.save()
+        }
+    }
+}
+
+func requireClosedSession(in context: ModelContext) throws {
+    let query = FetchDescriptor<TrainingSchemaV1.Session>(predicate: #Predicate { $0.finishedAt == nil })
+    if let session = try context.fetch(query).first { throw RoutineEditorError.openSession(session.id) }
+}
+
+func unarchivedRoutines(in context: ModelContext) throws -> [TrainingSchemaV1.Routine] {
+    try context.fetch(FetchDescriptor<TrainingSchemaV1.Routine>(predicate: #Predicate { !$0.isArchived }))
+}
+
+func activeRoutineRecord(in gymID: UUID, context: ModelContext) throws -> TrainingSchemaV1.Routine? {
+    // Older editors allowed multiple saved routines. Let the user choose which to activate.
+    var query = FetchDescriptor<TrainingSchemaV1.Routine>(predicate: #Predicate { $0.gymID == gymID && !$0.isArchived })
+    query.fetchLimit = 2
+    let candidates = try context.fetch(query)
+    return candidates.count == 1 ? candidates.first : nil
 }
 
 private func validateForEditing(_ plan: RoutinePlan) throws {
