@@ -7,6 +7,7 @@ struct ExerciseEditor: View {
     @Binding var exercise: ExercisePrescription
     let gym: GymProfile
     let defaults: RoutinePlan
+    let history: GymLoadHistory?
     @Environment(\.locale) private var locale
 
     var body: some View {
@@ -73,6 +74,16 @@ struct ExerciseEditor: View {
                                 Text("Undefined")
                             }
                         }
+                    }
+                } else if let current = exercise.load.value {
+                    LabeledContent("Usual load", value: TrainingDisplayFormat.load(current, locale: locale))
+                    Button("Clear load") { exercise.load = .undefined }
+                }
+                if let previous = history?.suggestion(for: exercise) {
+                    NavigationLink("Review previous load") {
+                        HistoricalLoadReview(
+                            previous: previous, exercise: $exercise, sets: defaults.setCount(for: exercise),
+                            locale: locale)
                     }
                 }
             }
@@ -143,6 +154,59 @@ struct ExerciseEditor: View {
                 title: title,
                 seconds: Binding(get: { value.wrappedValue ?? inherited }, set: { value.wrappedValue = $0 }))
         }
+    }
+}
+
+private struct HistoricalLoadReview: View {
+    @Environment(\.dismiss) private var dismiss
+    let previous: HistoricalLoad
+    @Binding var exercise: ExercisePrescription
+    let sets: Int
+    let locale: Locale
+    @State private var amount: String
+
+    init(previous: HistoricalLoad, exercise: Binding<ExercisePrescription>, sets: Int, locale: Locale) {
+        self.previous = previous
+        self._exercise = exercise
+        self.sets = sets
+        self.locale = locale
+        _amount = State(initialValue: TrainingDisplayFormat.editableWeight(previous.load.amount, locale: locale))
+    }
+
+    var body: some View {
+        Form {
+            Section("Previous workout") {
+                LabeledContent("Date", value: TrainingDisplayFormat.date(previous.performedAt, locale: locale))
+                LabeledContent(
+                    "Prescription",
+                    value: TrainingDisplayFormat.prescription(
+                        previous.exercise, sets: previous.exercise.sets ?? 1, locale: locale))
+                if previous.exercise.perSide { Text("Per side") }
+                LabeledContent(
+                    previous.load.representation.title, value: TrainingDisplayFormat.load(previous.load, locale: locale)
+                )
+                if let station = previous.station { LabeledContent("Station", value: station) }
+                if let instructions = previous.exercise.instructions {
+                    LabeledContent("Instructions", value: instructions)
+                }
+            }
+            Section("New prescription") {
+                Text(verbatim: TrainingDisplayFormat.prescription(exercise, sets: sets, locale: locale))
+                if exercise.perSide { Text("Per side") }
+                HStack {
+                    TextField("Weight", text: $amount).keyboardType(.decimalPad)
+                    Text(verbatim: previous.load.unit.rawValue)
+                }
+                let weight = TrainingDisplayFormat.parseWeight(amount, locale: locale)
+                Button("Confirm load") {
+                    if let weight {
+                        exercise.load = previous.confirmed(amount: weight)
+                        dismiss()
+                    }
+                }.disabled(weight == nil)
+                Button("Leave undefined") { dismiss() }
+            }
+        }.navigationTitle("Review previous load")
     }
 }
 

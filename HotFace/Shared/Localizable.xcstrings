@@ -438,6 +438,16 @@
         }
       }
     },
+    "Clear load" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quitar carga"
+          }
+        }
+      }
+    },
     "Complete set" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -451,6 +461,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Completar serie"
+          }
+        }
+      }
+    },
+    "Confirm load" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirmar carga"
           }
         }
       }
@@ -519,6 +539,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No se pudieron cargar los gimnasios"
+          }
+        }
+      }
+    },
+    "Could not load previous weights" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudieron cargar los pesos anteriores"
           }
         }
       }
@@ -618,6 +648,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Personalizar número de series"
+          }
+        }
+      }
+    },
+    "Date" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fecha"
           }
         }
       }
@@ -1045,6 +1085,16 @@
         }
       }
     },
+    "Instructions" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Indicaciones"
+          }
+        }
+      }
+    },
     "Instructions (optional)" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1095,6 +1145,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Última serie terminada"
+          }
+        }
+      }
+    },
+    "Leave undefined" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dejar sin definir"
           }
         }
       }
@@ -1155,6 +1215,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ponle nombre a la rutina, a cada día y a cada ejercicio. Añade al menos un día, un ejercicio por día y un segmento por ejercicio."
+          }
+        }
+      }
+    },
+    "New prescription" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nueva prescripción"
           }
         }
       }
@@ -1464,6 +1534,16 @@
         }
       }
     },
+    "Review previous load" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Revisar carga anterior"
+          }
+        }
+      }
+    },
     "Revision" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1763,6 +1843,16 @@
         }
       }
     },
+    "Station" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estación"
+          }
+        }
+      }
+    },
     "Station (optional)" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2048,6 +2138,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aquí aparecerán las rutinas que guardes."
+          }
+        }
+      }
+    },
+    "Previous workout" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entrenamiento anterior"
           }
         }
       }

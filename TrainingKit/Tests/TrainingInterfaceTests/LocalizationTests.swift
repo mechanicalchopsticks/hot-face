@@ -5,6 +5,13 @@ import TrainingDomain
 @testable import TrainingInterface
 
 struct LocalizationTests {
+    @Test func comparesPreviousAndNewPrescriptions() {
+        let locale = Locale(identifier: "es_ES")
+        let previous = ExercisePrescription(name: "Curl", segments: Array(repeating: .repetitions(7), count: 3))
+        let current = ExercisePrescription(name: "Curl", segments: [.repetitions(8)])
+        #expect(TrainingDisplayFormat.prescription(previous, sets: 4, locale: locale) == "4 × (7+7+7)")
+        #expect(TrainingDisplayFormat.prescription(current, sets: 3, locale: locale) == "3 × 8")
+    }
     @Test(arguments: [("en_US", "12.500001", "12,5"), ("es_ES", "12,500001", "12.5")])
     func editableWeightsRoundTripAndRejectInvalidInput(localeID: String, formatted: String, wrongSeparator: String) {
         let locale = Locale(identifier: localeID)
