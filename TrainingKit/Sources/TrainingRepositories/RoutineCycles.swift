@@ -41,9 +41,19 @@ extension CoordinatedModelStore {
             let dayIDs = try routine.plan.days.map(\.id)
             let cycles = try context.fetch(
                 FetchDescriptor<V1.Cycle>(predicate: #Predicate { $0.routineID == routineID }))
+            let currentDayIDs = Set(dayIDs)
             if let current = cycles.first(where: {
-                !Set($0.completedDayIDs + $0.skippedDayIDs).isSuperset(of: dayIDs)
+                let resolved = Set($0.completedDayIDs + $0.skippedDayIDs)
+                return $0.orderedDayIDs.contains { currentDayIDs.contains($0) && !resolved.contains($0) }
             }) {
+                let savedOrder = Set(current.orderedDayIDs)
+                let updatedOrder =
+                    current.orderedDayIDs.filter(currentDayIDs.contains)
+                    + dayIDs.filter { !savedOrder.contains($0) }
+                if current.orderedDayIDs != updatedOrder {
+                    current.orderedDayIDs = updatedOrder
+                    try context.save()
+                }
                 return RoutineCycle(current)
             }
             let cycle = V1.Cycle(routineID: routineID, orderedDayIDs: dayIDs)

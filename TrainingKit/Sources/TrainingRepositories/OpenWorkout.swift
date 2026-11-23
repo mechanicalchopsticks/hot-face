@@ -1,0 +1,80 @@
+import Foundation
+import SwiftData
+import TrainingDomain
+
+public struct OpenWorkout: Identifiable, Sendable {
+    public struct PendingSet: Sendable {
+        public let exercise: ExercisePrescription
+        public let equipment: EquipmentDescription?
+        public let number: Int
+        public let count: Int
+    }
+
+    public struct Rest: Identifiable, Sendable {
+        public let id: UUID
+        public let completedSetNumber: Int
+        public let endsAt: Date
+        public let betweenExercises: Bool
+    }
+
+    public let id: UUID
+    public let prescription: SessionPrescription
+    public let nextSet: PendingSet?
+    public let rest: Rest?
+
+    fileprivate init(session: TrainingSchemaV1.Session, performed: [TrainingSchemaV1.PerformedSet]) throws {
+        id = session.id
+        let prescription = try session.prescription
+        self.prescription = prescription
+
+        let byExercise = Dictionary(grouping: performed, by: \.exerciseID)
+        let skipped = Set(session.skippedExerciseIDs)
+        var pending: PendingSet?
+        for exercise in prescription.day.exercises where !skipped.contains(exercise.id) {
+            guard let count = exercise.sets, count > 0 else { throw CocoaError(.coderReadCorrupt) }
+            let completed = Set(byExercise[exercise.id, default: []].map(\.number))
+            if let number = (1...count).first(where: { !completed.contains($0) }) {
+                let equipment = prescription.equipment.first { $0.id == exercise.equipmentID }
+                pending = PendingSet(exercise: exercise, equipment: equipment, number: number, count: count)
+                break
+            }
+        }
+        nextSet = pending
+
+        // The set's saved timestamp is the start of rest, including when a completion is retried.
+        if let pending, let last = performed.first,
+            let exercise = prescription.day.exercises.first(where: { $0.id == last.exerciseID })
+        {
+            let betweenExercises = pending.exercise.id != last.exerciseID
+            let seconds =
+                betweenExercises
+                ? exercise.restAfterExercise ?? prescription.restBetweenExercises
+                : exercise.restBetweenSets ?? prescription.restBetweenSets
+            rest =
+                seconds > 0
+                ? Rest(
+                    id: last.id, completedSetNumber: last.number, endsAt: last.performedAt.addingTimeInterval(seconds),
+                    betweenExercises: betweenExercises)
+                : nil
+        } else {
+            rest = nil
+        }
+    }
+}
+
+extension CoordinatedModelStore {
+    public func openWorkout() throws -> OpenWorkout? {
+        try withContext { context in
+            var sessions = FetchDescriptor<TrainingSchemaV1.Session>(predicate: #Predicate { $0.finishedAt == nil })
+            sessions.fetchLimit = 1
+            guard let session = try context.fetch(sessions).first else { return nil }
+
+            let id = session.id
+            let performed = try context.fetch(
+                FetchDescriptor<TrainingSchemaV1.PerformedSet>(
+                    predicate: #Predicate { $0.sessionID == id },
+                    sortBy: [SortDescriptor(\.performedAt, order: .reverse)]))
+            return try OpenWorkout(session: session, performed: performed)
+        }
+    }
+}

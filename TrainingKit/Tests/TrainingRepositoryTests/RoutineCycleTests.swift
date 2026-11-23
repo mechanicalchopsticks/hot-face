@@ -54,6 +54,39 @@ struct RoutineCycleTests {
         #expect(try store().activeRoutine()?.id == routine.id)
     }
 
+    @Test func editedDaysStayAvailableToStartWithoutReopeningFinishedCycles() throws {
+        let directory = try temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: directory) }
+        func store() -> CoordinatedModelStore { CoordinatedModelStore(trainingDirectory: directory) }
+        func day(_ name: String) -> RoutineDay {
+            RoutineDay(name: name, exercises: [ExercisePrescription(name: name, segments: [.repetitions(8)])])
+        }
+        let gymID = try #require(store().createGym(name: "Gym").activeGymID)
+        let first = day("A")
+        let second = day("B")
+        var routine = ManualRoutine(gymID: gymID)
+        routine.plan = RoutinePlan(name: "Plan", days: [first, second])
+        try store().saveRoutine(routine)
+        let previous = try store().currentCycle(for: routine.id)
+        _ = try store().skipDay(first.id, in: previous.id)
+        _ = try store().skipDay(second.id, in: previous.id)
+        let current = try store().currentCycle(for: routine.id)
+
+        let added = day("C")
+        routine = try #require(try store().activeRoutine())
+        routine.plan.days = [second, added]
+        try store().saveRoutine(routine)
+        let updated = try store().currentCycle(for: routine.id)
+        #expect(updated.id == current.id)
+        #expect(updated.availableDayIDs == [second.id, added.id])
+        let sessionID = UUID()
+        let command = SessionCommand(
+            sessionID: sessionID,
+            action: .start(routineID: routine.id, gymID: gymID, dayID: added.id, cycleID: updated.id))
+        #expect(try store().apply(command, clock: TestWorkoutClock(.now)) == .applied)
+        #expect(try store().openWorkout()?.prescription.day.id == added.id)
+    }
+
     @Test func usualOrderIsSavedForFutureCycles() throws {
         let directory = try temporaryDirectory()
         defer { try? FileManager.default.removeItem(at: directory) }
