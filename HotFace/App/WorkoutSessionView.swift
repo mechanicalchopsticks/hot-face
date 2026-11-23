@@ -11,6 +11,8 @@ struct WorkoutSessionView: View {
     @State private var actionError: LocalizedStringKey?
     @State private var confirmsFinish = false
 
+    @State private var correcting: OpenWorkout.Rest?
+
     private var rest: OpenWorkout.Rest? {
         workout.rest.flatMap { $0.id == reviewedRestID ? nil : $0 }
     }
@@ -21,6 +23,7 @@ struct WorkoutSessionView: View {
                 if let rest {
                     Section {
                         WorkoutRestCountdown(end: rest.endsAt)
+                        Button("Correct set") { correcting = rest }
                         Label("Set \(rest.completedSetNumber) completed", systemImage: "checkmark.circle")
                     } header: {
                         Text("Rest")
@@ -52,6 +55,16 @@ struct WorkoutSessionView: View {
                             Label("More", systemImage: "ellipsis.circle")
                         }
                     }
+                }
+            }
+            .sheet(item: $correcting) { record in
+                SetCorrectionView(record: record) { performance in
+                    let store = try TrainingStorage.openStore()
+                    _ = try store.apply(
+                        SessionCommand(
+                            sessionID: workout.id, action: .correctSet(id: record.id, performance: performance)),
+                        clock: SystemWorkoutClock())
+                    if let updated = try store.openWorkout(), updated.id == workout.id { workout = updated }
                 }
             }
             .safeAreaInset(edge: .bottom) { primaryAction }
@@ -211,5 +224,83 @@ private struct WorkoutSetPrescription: View {
         case .seconds(let count): String(localized: "\(count) s", locale: locale)
         case .toFailure: String(localized: TrainingDisplayFormat.toFailure(locale: locale))
         }
+    }
+}
+
+private struct SetCorrectionView: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.locale) private var locale
+    let record: OpenWorkout.Rest
+    let save: (SetPerformance) throws -> Void
+    @State private var values: [String] = []
+    @State private var weight = ""
+    @State private var failed = false
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                ForEach(values.indices, id: \.self) { index in
+                    let seconds = if case .seconds = record.exercise.segments[index] { true } else { false }
+                    TextField(seconds ? "Seconds" : "Actual repetitions", text: $values[index]).keyboardType(.numberPad)
+                }
+                if record.exercise.segments.contains(.toFailure) {
+                    Text("Leave repetitions blank if you did not count them.")
+                }
+                if record.performance.perSide { Text("Enter repetitions per side.") }
+                if let load = record.performance.load {
+                    LabeledContent(load.unit.rawValue) {
+                        TextField("Actual load", text: $weight).keyboardType(.decimalPad)
+                    }
+                }
+            }
+            .navigationTitle("Correct set")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") {
+                        guard let corrected else { return }
+                        do {
+                            try save(corrected)
+                            dismiss()
+                        } catch { failed = true }
+                    }.disabled(corrected == nil)
+                }
+            }
+            .alert("Could not update workout", isPresented: $failed) { Button("OK") {} }
+            .onAppear {
+                values = record.performance.segments.map {
+                    switch $0 {
+                    case .toFailure: ""
+                    case .seconds(let n), .repetitions(let n): String(n)
+                    }
+                }
+                if let load = record.performance.load {
+                    weight = TrainingDisplayFormat.editableWeight(load.amount, locale: locale)
+                }
+            }
+        }
+    }
+
+    private var corrected: SetPerformance? {
+        var result = record.performance
+        guard values.count == record.exercise.segments.count else { return nil }
+        result.segments = []
+        for (value, prescribed) in zip(values, record.exercise.segments) {
+            if value.isEmpty && prescribed == .toFailure {
+                result.segments.append(.toFailure)
+                continue
+            }
+            guard let n = Int(value), n > 0 else { return nil }
+            if case .seconds = prescribed {
+                result.segments.append(.seconds(n))
+            } else {
+                result.segments.append(.repetitions(n))
+            }
+        }
+        if result.load != nil {
+            guard let amount = TrainingDisplayFormat.parseWeight(weight, locale: locale) else { return nil }
+            result.load?.amount = amount
+        }
+        return result
     }
 }

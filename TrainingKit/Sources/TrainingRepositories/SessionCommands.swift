@@ -78,6 +78,12 @@ private struct SessionWriter {
                 try V1.PerformedSet(
                     sessionID: sessionID, exerciseID: id, number: number,
                     performedAt: date, performance: performance))
+        case .correctSet(let id, let performance):
+            _ = try openSession()
+            let query = FetchDescriptor<V1.PerformedSet>(
+                predicate: #Predicate { $0.sessionID == sessionID && $0.id == id })
+            guard let set = try context.fetch(query).first else { throw SessionCommandError.invalidSetNumber }
+            try set.correct(to: performance)
         case .rate(let id, let effort):
             let session = try openSession()
             _ = try session.exercise(id)
