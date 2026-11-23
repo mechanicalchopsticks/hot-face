@@ -74,7 +74,7 @@ Once both flows are defined, connect the agreed screens to the domain, persisten
 - [x] 4.4 Implement adding, replacing, postponing, selecting and skipping exercises. Test an occupied station, returning to the exercise and preserving the usual order. Verify that the Train exercise list uses the day editor’s group headings, including the unassigned group and single-group rule, and that opening the grouped list preserves the next exercise in session order.
 - [x] 4.5 Implement full and partial session completion and the summary. Verify retention of sets and ratings, pending exercises recorded as unperformed, the day marked complete and no final rest. In the summary, verify that two sets performed to failure both appear as completed when only one has a recorded repetition count.
 - [x] 4.6 Implement open-session recovery. Test unexpected termination and reopening on another date with options to continue or finish.
-- [ ] 4.7 Complete a cycle offline and review history. Deliver an integration test and a short guide distinguishing a partially completed session from an open session.
+- [x] 4.7 Complete a cycle offline and review history. Deliver an integration test and a short guide distinguishing a partially completed session from an open session.
 
 ## 5. Timers, audio and supersets
 
