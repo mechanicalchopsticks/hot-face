@@ -17,7 +17,6 @@
 		00000000000000000000006E /* TrainingStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000006D /* TrainingStorage.swift */; };
 		00000000000000000000006F /* TrainingStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000006D /* TrainingStorage.swift */; };
 		000000000000000000000068 /* TrainingTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000067 /* TrainingTabView.swift */; };
-		000000000000000000000096 /* SampleWorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000095 /* SampleWorkoutView.swift */; };
 		00000000000000000000009D /* WorkoutSessionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000009C /* WorkoutSessionView.swift */; };
 		000000000000000000000059 /* StorageTrialWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000058 /* StorageTrialWidget.swift */; };
 		000000000000000000000057 /* StorageTrialRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000056 /* StorageTrialRunner.swift */; };
@@ -43,17 +42,14 @@
 		000000000000000000000027 /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000023 /* InfoPlist.xcstrings */; };
 		00000000000000000000000F /* HotFace.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000004 /* HotFace.swift */; };
 		000000000000000000000010 /* SampleSet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000006 /* SampleSet.swift */; };
-		00000000000000000000009A /* SampleWorkout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000099 /* SampleWorkout.swift */; };
 		000000000000000000000012 /* WorkoutSetWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000005 /* WorkoutSetWidget.swift */; };
 		000000000000000000000013 /* SampleSet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000006 /* SampleSet.swift */; };
-		00000000000000000000009B /* SampleWorkout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000099 /* SampleWorkout.swift */; };
 		000000000000000000000015 /* WorkoutLiveActivity.appex in Embed App Extension */ = {isa = PBXBuildFile; fileRef = 000000000000000000000009 /* WorkoutLiveActivity.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		000000000000000000000062 /* TrainingKit in Frameworks */ = {isa = PBXBuildFile; productRef = 000000000000000000000060 /* TrainingKit */; };
 		000000000000000000000063 /* TrainingKit in Frameworks */ = {isa = PBXBuildFile; productRef = 000000000000000000000061 /* TrainingKit */; };
 		000000000000000000000081 /* CatalogDeletionUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000080 /* CatalogDeletionUITests.swift */; };
 		000000000000000000000092 /* BandColorUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000091 /* BandColorUITests.swift */; };
 		000000000000000000000094 /* RoutineEditorUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000093 /* RoutineEditorUITests.swift */; };
-		000000000000000000000098 /* SampleWorkoutUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000097 /* SampleWorkoutUITests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -91,7 +87,6 @@
 		000000000000000000000076 /* ExerciseLoadEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseLoadEditor.swift; sourceTree = "<group>"; };
 		00000000000000000000006D /* TrainingStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingStorage.swift; sourceTree = "<group>"; };
 		000000000000000000000067 /* TrainingTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingTabView.swift; sourceTree = "<group>"; };
-		000000000000000000000095 /* SampleWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleWorkoutView.swift; sourceTree = "<group>"; };
 		00000000000000000000009C /* WorkoutSessionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutSessionView.swift; sourceTree = "<group>"; };
 		000000000000000000000058 /* StorageTrialWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageTrialWidget.swift; sourceTree = "<group>"; };
 		000000000000000000000056 /* StorageTrialRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageTrialRunner.swift; sourceTree = "<group>"; };
@@ -112,7 +107,6 @@
 		000000000000000000000004 /* HotFace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotFace.swift; sourceTree = "<group>"; };
 		000000000000000000000005 /* WorkoutSetWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutSetWidget.swift; sourceTree = "<group>"; };
 		000000000000000000000006 /* SampleSet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleSet.swift; sourceTree = "<group>"; };
-		000000000000000000000099 /* SampleWorkout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleWorkout.swift; sourceTree = "<group>"; };
 		000000000000000000000007 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		000000000000000000000008 /* HotFace.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HotFace.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		000000000000000000000009 /* WorkoutLiveActivity.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = WorkoutLiveActivity.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -120,7 +114,6 @@
 		000000000000000000000082 /* HotFaceUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HotFaceUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		000000000000000000000091 /* BandColorUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests/BandColorUITests.swift; sourceTree = "<group>"; };
 		000000000000000000000093 /* RoutineEditorUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests/RoutineEditorUITests.swift; sourceTree = "<group>"; };
-		000000000000000000000097 /* SampleWorkoutUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests/SampleWorkoutUITests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -145,7 +138,6 @@
 				00000000000000000000009E /* Assets.xcassets */,
 				000000000000000000000004 /* HotFace.swift */,
 				000000000000000000000067 /* TrainingTabView.swift */,
-				000000000000000000000095 /* SampleWorkoutView.swift */,
 				00000000000000000000009C /* WorkoutSessionView.swift */,
 				000000000000000000000069 /* GymSettingsView.swift */,
 				00000000000000000000006B /* EquipmentEditor.swift */,
@@ -170,7 +162,6 @@
 			isa = PBXGroup;
 			children = (
 				000000000000000000000006 /* SampleSet.swift */,
-				000000000000000000000099 /* SampleWorkout.swift */,
 				000000000000000000000053 /* StorageTrial.swift */,
 				00000000000000000000006D /* TrainingStorage.swift */,
 				000000000000000000000050 /* ProbeSetStore.swift */,
@@ -202,7 +193,6 @@
 				000000000000000000000080 /* CatalogDeletionUITests.swift */,
 				000000000000000000000091 /* BandColorUITests.swift */,
 				000000000000000000000093 /* RoutineEditorUITests.swift */,
-				000000000000000000000097 /* SampleWorkoutUITests.swift */,
 			);
 			sourceTree = "<group>";
 		};
@@ -299,7 +289,6 @@
 			files = (
 				00000000000000000000000F /* HotFace.swift in Sources */,
 				000000000000000000000068 /* TrainingTabView.swift in Sources */,
-				000000000000000000000096 /* SampleWorkoutView.swift in Sources */,
 				00000000000000000000009D /* WorkoutSessionView.swift in Sources */,
 				00000000000000000000006A /* GymSettingsView.swift in Sources */,
 				00000000000000000000006C /* EquipmentEditor.swift in Sources */,
@@ -312,7 +301,6 @@
 				000000000000000000000043 /* HoldTrial.swift in Sources */,
 				000000000000000000000041 /* HoldAudioProbe.swift in Sources */,
 				000000000000000000000010 /* SampleSet.swift in Sources */,
-				00000000000000000000009A /* SampleWorkout.swift in Sources */,
 				000000000000000000000054 /* StorageTrial.swift in Sources */,
 				000000000000000000000051 /* ProbeSetStore.swift in Sources */,
 				000000000000000000000037 /* WorkoutControls.swift in Sources */,
@@ -327,7 +315,6 @@
 				000000000000000000000012 /* WorkoutSetWidget.swift in Sources */,
 				000000000000000000000059 /* StorageTrialWidget.swift in Sources */,
 				000000000000000000000013 /* SampleSet.swift in Sources */,
-				00000000000000000000009B /* SampleWorkout.swift in Sources */,
 				000000000000000000000055 /* StorageTrial.swift in Sources */,
 				00000000000000000000006F /* TrainingStorage.swift in Sources */,
 				000000000000000000000052 /* ProbeSetStore.swift in Sources */,
@@ -336,7 +323,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		000000000000000000000085 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (000000000000000000000081 /* CatalogDeletionUITests.swift in Sources */, 000000000000000000000092 /* BandColorUITests.swift in Sources */, 000000000000000000000094 /* RoutineEditorUITests.swift in Sources */, 000000000000000000000098 /* SampleWorkoutUITests.swift in Sources */, ); runOnlyForDeploymentPostprocessing = 0; };
+		000000000000000000000085 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (000000000000000000000081 /* CatalogDeletionUITests.swift in Sources */, 000000000000000000000092 /* BandColorUITests.swift in Sources */, 000000000000000000000094 /* RoutineEditorUITests.swift in Sources */, ); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
