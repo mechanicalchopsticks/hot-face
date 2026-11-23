@@ -4,6 +4,74 @@ import XCTest
 final class RoutineEditorUITests: XCTestCase {
     func testSuggestedNamesInEnglish() { verifySuggestedNames(spanish: false) }
     func testSuggestedNamesInSpanish() { verifySuggestedNames(spanish: true) }
+    func testCustomSetCountInEnglish() { verifyCustomSetCount(spanish: false) }
+    func testCustomSetCountInSpanish() { verifyCustomSetCount(spanish: true) }
+
+    private func verifyCustomSetCount(spanish: Bool) {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchEnvironment["HOTFACE_UI_TEST_STORE_ID"] = UUID().uuidString
+        app.launchEnvironment["HOTFACE_UI_TEST_ROUTINE_DATE"] = "2026-11-15T12:00:00Z"
+        func label(_ english: String, _ spanishLabel: String) -> String { spanish ? spanishLabel : english }
+        func press(_ title: String) { tap(button(title, in: app)) }
+        func count(_ value: Int) -> String { label("Sets: \(value)", "Series: \(value)") }
+        func adjust(_ direction: Int, from value: Int) {
+            tap(app.steppers[count(value)].buttons.element(boundBy: direction > 0 ? 1 : 0))
+        }
+        let toggle = app.switches[label("Custom set count", "Personalizar número de series")]
+        func switchCustomCount() { toggle.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.5)).tap() }
+        let editExercise = label("Edit exercise", "Editar ejercicio")
+        let editDay = label("Edit day", "Editar día")
+        let month = label("November 2026", "Noviembre de 2026")
+
+        launch(app, spanish: spanish)
+        press(label("Settings", "Ajustes"))
+        press(label("Add gym", "Añadir gimnasio"))
+        enter("Gym", in: app.textFields[label("Gym name", "Nombre del gimnasio")])
+        press(label("Save", "Guardar"))
+        press(label("Routines", "Rutinas"))
+        press(label("Add routine", "Añadir rutina"))
+        XCTAssertTrue(app.steppers[count(4)].exists)
+        adjust(1, from: 4)
+        XCTAssertTrue(app.steppers[count(5)].exists)
+        press(label("Add day", "Añadir día"))
+        press(label("Add exercise", "Añadir ejercicio"))
+        enter("Squat", in: app.textFields[label("Exercise name", "Nombre del ejercicio")])
+        for _ in 0..<5 where !toggle.isHittable { app.swipeUp() }
+        XCTAssertEqual(toggle.value as? String, "0")
+        XCTAssertFalse(app.steppers[count(5)].exists)
+        XCTAssertFalse(app.staticTexts[count(5)].exists)
+        switchCustomCount()
+        for _ in 0..<4 where !app.steppers[count(5)].exists { app.swipeUp() }
+        XCTAssertTrue(app.steppers[count(5)].exists, app.debugDescription)
+        adjust(1, from: 5)
+        XCTAssertTrue(app.steppers[count(6)].exists)
+        adjust(-1, from: 6)
+        XCTAssertTrue(app.steppers[count(5)].exists)
+        switchCustomCount()
+        XCTAssertEqual(toggle.value as? String, "0")
+        XCTAssertFalse(app.steppers[count(5)].exists)
+        tap(app.navigationBars[editExercise].buttons["BackButton"])
+        tap(app.navigationBars[editDay].buttons["BackButton"])
+        let activate = button(label("Save and activate", "Guardar y activar"), in: app)
+        if !activate.exists { tap(app.navigationBars.buttons[label("More", "Más")]) }
+        tap(activate)
+
+        app.terminate()
+        launch(app, spanish: spanish)
+        press(label("Routines", "Rutinas"))
+        press(month)
+        XCTAssertTrue(app.steppers[count(5)].exists)
+        adjust(1, from: 5)
+        press(label("Day 1", "Día 1"))
+        press("Squat")
+        for _ in 0..<5 where !toggle.isHittable { app.swipeUp() }
+        XCTAssertEqual(toggle.value as? String, "0")
+        XCTAssertFalse(app.steppers[count(6)].exists)
+        switchCustomCount()
+        for _ in 0..<4 where !app.steppers[count(6)].exists { app.swipeUp() }
+        XCTAssertTrue(app.steppers[count(6)].exists, app.debugDescription)
+    }
 
     func testFailureSegmentReopensInBothLanguages() {
         continueAfterFailure = false
