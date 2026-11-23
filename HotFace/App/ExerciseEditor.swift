@@ -73,6 +73,7 @@ struct ExerciseEditor: View {
                             guard exercise.equipmentID != id else { return }
                             exercise.equipmentID = id
                             exercise.load = .undefined
+                            if gym.equipment(withID: id)?.kind != .band { exercise.bandColor = nil }
                         })
                 ) {
                     Text("None").tag(nil as UUID?)
@@ -85,7 +86,16 @@ struct ExerciseEditor: View {
                         }
                     }
                 }
-                if let equipment = assigned {
+                if assigned?.kind == .band {
+                    NavigationLink {
+                        BandColorPicker(selection: $exercise.bandColor)
+                    } label: {
+                        LabeledContent("Band color") { BandColorLabel(color: exercise.bandColor) }
+                    }
+                }
+                if let equipment = assigned,
+                    equipment.kind != .band || !equipment.availableLoads.isEmpty || exercise.load.value != nil
+                {
                     NavigationLink {
                         ExerciseLoadEditor(load: $exercise.load, gym: gym, equipment: equipment)
                     } label: {
@@ -188,6 +198,91 @@ struct ExerciseEditor: View {
             RestStepper(
                 title: title,
                 seconds: Binding(get: { value.wrappedValue ?? inherited }, set: { value.wrappedValue = $0 }))
+        }
+    }
+}
+
+private struct BandColorPicker: View {
+    @Binding var selection: ResistanceBandColor?
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        List {
+            option(nil)
+            ForEach(ResistanceBandColor.allCases, id: \.self) { option($0) }
+        }
+        .navigationTitle("Band color")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private func option(_ color: ResistanceBandColor?) -> some View {
+        Button {
+            selection = color
+            dismiss()
+        } label: {
+            HStack {
+                BandColorLabel(color: color).foregroundStyle(.primary)
+                Spacer()
+                if color == selection { Image(systemName: "checkmark").accessibilityHidden(true) }
+            }
+        }
+        .accessibilityAddTraits(color == selection ? .isSelected : [])
+    }
+}
+
+private struct BandColorLabel: View {
+    let color: ResistanceBandColor?
+
+    var body: some View {
+        if let color {
+            HStack {
+                Circle()
+                    .fill(color.swatch)
+                    .overlay { Circle().strokeBorder(.secondary, lineWidth: 1) }
+                    .frame(width: 18, height: 18)
+                    .accessibilityHidden(true)
+                Text(color.title)
+            }
+        } else {
+            Text("No band selected")
+        }
+    }
+}
+
+extension ResistanceBandColor {
+    fileprivate var title: LocalizedStringKey {
+        switch self {
+        case .red: "Red"
+        case .orange: "Orange"
+        case .yellow: "Yellow"
+        case .green: "Green"
+        case .blue: "Blue"
+        case .purple: "Purple"
+        case .brown: "Brown"
+        case .pink: "Pink"
+        case .lightBlue: "Light blue"
+        case .white: "White"
+        case .lightGray: "Light gray"
+        case .darkGray: "Dark gray"
+        case .black: "Black"
+        }
+    }
+
+    fileprivate var swatch: Color {
+        switch self {
+        case .red: .red
+        case .orange: .orange
+        case .yellow: .yellow
+        case .green: .green
+        case .blue: .blue
+        case .purple: .purple
+        case .brown: .brown
+        case .pink: Color(red: 1, green: 0.55, blue: 0.75)
+        case .lightBlue: Color(red: 0.38, green: 0.75, blue: 0.95)
+        case .white: .white
+        case .lightGray: Color(white: 0.78)
+        case .darkGray: Color(white: 0.30)
+        case .black: .black
         }
     }
 }

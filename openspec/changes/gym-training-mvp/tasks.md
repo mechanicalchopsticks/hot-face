@@ -42,7 +42,7 @@ Continue 3.1 with 3.11 (model and migration) and 3.12 (Settings). Use the result
 
 - [x] 3.16 Add day-owned groups and a group picker to the exercise editor. Verify creating, reusing and clearing a group, matching names regardless of case or surrounding whitespace, and retaining an empty group in the picker after reopening. Reopen a frozen routine from the free-text editor and verify deduplication within each day, independent groups across days, exercise order and heading visibility.
 - [x] 3.17 Offer one generic option for each of the eight equipment types in new and existing gyms. In the exercise editor, choose a load using the gym's inventory, add specific equipment and assign it to just one exercise. Reopen a frozen pre-change gym and verify that all eight options appear once and that custom equipment, edited weights, existing assignments and historical sessions are preserved.
-- [ ] 3.18 Add the 13-color resistance band picker for generic and specific bands, with a swatch and localized name for each color. Save different colors for two exercises using the same equipment and verify both after reopening in English and Spanish. Check that older prescriptions with numeric resistance retain their load and have no preselected color.
+- [x] 3.18 Add the 13-color resistance band picker for generic and specific bands, with a swatch and localized name for each color. Save different colors for two exercises using the same equipment and verify both after reopening in English and Spanish. Check that older prescriptions with numeric resistance retain their load and have no preselected color.
 
 ## 4. End-to-end basic training
 

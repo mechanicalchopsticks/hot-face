@@ -37,6 +37,10 @@ public enum ExerciseSegment: Codable, Equatable, Sendable {
     case seconds(Int)
 }
 
+public enum ResistanceBandColor: String, Codable, CaseIterable, Sendable {
+    case red, orange, yellow, green, blue, purple, brown, pink, lightBlue, white, lightGray, darkGray, black
+}
+
 public struct ExercisePrescription: Identifiable, Codable, Equatable, Sendable {
     public private(set) var id: UUID
     public var name: String
@@ -44,6 +48,7 @@ public struct ExercisePrescription: Identifiable, Codable, Equatable, Sendable {
     public var variant: String?
     public var instructions: String?
     public var equipmentID: UUID?
+    public var bandColor: ResistanceBandColor?
     public var station: String?
     /// A missing count inherits the routine default. Older payloads always contain an explicit count.
     public var sets: Int?
