@@ -1084,6 +1084,16 @@
         }
       }
     },
+    "Easy" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fácil"
+          }
+        }
+      }
+    },
     "Edit day" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1438,6 +1448,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gimnasios"
+          }
+        }
+      }
+    },
+    "Hard" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Difícil"
           }
         }
       }
@@ -1849,6 +1869,16 @@
         }
       }
     },
+    "Partially completed" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Completado parcialmente"
+          }
+        }
+      }
+    },
     "Pause" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2020,6 +2050,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Morado"
+          }
+        }
+      }
+    },
+    "Rate exercise" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Valorar ejercicio"
           }
         }
       }
@@ -2837,6 +2877,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ejercicio sin nombre"
+          }
+        }
+      }
+    },
+    "Unperformed sets: %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Series sin realizar: %lld"
           }
         }
       }

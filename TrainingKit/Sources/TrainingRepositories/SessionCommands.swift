@@ -59,6 +59,12 @@ private struct SessionWriter {
                 return .alreadyApplied
             }
             try start(routineID: routineID, gymID: gymID, dayID: dayID, cycleID: cycleID, at: date)
+        case .logSet(let id, let number, let performance):
+            _ = try perform(.completeSet(exerciseID: id, number: number, performance: performance), at: date)
+            try finishIfResolved(openSession(), at: date)
+        case .skipAndAdvance(let id):
+            _ = try perform(.skip(exerciseID: id), at: date)
+            try finishIfResolved(openSession(), at: date)
         case .completeSet(let id, let number, let performance):
             let session = try openSession()
             let target = try session.exercise(id)
@@ -142,8 +148,13 @@ private struct SessionWriter {
                 predicate: #Predicate { $0.sessionID == sessionID && $0.id == id })
             guard let set = try context.fetch(query).first else { throw SessionCommandError.invalidSetNumber }
             try set.correct(to: performance)
-        case .rate(let id, let effort):
-            let session = try openSession()
+        case .rate(let id, let effort), .rateFinished(let id, let effort):
+            guard let session = existing else { throw SessionCommandError.sessionNotFound }
+            if case .rateFinished = action {
+                guard session.finishedAt != nil else { throw SessionCommandError.sessionAlreadyOpen }
+            } else {
+                _ = try openSession()
+            }
             _ = try session.exercise(id)
             let ratings = FetchDescriptor<V1.Rating>(
                 predicate: #Predicate { $0.sessionID == sessionID && $0.exerciseID == id })
@@ -178,6 +189,13 @@ private struct SessionWriter {
             session.finish(at: date, partial: partial)
         }
         return .applied
+    }
+
+    private func finishIfResolved(_ session: V1.Session, at date: Date) throws {
+        let sets = try context.fetch(
+            FetchDescriptor<V1.PerformedSet>(predicate: #Predicate { $0.sessionID == sessionID }))
+        let state = try OpenWorkout(session: session, performed: sets)
+        if state.nextSet == nil { _ = try perform(.finish, at: date) }
     }
 
     private func insertExercise(_ sourceID: UUID, replacing: UUID?, usual: Bool, in session: V1.Session, at date: Date)
