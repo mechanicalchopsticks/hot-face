@@ -71,6 +71,17 @@ private struct Fixture {
 }
 
 struct SessionCommandTests {
+    @Test func partiallyFinishedSummaryRetainsWorkAndRating() throws {
+        let f = try Fixture(withExistingSet: true)
+        defer { try? FileManager.default.removeItem(at: f.directory) }
+        _ = try f.store.apply(f.command(.finish), clock: FixedClock(50))
+        _ = try f.store.apply(f.command(.rateFinished(exerciseID: f.exercise.id, effort: .hard)), clock: FixedClock(51))
+        let summary = try f.store.workoutSummary(id: f.sessionID)
+        #expect(summary.partial && summary.exercises[0].unperformed == 1)
+        #expect(summary.exercises[0].effort == .hard)
+        #expect(summary.exercises[0].sets.map(\.performance) == [f.performance])
+    }
+
     @Test func reusesTemporaryAdjustmentAndExplicitlySavesIt() throws {
         let f = try Fixture()
         defer { try? FileManager.default.removeItem(at: f.directory) }

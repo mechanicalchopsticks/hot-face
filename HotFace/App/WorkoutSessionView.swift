@@ -17,11 +17,17 @@ struct WorkoutSessionView: View {
 
     @State private var choosingExercise = false
 
+    @State private var summary: WorkoutSummary?
+
     private var rest: OpenWorkout.Rest? {
         workout.rest.flatMap { $0.id == reviewedRestID ? nil : $0 }
     }
 
     var body: some View {
+        if let summary { FinishedWorkoutView(summary: summary) { dismiss() } } else { training }
+    }
+
+    private var training: some View {
         NavigationStack {
             List {
                 if let rest {
@@ -122,37 +128,89 @@ struct WorkoutSessionView: View {
     private func apply(_ action: SessionCommand.Action) throws {
         let store = try TrainingStorage.openStore()
         _ = try store.apply(SessionCommand(sessionID: workout.id, action: action), clock: SystemWorkoutClock())
-        if let updated = try store.openWorkout(), updated.id == workout.id { workout = updated }
+        if let updated = try store.openWorkout(), updated.id == workout.id {
+            workout = updated
+        } else {
+            summary = try store.workoutSummary(id: workout.id)
+        }
     }
 
     private func complete(_ set: OpenWorkout.PendingSet) {
         do {
-            let store = try TrainingStorage.openStore()
-            _ = try store.apply(
-                SessionCommand(
-                    sessionID: workout.id,
-                    action: .completeSet(
-                        exerciseID: set.exercise.id, number: set.number,
-                        performance: SetPerformance(asPrescribed: set.exercise))),
-                clock: SystemWorkoutClock())
-            if let updated = try store.openWorkout(), updated.id == workout.id {
-                workout = updated
-            } else {
-                dismiss()
-            }
-        } catch {
-            actionError = "Could not update workout"
-        }
+            try apply(
+                .logSet(exerciseID: set.exercise.id, number: set.number, performance: .init(asPrescribed: set.exercise))
+            )
+        } catch { actionError = "Could not update workout" }
     }
 
     private func finish() {
-        do {
-            _ = try TrainingStorage.openStore().apply(
-                SessionCommand(sessionID: workout.id, action: .finish), clock: SystemWorkoutClock())
-            dismiss()
-        } catch {
-            actionError = "Could not finish workout"
+        do { try apply(.finish) } catch { actionError = "Could not finish workout" }
+    }
+}
+
+struct FinishedWorkoutView: View {
+    @State var summary: WorkoutSummary
+    let close: () -> Void
+    @Environment(\.locale) private var locale
+    @State private var failed = false
+
+    var body: some View {
+        NavigationStack {
+            List {
+                Section {
+                    Text(verbatim: summary.name)
+                    if summary.partial { Text("Partially completed") }
+                }
+                ForEach(summary.exercises) { exercise in
+                    Section {
+                        ForEach(exercise.sets) { set in
+                            VStack(alignment: .leading) {
+                                Label("Set \(set.number) completed", systemImage: "checkmark.circle")
+                                ForEach(set.performance.segments.indices, id: \.self) { i in
+                                    switch set.performance.segments[i] {
+                                    case .toFailure: Text("To failure · Reps unspecified")
+                                    case .seconds(let seconds): Text("\(seconds) s")
+                                    case .repetitions(let count):
+                                        if set.performance.perSide {
+                                            Text("\(count) reps per side")
+                                        } else {
+                                            Text("\(count) reps")
+                                        }
+                                    }
+                                }
+                                if let load = set.performance.load {
+                                    Text(verbatim: TrainingDisplayFormat.load(load, locale: locale))
+                                }
+                            }
+                        }
+                        if exercise.unperformed > 0 { Text("Unperformed sets: \(exercise.unperformed)") }
+                        if let effort = exercise.effort {
+                            Text(effort == .easy ? "Easy" : "Hard")
+                        } else if !exercise.sets.isEmpty {
+                            Menu("Rate exercise") {
+                                Button("Easy") { rate(exercise.id, .easy) }
+                                Button("Hard") { rate(exercise.id, .hard) }
+                            }
+                        }
+                    } header: {
+                        Text(verbatim: exercise.prescription.name)
+                    }
+                }
+            }
+            .navigationTitle("Workout summary")
+            .toolbar { Button("Done", action: close) }
+            .alert("Could not update workout", isPresented: $failed) { Button("OK") {} }
         }
+    }
+
+    private func rate(_ exerciseID: UUID, _ effort: Effort) {
+        do {
+            let store = try TrainingStorage.openStore()
+            _ = try store.apply(
+                SessionCommand(sessionID: summary.id, action: .rateFinished(exerciseID: exerciseID, effort: effort)),
+                clock: SystemWorkoutClock())
+            summary = try store.workoutSummary(id: summary.id)
+        } catch { failed = true }
     }
 }
 
@@ -411,7 +469,7 @@ private struct WorkoutExerciseList: View {
                             Menu {
                                 Button("Select exercise") { run(.moveExercise(id: exercise.id, toFront: true)) }
                                 Button("Postpone exercise") { run(.moveExercise(id: exercise.id, toFront: false)) }
-                                Button("Skip exercise") { run(.skip(exerciseID: exercise.id)) }
+                                Button("Skip exercise") { run(.skipAndAdvance(exerciseID: exercise.id)) }
                             } label: {
                                 Text(verbatim: exercise.name)
                             }

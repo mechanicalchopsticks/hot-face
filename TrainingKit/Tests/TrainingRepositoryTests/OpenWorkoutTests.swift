@@ -115,9 +115,12 @@ struct OpenWorkoutTests {
         #expect(afterSecond.rest?.completedSetNumber == 2 && afterSecond.rest?.betweenExercises == true)
         #expect(afterSecond.rest?.endsAt == SetClock(165).now)
 
-        _ = try completeDisplayedSet(at: 170)
-        let completed = try #require(try reopen().openWorkout())
-        #expect(completed.nextSet == nil && completed.rest == nil)
+        try command(.logSet(exerciseID: row.id, number: 1, performance: .init(asPrescribed: row)), at: 170)
+        #expect(try reopen().openWorkout() == nil)
+        let completed = try reopen().workoutSummary(id: id)
+        #expect(!completed.partial && completed.finishedAt == SetClock(170).now)
+        #expect(completed.exercises[0].sets.map(\.performance.segments) == [[.repetitions(12)], [.toFailure]])
+        #expect(try reopen().currentCycle(for: routine.id).id != cycle.id)
         try reopen().withContext { context in
             let sets = try context.fetch(FetchDescriptor<TrainingSchemaV1.PerformedSet>())
             let failureSets = sets.filter { $0.exerciseID == curl.id }

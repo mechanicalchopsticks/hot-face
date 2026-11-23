@@ -25,7 +25,7 @@ public struct OpenWorkout: Identifiable, Sendable {
     public let nextSet: PendingSet?
     public let rest: Rest?
 
-    fileprivate init(session: TrainingSchemaV1.Session, performed: [TrainingSchemaV1.PerformedSet]) throws {
+    init(session: TrainingSchemaV1.Session, performed: [TrainingSchemaV1.PerformedSet]) throws {
         id = session.id
         let prescription = try session.prescription
         self.prescription = prescription
