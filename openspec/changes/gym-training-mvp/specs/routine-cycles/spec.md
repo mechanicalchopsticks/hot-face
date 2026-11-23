@@ -12,13 +12,28 @@ The app SHALL support manually creating, editing and copying routines with reord
 - **THEN** the copy retains its structure and settings and starts with a fresh history and new progression balances
 - **AND** the original remains intact and the previously active routine is archived with its history
 
+### Requirement: Swipe actions for editable routines
+An editable routine's row SHALL use the available width for its name, with no persistent actions label. Tapping the name SHALL open the routine editor. Swiping left on the row SHALL reveal Copy and Archive. Archiving SHALL require confirmation.
+
+#### Scenario: Swipe an editable routine
+- **WHEN** the user swipes left on a routine and selects Copy
+- **THEN** the editor opens a copy of that routine
+
+#### Scenario: Cancel archiving
+- **WHEN** the user swipes left, selects Archive and cancels the confirmation
+- **THEN** the routine remains in the list and tapping its name opens the original routine
+
 ### Requirement: Editable default names for routines and days
-When the user adds a routine, the editor SHALL prefill its name with the current month and year in the interface language. When the user copies a routine, the editor SHALL prefill the copy's name with the localized prefix “Copy of ” (“Copia de ” in Spanish) followed by the original name. Each routine SHALL number its added days in order starting at one, using “Day {number}” in English and “Día {number}” in Spanish. The user SHALL be able to accept or edit each suggested name before saving.
+The editor SHALL suggest the current month and year in the interface language, capitalizing the first letter of the suggested routine name. Copies SHALL use “Copy of ” (“Copia de ” in Spanish) followed by the original name. Each routine SHALL number added days from one in order, using “Day {number}” or “Día {number}”. Users SHALL be able to accept or edit each suggestion and retain the capitalization they enter.
 
 #### Scenario: Add a routine in November 2026
 - **WHEN** the user opens Add Routine in November 2026
-- **THEN** the name field contains “noviembre de 2026” in Spanish or “November 2026” in English
+- **THEN** the name field contains “Noviembre de 2026” in Spanish or “November 2026” in English
 - **AND** saving with the suggested name retains that name
+
+#### Scenario: Keep the user's capitalization
+- **WHEN** the user replaces the suggested routine name with “fuerza A” and saves it
+- **THEN** the routine list and editor both show “fuerza A”
 
 #### Scenario: Copy a named routine
 - **WHEN** the user copies a routine named “Fuerza”
