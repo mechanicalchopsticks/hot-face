@@ -1,0 +1,46 @@
+{
+  "day" : {
+    "exercises" : [
+      {
+        "id" : "E2C3A186-C45C-45BA-9CCB-C57D1F29A532",
+        "load" : {
+          "undefined" : {
+
+          }
+        },
+        "name" : "Plank",
+        "perSide" : false,
+        "segments" : [
+          {
+            "seconds" : {
+              "_0" : 20
+            }
+          }
+        ],
+        "sets" : 2
+      }
+    ],
+    "groupNames" : [
+
+    ],
+    "id" : "2BE46853-F79F-492D-97A4-DE3799BB7699",
+    "name" : "Day"
+  },
+  "equipment" : [
+
+  ],
+  "gymID" : "4D1253A5-C61D-4A1E-9538-B17AF2BE53E0",
+  "gymName" : "Gym",
+  "restBetweenExercises" : 135,
+  "restBetweenSets" : 105,
+  "routineID" : "06D2F236-CDCA-428A-9EEA-67064D7165F2",
+  "routineName" : "Routine",
+  "routineRevision" : 1,
+  "timer" : {
+    "exerciseEnd" : 35,
+    "exerciseStart" : 15,
+    "restEnd" : 35,
+    "revision" : 1,
+    "setNumber" : 1
+  }
+}

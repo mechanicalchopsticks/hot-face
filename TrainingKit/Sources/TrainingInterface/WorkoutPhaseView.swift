@@ -26,6 +26,7 @@ public struct WorkoutPhaseView: View {
         switch phase {
         case .preparation: countdown(to: workout.exerciseStart, from: now)
         case .exercise: countdown(to: workout.exerciseEnd, from: now)
+        case .holdPause: countdown(to: workout.holdAvailableAt, from: now)
         case .rest: countdown(to: workout.restEnd, from: now)
         case .paused: Text(Duration.seconds(workout.pausedSeconds ?? 0).formatted(.time(pattern: .minuteSecond)))
         case .ready: EmptyView()
@@ -48,6 +49,7 @@ extension WorkoutPhase {
         case .preparation: LocalizedStringResource("Get ready", bundle: .atURL(Bundle.module.bundleURL))
         case .exercise: LocalizedStringResource("Exercise", bundle: .atURL(Bundle.module.bundleURL))
         case .paused: LocalizedStringResource("Paused", bundle: .atURL(Bundle.module.bundleURL))
+        case .holdPause: LocalizedStringResource("Hold break", bundle: .atURL(Bundle.module.bundleURL))
         case .rest: LocalizedStringResource("Rest", bundle: .atURL(Bundle.module.bundleURL))
         }
     }

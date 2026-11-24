@@ -2,6 +2,15 @@ import Foundation
 import SwiftData
 import TrainingDomain
 
+public struct WorkoutTimingCue: Equatable, Sendable {
+    public enum Kind: String, Codable, Sendable {
+        case holdStarted, lastHoldStarted, holdEnded, sideCompleted, setCompleted, lastSetCompleted
+    }
+
+    public let date: Date
+    public let kind: Kind
+}
+
 public struct OpenWorkout: Identifiable, Sendable {
     public struct PendingSet: Sendable {
         public let exercise: ExercisePrescription
@@ -9,11 +18,11 @@ public struct OpenWorkout: Identifiable, Sendable {
         public let number: Int
         public let count: Int
 
+        /// Prescribed work for the entire set, excluding preparation and breaks.
         public var timedDuration: TimeInterval? {
-            guard !exercise.perSide, exercise.segments.count == 1, case .seconds(let seconds) = exercise.segments[0],
-                seconds > 0
-            else { return nil }
-            return TimeInterval(seconds)
+            guard let holds = exercise.timedHolds else { return nil }
+            let perSideDuration = holds.reduce(0.0) { $0 + TimeInterval($1) }
+            return exercise.perSide ? 2 * perSideDuration : perSideDuration
         }
     }
 
@@ -36,6 +45,30 @@ public struct OpenWorkout: Identifiable, Sendable {
     public func activeRest(at date: Date) -> Rest? {
         guard timer == nil, let rest, date < rest.endsAt else { return nil }
         return rest
+    }
+
+    /// Pending cues stop at the next transition that requires user input.
+    public var timingCues: [WorkoutTimingCue] {
+        guard let set = nextSet, var hold = timer, let durations = set.exercise.timedHolds else { return [] }
+        var cues: [WorkoutTimingCue] = []
+        while let start = hold.exerciseStart, let end = hold.exerciseEnd {
+            let lastHold = hold.holdNumber == durations.count
+            cues.append(.init(date: start, kind: lastHold && durations.count > 1 ? .lastHoldStarted : .holdStarted))
+            let kind: WorkoutTimingCue.Kind
+            if !lastHold {
+                kind = .holdEnded
+            } else if set.exercise.perSide && hold.sideNumber == 1 {
+                kind = .sideCompleted
+            } else {
+                kind = set.number == set.count ? .lastSetCompleted : .setCompleted
+            }
+            let next = hold.followingHold(in: set.exercise)
+            // Back-to-back holds share a boundary and sound the next hold's start cue once.
+            if next?.exerciseStart != end { cues.append(.init(date: end, kind: kind)) }
+            guard let next else { break }
+            hold = next
+        }
+        return cues
     }
 
     init(session: TrainingSchemaV1.Session, performed: [TrainingSchemaV1.PerformedSet]) throws {

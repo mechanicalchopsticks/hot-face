@@ -54,6 +54,17 @@ public struct ExercisePrescription: Identifiable, Codable, Equatable, Sendable {
     /// A missing count inherits the routine default. Older payloads always contain an explicit count.
     public var sets: Int?
     public var segments: [ExerciseSegment]
+    /// Each seconds segment is one hold. Missing settings preserve manual starts and a zero-length hold pause.
+    public var pauseBetweenHolds: Int?
+    public var automaticallyStartsHolds: Bool?
+    public var timedHolds: [Int]? {
+        let durations = segments.compactMap { segment -> Int? in
+            guard case .seconds(let duration) = segment, duration > 0 else { return nil }
+            return duration
+        }
+        return !durations.isEmpty && durations.count == segments.count ? durations : nil
+    }
+
     public var perSide = false
     public var load: PrescribedLoad = .undefined
     public var restBetweenSets: TimeInterval?

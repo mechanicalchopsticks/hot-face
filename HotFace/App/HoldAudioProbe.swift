@@ -1,6 +1,8 @@
 import AVFAudio
 import AlarmKit
+import OSLog
 import SwiftUI
+import TrainingRepositories
 import UserNotifications
 
 extension HoldCue {
@@ -22,9 +24,41 @@ extension HoldCue {
     }
 }
 
-final class HoldAudioDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate, AVAudioPlayerDelegate
+final class HoldAudioDelegate: NSObject, ObservableObject, UIApplicationDelegate, UNUserNotificationCenterDelegate,
+    AVAudioPlayerDelegate
 {
     private var player: AVAudioPlayer?
+    private var playback: Task<Void, Never>?
+    private let audioLog = Logger(subsystem: "HotFace", category: "WorkoutAudio")
+
+    func schedule(_ cues: [WorkoutTimingCue]) {
+        playback?.cancel()
+        let pending = cues.filter { $0.date > .now }
+        playback = Task {
+            for cue in pending {
+                do { try await Task.sleep(for: .seconds(max(0, cue.date.timeIntervalSinceNow))) } catch { return }
+                guard !Task.isCancelled else { return }
+                if UIApplication.shared.applicationState == .active { play(cue.kind) }
+            }
+        }
+    }
+
+    func play(_ kind: WorkoutTimingCue.Kind) {
+        let soundFile: String =
+            switch kind {
+            case .holdStarted: HoldCue.firstHold.soundFile
+            case .lastHoldStarted: HoldCue.lastHold.soundFile
+            case .holdEnded: HoldCue.holdPause.soundFile
+            case .sideCompleted: "sideComplete.wav"
+            case .setCompleted: HoldCue.lastHoldComplete.soundFile
+            case .lastSetCompleted: HoldCue.lastSetComplete.soundFile
+            }
+        if play(soundFile: soundFile) {
+            audioLog.info("Started workout cue \(kind.rawValue, privacy: .public)")
+        } else {
+            audioLog.error("Could not play workout cue \(kind.rawValue, privacy: .public)")
+        }
+    }
 
     func application(
         _ application: UIApplication,
@@ -40,7 +74,11 @@ final class HoldAudioDelegate: NSObject, UIApplicationDelegate, UNUserNotificati
         guard let cue = HoldCue(rawValue: notification.request.content.userInfo["holdCue"] as? String ?? "") else {
             return [.banner, .sound]
         }
-        guard let url = Bundle.main.url(forResource: cue.soundFile, withExtension: nil) else { return [.sound] }
+        return play(soundFile: cue.soundFile) ? [] : [.sound]
+    }
+
+    private func play(soundFile: String) -> Bool {
+        guard let url = Bundle.main.url(forResource: soundFile, withExtension: nil) else { return false }
         let session = AVAudioSession.sharedInstance()
         do {
             let next = try AVAudioPlayer(contentsOf: url)
@@ -48,12 +86,12 @@ final class HoldAudioDelegate: NSObject, UIApplicationDelegate, UNUserNotificati
             try session.setActive(true)
             next.delegate = self
             player = next
-            if next.play() { return [] }
+            if next.play() { return true }
         } catch {
             // Fall back to the notification sound if the audio session is unavailable.
         }
         releaseAudio()
-        return [.sound]
+        return false
     }
 
     func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {

@@ -91,16 +91,22 @@ struct SessionWriter {
             let session = try openSession()
             let state = try workout(session)
             guard let set = state.nextSet, set.exercise.id == id, set.number == number,
-                let duration = set.timedDuration,
+                let holds = set.exercise.timedHolds,
                 state.timer != nil || (action == .start && (state.rest?.endsAt ?? .distantPast) <= date)
             else { throw SessionCommandError.invalidTimerTransition }
             let timer = state.timer ?? WorkoutTimeline(setNumber: number)
-            guard
+            guard timer.holdNumber <= holds.count,
+                action != .complete || timer.exerciseStart != nil || timer.pausedSeconds != nil || timer.holdNumber > 1,
                 let next = timer.applying(
                     action, expectedRevision: revision, expectedSet: number,
-                    exerciseDuration: duration, restDuration: 0, clock: CommandClock(now: date))
+                    exerciseDuration: TimeInterval(holds[timer.holdNumber - 1]), restDuration: 0,
+                    clock: CommandClock(now: date))
             else { throw SessionCommandError.invalidTimerTransition }
-            if action == .complete {
+            if action == .complete, let following = timer.followingSide(in: set.exercise, at: date) {
+                var plan = state.prescription
+                plan.timer = following
+                try session.updatePrescription(plan)
+            } else if action == .complete {
                 try completeTimer(set: set, timer: timer, in: session, at: date)
             } else {
                 var plan = state.prescription
@@ -261,11 +267,20 @@ struct SessionWriter {
     }
 
     func reconcileTimer(in session: TrainingSchemaV1.Session, at date: Date) throws {
-        guard let timer = try session.prescription.timer, let end = timer.exerciseEnd, end <= date else { return }
+        var plan = try session.prescription
+        guard var timer = plan.timer, let end = timer.exerciseEnd, end <= date else { return }
         guard let set = try workout(session).nextSet, set.number == timer.setNumber else {
             throw CocoaError(.coderReadCorrupt)
         }
-        try completeTimer(set: set, timer: timer, in: session, at: end)
+        while let end = timer.exerciseEnd, end <= date, let next = timer.followingHold(in: set.exercise) {
+            timer = next
+        }
+        if let end = timer.exerciseEnd, end <= date {
+            try completeTimer(set: set, timer: timer, in: session, at: end)
+        } else {
+            plan.timer = timer
+            try session.updatePrescription(plan)
+        }
         // Expiry is already due even if the command that woke the app turns out to be stale.
         try context.save()
     }
@@ -273,15 +288,8 @@ struct SessionWriter {
     private func completeTimer(
         set: OpenWorkout.PendingSet, timer: WorkoutTimeline, in session: V1.Session, at date: Date
     ) throws {
-        guard let duration = set.timedDuration, case .seconds(let target) = set.exercise.segments.first else {
+        guard let performance = timer.performance(in: set.exercise, at: date) else {
             throw SessionCommandError.invalidTimerTransition
-        }
-        let remaining = timer.remainingExerciseTime(at: date)
-        var performance = SetPerformance(asPrescribed: set.exercise)
-        if remaining > 0 {
-            let elapsed = max(0, duration - remaining).rounded(.down)
-            performance.segments = [.seconds(Int(exactly: elapsed) ?? target)]
-            performance.isPartial = true
         }
         var plan = try session.prescription
         plan.timer = nil

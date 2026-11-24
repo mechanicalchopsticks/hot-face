@@ -28,6 +28,7 @@
 		00000000000000000000004D /* restComplete.wav in Resources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000004C /* restComplete.wav */; };
 		00000000000000000000004B /* lastHoldComplete.wav in Resources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000004A /* lastHoldComplete.wav */; };
 		000000000000000000000049 /* lastHold.wav in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000048 /* lastHold.wav */; };
+		0000000000000000000000A1 /* sideComplete.wav in Resources */ = {isa = PBXBuildFile; fileRef = 0000000000000000000000A0 /* sideComplete.wav */; };
 		000000000000000000000047 /* holdPause.wav in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000046 /* holdPause.wav */; };
 		000000000000000000000045 /* firstHold.wav in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000044 /* firstHold.wav */; };
 		000000000000000000000043 /* HoldTrial.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000042 /* HoldTrial.swift */; };
@@ -96,6 +97,7 @@
 		00000000000000000000004C /* restComplete.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/restComplete.wav"; sourceTree = "<group>"; };
 		00000000000000000000004A /* lastHoldComplete.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/lastHoldComplete.wav"; sourceTree = "<group>"; };
 		000000000000000000000048 /* lastHold.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/lastHold.wav"; sourceTree = "<group>"; };
+		0000000000000000000000A0 /* sideComplete.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/sideComplete.wav"; sourceTree = "<group>"; };
 		000000000000000000000046 /* holdPause.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/holdPause.wav"; sourceTree = "<group>"; };
 		000000000000000000000044 /* firstHold.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "Sounds/firstHold.wav"; sourceTree = "<group>"; };
 		000000000000000000000042 /* HoldTrial.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HoldTrial.swift"; sourceTree = "<group>"; };
@@ -150,6 +152,7 @@
 				00000000000000000000004C /* restComplete.wav */,
 				00000000000000000000004A /* lastHoldComplete.wav */,
 				000000000000000000000048 /* lastHold.wav */,
+				0000000000000000000000A0 /* sideComplete.wav */,
 				000000000000000000000046 /* holdPause.wav */,
 				000000000000000000000044 /* firstHold.wav */,
 				000000000000000000000042 /* HoldTrial.swift */,
@@ -278,7 +281,7 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		000000000000000000000028 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (00000000000000000000009F /* Assets.xcassets in Resources */, 000000000000000000000045 /* firstHold.wav in Resources */, 000000000000000000000047 /* holdPause.wav in Resources */, 000000000000000000000049 /* lastHold.wav in Resources */, 00000000000000000000004B /* lastHoldComplete.wav in Resources */, 00000000000000000000004D /* restComplete.wav in Resources */, 00000000000000000000004F /* lastSetComplete.wav in Resources */, 000000000000000000000024 /* Localizable.xcstrings in Resources */, 000000000000000000000025 /* InfoPlist.xcstrings in Resources */, ); runOnlyForDeploymentPostprocessing = 0; };
+		000000000000000000000028 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (00000000000000000000009F /* Assets.xcassets in Resources */, 000000000000000000000045 /* firstHold.wav in Resources */, 000000000000000000000047 /* holdPause.wav in Resources */, 0000000000000000000000A1 /* sideComplete.wav in Resources */, 000000000000000000000049 /* lastHold.wav in Resources */, 00000000000000000000004B /* lastHoldComplete.wav in Resources */, 00000000000000000000004D /* restComplete.wav in Resources */, 00000000000000000000004F /* lastSetComplete.wav in Resources */, 000000000000000000000024 /* Localizable.xcstrings in Resources */, 000000000000000000000025 /* InfoPlist.xcstrings in Resources */, ); runOnlyForDeploymentPostprocessing = 0; };
 		000000000000000000000029 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (000000000000000000000026 /* Localizable.xcstrings in Resources */, 000000000000000000000027 /* InfoPlist.xcstrings in Resources */, ); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXResourcesBuildPhase section */
 

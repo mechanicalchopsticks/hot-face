@@ -159,7 +159,8 @@ func validateForEditing(_ plan: RoutinePlan) throws {
         }
         for exercise in day.exercises {
             guard hasName(exercise.name), plan.setCount(for: exercise) > 0, !exercise.segments.isEmpty,
-                exercise.restBetweenSets.map(validRest) != false, exercise.restAfterExercise.map(validRest) != false
+                (exercise.pauseBetweenHolds ?? 0) >= 0, exercise.restBetweenSets.map(validRest) != false,
+                exercise.restAfterExercise.map(validRest) != false
             else { throw RoutineEditorError.incompletePlan }
             for segment in exercise.segments {
                 switch segment {

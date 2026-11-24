@@ -1,6 +1,106 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%lld s per side" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld s por lado"
+          }
+        }
+      }
+    },
+    "Finish side early" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminar lado antes"
+          }
+        }
+      }
+    },
+    "First side" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Primer lado"
+          }
+        }
+      }
+    },
+    "Second side" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Segundo lado"
+          }
+        }
+      }
+    },
+    "Start second side" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Iniciar segundo lado"
+          }
+        }
+      }
+    },
+    "Start next hold" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Iniciar siguiente sostenimiento"
+          }
+        }
+      }
+    },
+    "Hold %lld of %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sostenimiento %1$lld de %2$lld"
+          }
+        }
+      }
+    },
+    "Side %lld of 2" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lado %lld de 2"
+          }
+        }
+      }
+    },
+    "Hold timing" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tiempos de sostenimiento"
+          }
+        }
+      }
+    },
+    "Start next hold automatically" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Iniciar el siguiente sostenimiento automáticamente"
+          }
+        }
+      }
+    },
     "%@ added" : {
       "extractionState" : "stale",
       "localizations" : {

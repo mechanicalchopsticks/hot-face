@@ -32,7 +32,7 @@ struct WorkoutControls: View {
                 case .ready: control("Start", .start, number)
                 case .paused: control("Resume", .resume, number)
                 case .preparation, .exercise: control("Pause", .pause, number)
-                case .rest: EmptyView()
+                case .rest, .holdPause: EmptyView()
                 }
                 if phase != .rest {
                     control("Complete set", .complete, number)

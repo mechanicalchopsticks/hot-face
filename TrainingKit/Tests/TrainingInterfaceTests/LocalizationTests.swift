@@ -37,6 +37,7 @@ struct LocalizationTests {
         (.preparation, "Get ready", "Prepárate"),
         (.exercise, "Exercise", "Ejercicio"),
         (.paused, "Paused", "En pausa"),
+        (.holdPause, "Hold break", "Pausa entre sostenimientos"),
         (.rest, "Rest", "Descanso"),
     ])
     func phaseTitlesUsePackageLocalizations(phase: WorkoutPhase, english: String, spanish: String) {

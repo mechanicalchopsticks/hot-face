@@ -34,6 +34,7 @@ struct TrainingTabView: View {
 }
 
 private struct ActiveRoutineView: View {
+    @EnvironmentObject private var audio: HoldAudioDelegate
     @State private var active: ManualRoutine?
     @State private var cycle: RoutineCycle?
     @State private var openWorkout: OpenWorkout?
@@ -116,6 +117,7 @@ private struct ActiveRoutineView: View {
         do {
             let store = try TrainingStorage.openStore()
             _ = try store.apply(SessionCommand(sessionID: openWorkout.id, action: .finish), clock: SystemWorkoutClock())
+            audio.schedule([])
             summary = try store.workoutSummary(id: openWorkout.id)
             reload()
         } catch { finishFailed = true }

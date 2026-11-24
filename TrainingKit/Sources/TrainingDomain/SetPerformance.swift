@@ -7,6 +7,8 @@ public enum Effort: String, Codable, Sendable {
 public struct SetPerformance: Codable, Equatable, Sendable {
     public var segments: [ExerciseSegment]
     public var load: ExerciseLoad?
+    /// When sides differ, segments describes the first side and this records the second.
+    public var secondSideSegments: [ExerciseSegment]?
     public var perSide: Bool
     public var isPartial: Bool
 
