@@ -40,6 +40,17 @@ struct GymLoadOptionsTests {
         #expect(loads.allSatisfy { $0.unit == .kg && $0.representation == .combined && $0.implementCount == 1 })
     }
 
+    @Test func selectorizedMachineUsesConfiguredLoadsAndUnits() {
+        var machine = EquipmentDescription(name: "Pulldown", kind: .selectorizedMachine, unit: .lb)
+        machine.availableLoads = [10, 20]
+
+        #expect(
+            GymInventory().loadOptions(for: machine)
+                == machine.availableLoads.map {
+                    ExerciseLoad(amount: $0, unit: .lb, representation: .combined, implementCount: 1)
+                })
+    }
+
     @Test func mixesPlateUnitsBeforeApplyingTheEquipmentLimit() throws {
         var inventory = GymInventory()
         inventory[.plates] = [.init(5, .lb), .init(2.5, .kg)]
