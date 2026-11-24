@@ -8,7 +8,6 @@ struct WorkoutSessionView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) private var scenePhase
     @State var workout: OpenWorkout
-    @State private var reviewedRestID: UUID?
     @State private var actionError: LocalizedStringKey?
     @State private var confirmsFinish = false
 
@@ -20,33 +19,31 @@ struct WorkoutSessionView: View {
 
     @State private var summary: WorkoutSummary?
 
-    private var rest: OpenWorkout.Rest? {
-        guard workout.timer == nil else { return nil }
-        return workout.rest.flatMap { $0.id == reviewedRestID ? nil : $0 }
-    }
-
     var body: some View {
-        if let summary { FinishedWorkoutView(summary: summary) { dismiss() } } else { training }
+        if let summary {
+            FinishedWorkoutView(summary: summary) { dismiss() }
+        } else {
+            TimelineView(.periodic(from: .now, by: 1)) { timeline in
+                training(at: timeline.date)
+            }
+        }
     }
 
-    private var training: some View {
-        NavigationStack {
+    private func training(at date: Date) -> some View {
+        let rest = workout.activeRest(at: date)
+        return NavigationStack {
             List {
                 if let rest {
                     Section {
-                        WorkoutRestCountdown(end: rest.endsAt)
-                        TimelineView(.periodic(from: .now, by: 1)) { timeline in
-                            if timeline.date < rest.endsAt {
-                                HStack {
-                                    Button("−15 s") { adjustRest(rest, by: .shorten) }
-                                        .accessibilityLabel("Shorten rest by 15 seconds")
-                                    Spacer()
-                                    Button("+15 s") { adjustRest(rest, by: .extend) }
-                                        .accessibilityLabel("Extend rest by 15 seconds")
-                                }
-                                .buttonStyle(.bordered)
-                            }
+                        WorkoutRestCountdown(remaining: rest.endsAt.timeIntervalSince(date))
+                        HStack {
+                            Button("−15 s") { adjustRest(rest, by: .shorten) }
+                                .accessibilityLabel("Shorten rest by 15 seconds")
+                            Spacer()
+                            Button("+15 s") { adjustRest(rest, by: .extend) }
+                                .accessibilityLabel("Extend rest by 15 seconds")
                         }
+                        .buttonStyle(.bordered)
                         Button("Correct set") { correcting = rest }
                         Label("Set \(rest.completedSetNumber) completed", systemImage: "checkmark.circle")
                     } header: {
@@ -64,7 +61,7 @@ struct WorkoutSessionView: View {
                         WorkoutSetPrescription(
                             exercise: set.exercise, equipment: set.equipment, gymID: workout.prescription.gymID)
                     } header: {
-                        if rest != nil { Text("Up next") }
+                        if rest != nil { Text("Up next") } else if workout.timer == nil { Text("Ready") }
                     }
                 } else {
                     Label("All sets completed", systemImage: "checkmark.circle")
@@ -103,7 +100,7 @@ struct WorkoutSessionView: View {
                     try apply(.correctSet(id: record.id, performance: performance))
                 }
             }
-            .safeAreaInset(edge: .bottom) { primaryAction }
+            .safeAreaInset(edge: .bottom) { primaryAction(rest: rest) }
             .onChange(of: scenePhase, initial: true) {
                 if scenePhase == .active { refresh() }
             }
@@ -126,16 +123,10 @@ struct WorkoutSessionView: View {
         }
     }
 
-    private var primaryAction: some View {
+    private func primaryAction(rest: OpenWorkout.Rest?) -> some View {
         Group {
             if let rest {
-                TimelineView(.periodic(from: .now, by: 1)) { timeline in
-                    if timeline.date < rest.endsAt {
-                        action("End rest") { adjustRest(rest, by: .end) }
-                    } else {
-                        action(rest.betweenExercises ? "Next exercise" : "Next set") { reviewedRestID = rest.id }
-                    }
-                }
+                action("End rest") { adjustRest(rest, by: .end) }
             } else if let set = workout.nextSet {
                 if let timer = workout.timer {
                     VStack {
@@ -304,21 +295,14 @@ struct WorkoutSetHeader: View {
 
 struct WorkoutRestCountdown: View {
     @Environment(\.locale) private var locale
-    let end: Date
+    let remaining: TimeInterval
 
     var body: some View {
-        TimelineView(.periodic(from: .now, by: 1)) { timeline in
-            let remaining = max(0, ceil(end.timeIntervalSince(timeline.date)))
-            if remaining > 0 {
-                Text(verbatim: Duration.seconds(remaining).formatted(.time(pattern: .minuteSecond).locale(locale)))
-                    .font(.largeTitle.monospacedDigit().bold())
-                    .accessibilityLabel(Text("Rest remaining"))
-                    .accessibilityValue(
-                        Text(verbatim: Duration.seconds(remaining).formatted(.units().locale(locale))))
-            } else {
-                Text("Rest complete").font(.title2.bold())
-            }
-        }
+        let duration = Duration.seconds(max(0, ceil(remaining)))
+        Text(verbatim: duration.formatted(.time(pattern: .minuteSecond).locale(locale)))
+            .font(.largeTitle.monospacedDigit().bold())
+            .accessibilityLabel(Text("Rest remaining"))
+            .accessibilityValue(Text(verbatim: duration.formatted(.units().locale(locale))))
     }
 }
 
