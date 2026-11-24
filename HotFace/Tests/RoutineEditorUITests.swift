@@ -246,6 +246,61 @@ final class RoutineEditorUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Serie 1 completada"].waitForExistence(timeout: 5))
     }
 
+    func testTimedHoldsWaitForManualRestartAndSecondSide() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchEnvironment["HOTFACE_UI_TEST_STORE_ID"] = UUID().uuidString
+        func press(_ title: String) { tap(button(title, in: app)) }
+        func reveal(_ element: XCUIElement) {
+            for _ in 0..<5 where !element.exists || !element.isHittable { app.swipeUp() }
+            XCTAssertTrue(element.isHittable, app.debugDescription)
+        }
+        launch(app, spanish: false)
+        press("Settings")
+        press("Add gym")
+        enter("Gym", in: app.textFields["Gym name"])
+        press("Save")
+        press("Routines")
+        press("Add routine")
+        press("Add day")
+        press("Add exercise")
+        enter("Side plank", in: app.textFields["Exercise name"])
+        let perSide = app.switches["Per side"]
+        reveal(perSide)
+        perSide.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.5)).tap()
+        let seconds = app.segmentedControls.buttons["Seconds"]
+        reveal(seconds)
+        tap(seconds)
+        let add = button("Add segment", in: app)
+        reveal(add)
+        tap(add)
+        let restart = app.switches["Start next hold automatically"]
+        reveal(restart)
+        XCTAssertEqual(restart.value as? String, "0")
+        let pause = app.steppers["Pause between holds: 0 s"]
+        tap(pause.buttons.element(boundBy: 1))
+        tap(app.navigationBars["Edit exercise"].buttons["BackButton"])
+        tap(app.navigationBars["Edit day"].buttons["BackButton"])
+        let activate = button("Save and activate", in: app)
+        if !activate.exists { tap(app.navigationBars.buttons["More"]) }
+        tap(activate)
+        press("Train")
+        press("Day 1")
+        press("Start set")
+        XCTAssertTrue(app.staticTexts["Side 1 of 2"].waitForExistence(timeout: 5))
+        let next = button("Start next hold", in: app)
+        XCTAssertTrue(next.waitForExistence(timeout: 20))
+        let enabled = expectation(for: NSPredicate(format: "enabled == true"), evaluatedWith: next)
+        wait(for: [enabled], timeout: 5)
+        tap(next)
+        XCTAssertTrue(app.staticTexts["Hold 2 of 2"].waitForExistence(timeout: 5))
+        XCTAssertTrue(button("Start second side", in: app).waitForExistence(timeout: 20))
+        XCTAssertFalse(app.staticTexts["Rest"].exists)
+        press("Start second side")
+        press("Finish set early")
+        XCTAssertTrue(app.staticTexts["Set 1 completed"].waitForExistence(timeout: 5))
+    }
+
     private func launch(_ app: XCUIApplication, spanish: Bool) {
         app.launchArguments = [
             "-AppleLanguages", spanish ? "(es)" : "(en)", "-AppleLocale", spanish ? "es_CR" : "en_US",

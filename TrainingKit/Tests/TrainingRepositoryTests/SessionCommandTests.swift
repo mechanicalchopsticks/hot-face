@@ -74,6 +74,175 @@ private struct Fixture {
 }
 
 struct SessionCommandTests {
+    @Test func mixedPrescriptionWaitsForManualCompletion() throws {
+        let exercise = ExercisePrescription(
+            name: "Mixed", sets: 1, segments: [.seconds(5), .repetitions(10), .toFailure])
+        let f = try Fixture(exercise: exercise)
+        defer { try? FileManager.default.removeItem(at: f.directory) }
+        _ = try f.store.apply(f.start, clock: FixedClock(0))
+        #expect(try f.store.openWorkout(clock: FixedClock(1))?.nextSet?.timedDuration == nil)
+        #expect(throws: SessionCommandError.invalidTimerTransition) {
+            _ = try f.store.apply(
+                f.command(.controlTimer(exerciseID: exercise.id, number: 1, expectedRevision: 0, action: .start)),
+                clock: FixedClock(1))
+        }
+        let pending = try #require(try f.store.openWorkout(clock: FixedClock(3600)))
+        #expect(pending.timer == nil && pending.nextSet?.number == 1)
+        let actual = SetPerformance(segments: [.seconds(4), .repetitions(8), .toFailure])
+        _ = try f.store.apply(
+            f.command(.logSet(exerciseID: exercise.id, number: 1, performance: actual)), clock: FixedClock(3605))
+        #expect(try f.store.workoutSummary(id: f.sessionID).exercises.first?.sets.first?.performance == actual)
+    }
+
+    @Test func oldTimedWorkoutResumesAtTheSavedDeadlineWithoutSideOrHoldSettings() throws {
+        let url = try #require(
+            Bundle.module.url(forResource: "before-hold-timing", withExtension: "json", subdirectory: "Fixtures"))
+        let plan = try JSONDecoder().decode(SessionPrescription.self, from: Data(contentsOf: url))
+        let timer = try #require(plan.timer)
+        let exercise = try #require(plan.day.exercises.first)
+        #expect(exercise.automaticallyStartsHolds == nil && exercise.pauseBetweenHolds == nil)
+        #expect(timer.sideNumber == 1 && timer.holdNumber == 1 && timer.exerciseEnd == FixedClock(35).now)
+        #expect(timer.performance(in: exercise, at: FixedClock(35).now) == SetPerformance(asPrescribed: exercise))
+    }
+
+    @Test(arguments: [true, false])
+    func holdsAndSidesRecoverAtTheRealBoundaryWithOneRest(automatic: Bool) throws {
+        var exercise = ExercisePrescription(name: "Side plank", sets: 2, segments: [.seconds(6), .seconds(4)])
+        exercise.perSide = true
+        exercise.pauseBetweenHolds = 3
+        exercise.automaticallyStartsHolds = automatic
+        let f = try Fixture(exercise: exercise)
+        defer { try? FileManager.default.removeItem(at: f.directory) }
+        _ = try f.store.apply(f.start, clock: FixedClock(0))
+        func workout(_ time: Double) throws -> OpenWorkout {
+            try #require(try f.store.openWorkout(clock: FixedClock(time)))
+        }
+        func control(_ action: WorkoutAction, _ revision: Int, _ time: Double) throws {
+            _ = try f.store.apply(
+                f.command(
+                    .controlTimer(exerciseID: exercise.id, number: 1, expectedRevision: revision, action: action)),
+                clock: FixedClock(time))
+        }
+        try control(.start, 0, 0)
+        let startedWorkout = try workout(1)
+        #expect(startedWorkout.nextSet?.timedDuration == 20)
+        let cues = startedWorkout.timingCues
+        #expect(
+            cues.map(\.kind)
+                == (automatic
+                    ? [.holdStarted, .holdEnded, .lastHoldStarted, .sideCompleted] : [.holdStarted, .holdEnded]))
+        #expect(cues.map(\.date) == (automatic ? [3, 9, 12, 16] : [3, 9]).map { FixedClock($0).now })
+        let holdBreak = try #require(try workout(10).timer)
+        #expect(holdBreak.phase(at: FixedClock(10).now) == .holdPause)
+        #expect(holdBreak.sideNumber == 1 && holdBreak.holdNumber == 2)
+        if !automatic {
+            #expect(throws: SessionCommandError.invalidTimerTransition) { try control(.start, 2, 11) }
+            #expect(try workout(70).timer?.phase(at: FixedClock(70).now) == .ready)
+            try control(.start, 2, 70)
+            let last = try workout(71)
+            #expect(last.timer?.exerciseStart == FixedClock(73).now)
+            #expect(last.timingCues.map(\.kind) == [.lastHoldStarted, .sideCompleted])
+        }
+        let waiting = try workout(100)
+        let next = try #require(waiting.timer)
+        #expect(next.sideNumber == 2 && next.holdNumber == 1 && next.phase(at: FixedClock(100).now) == .ready)
+        #expect(waiting.rest == nil && waiting.nextSet?.number == 1 && waiting.timingCues.isEmpty)
+        #expect(throws: SessionCommandError.invalidTimerTransition) { try control(.start, 0, 101) }
+        try control(.start, next.revision, 110)
+        // The second side finishes early. The first side keeps its original work.
+        let started = try #require(try workout(112).timer)
+        try control(.complete, started.revision, 115)
+        let resting = try workout(130)
+        #expect(resting.nextSet?.number == 2 && resting.timer == nil)
+        #expect(resting.rest?.endsAt == FixedClock(220).now)
+        #expect(resting.rest?.performance.segments == [.seconds(6), .seconds(4)])
+        #expect(resting.rest?.performance.secondSideSegments == [.seconds(2), .seconds(0)])
+        #expect(resting.rest?.performance.isPartial == true)
+    }
+
+    @Test func overdueAutomaticHoldsUseTheirOriginalTimesAndStopAfterTheSecondSide() throws {
+        var exercise = ExercisePrescription(name: "Side plank", sets: 2, segments: [.seconds(2), .seconds(5)])
+        exercise.perSide = true
+        exercise.pauseBetweenHolds = 2
+        exercise.automaticallyStartsHolds = true
+        let f = try Fixture(exercise: exercise)
+        defer { try? FileManager.default.removeItem(at: f.directory) }
+        _ = try f.store.apply(f.start, clock: FixedClock(0))
+        func start(revision: Int, at seconds: Double) throws {
+            _ = try f.store.apply(
+                f.command(
+                    .controlTimer(exerciseID: exercise.id, number: 1, expectedRevision: revision, action: .start)),
+                clock: FixedClock(seconds))
+        }
+        try start(revision: 0, at: 0)
+        let later = try #require(try f.store.openWorkout(clock: FixedClock(99)))
+        let next = try #require(later.timer)
+        #expect(later.rest == nil && next.sideNumber == 2)
+        try start(revision: next.revision, at: 100)
+        let running = try #require(try f.store.openWorkout(clock: FixedClock(101)))
+        #expect(running.timingCues.map(\.kind) == [.holdStarted, .holdEnded, .lastHoldStarted, .setCompleted])
+        let done = try #require(try f.store.openWorkout(clock: FixedClock(300)))
+        #expect(done.nextSet?.number == 2 && done.timer == nil)
+        #expect(
+            done.rest?.endsAt == FixedClock(217).now && done.rest?.performance == SetPerformance(asPrescribed: exercise)
+        )
+    }
+
+    @Test func resumingDuringAnAutomaticHoldBreakPreservesTheBreakAndPreparation() throws {
+        var exercise = ExercisePrescription(name: "Plank", sets: 1, segments: [.seconds(2), .seconds(5)])
+        exercise.pauseBetweenHolds = 10
+        exercise.automaticallyStartsHolds = true
+        let f = try Fixture(exercise: exercise)
+        defer { try? FileManager.default.removeItem(at: f.directory) }
+        _ = try f.store.apply(f.start, clock: FixedClock(0))
+        func control(_ action: WorkoutAction, revision: Int, at time: Double) throws {
+            _ = try f.store.apply(
+                f.command(
+                    .controlTimer(exerciseID: exercise.id, number: 1, expectedRevision: revision, action: action)),
+                clock: FixedClock(time))
+        }
+        try control(.start, revision: 0, at: 0)
+        try control(.pause, revision: 2, at: 6)
+        let paused = try #require(try f.store.openWorkout(clock: FixedClock(7)))
+        #expect(paused.timer?.pausedSeconds == 5 && paused.timingCues.isEmpty)
+        try control(.resume, revision: 3, at: 8)
+        let resumed = try #require(try f.store.openWorkout(clock: FixedClock(9)))
+        #expect(resumed.timer?.phase(at: FixedClock(14).now) == .holdPause)
+        #expect(resumed.timer?.phase(at: FixedClock(15).now) == .preparation)
+        #expect(resumed.timingCues.map(\.kind) == [.lastHoldStarted, .lastSetCompleted])
+        #expect(resumed.timingCues.map(\.date) == [18, 23].map { FixedClock($0).now })
+        #expect(try f.store.openWorkout(clock: FixedClock(30)) == nil)
+        #expect(
+            try f.store.workoutSummary(id: f.sessionID).exercises[0].sets[0].performance
+                == SetPerformance(asPrescribed: exercise))
+    }
+
+    @Test func finishingFirstSideEarlyKeepsItsDurationWhenTheSecondSideExpires() throws {
+        var exercise = ExercisePrescription(name: "Side plank", sets: 1, segments: [.seconds(12)])
+        exercise.perSide = true
+        let f = try Fixture(exercise: exercise)
+        defer { try? FileManager.default.removeItem(at: f.directory) }
+        _ = try f.store.apply(f.start, clock: FixedClock(0))
+        func control(_ action: WorkoutAction, revision: Int, at time: Double) throws {
+            _ = try f.store.apply(
+                f.command(
+                    .controlTimer(exerciseID: exercise.id, number: 1, expectedRevision: revision, action: action)),
+                clock: FixedClock(time))
+        }
+        try control(.start, revision: 0, at: 0)
+        try control(.complete, revision: 1, at: 7)
+        let waiting = try #require(try f.store.openWorkout(clock: FixedClock(90)))
+        #expect(waiting.timer?.sideNumber == 2 && waiting.rest == nil && waiting.timingCues.isEmpty)
+        #expect(throws: SessionCommandError.invalidTimerTransition) { try control(.complete, revision: 2, at: 90) }
+        try control(.start, revision: 2, at: 100)
+        #expect(try f.store.openWorkout(clock: FixedClock(116)) == nil)
+        let summary = try f.store.workoutSummary(id: f.sessionID)
+        #expect(summary.finishedAt == FixedClock(115).now)
+        let sets = try #require(summary.exercises.first?.sets)
+        #expect(sets.count == 1 && sets[0].performance.segments == [.seconds(4)])
+        #expect(sets[0].performance.secondSideSegments == [.seconds(12)] && sets[0].performance.isPartial)
+    }
+
     @Test func preTimerSessionPreservesTheTimedPrescription() throws {
         let url = try #require(
             Bundle.module.url(forResource: "pre-session-timer", withExtension: "json", subdirectory: "Fixtures"))

@@ -6,6 +6,7 @@ import TrainingDomain
 @main
 struct HotFace: App {
     @UIApplicationDelegateAdaptor(HoldAudioDelegate.self) private var audioDelegate
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some Scene {
         WindowGroup {
@@ -13,6 +14,14 @@ struct HotFace: App {
                 ProbeView()
             } else {
                 TrainingTabView()
+                    .onChange(of: scenePhase, initial: true) {
+                        if scenePhase == .active {
+                            let workout = try? TrainingStorage.openStore().openWorkout()
+                            audioDelegate.schedule(workout?.timingCues ?? [])
+                        } else {
+                            audioDelegate.schedule([])
+                        }
+                    }
                     .task { await StorageTrialRunner.runIfRequested() }
             }
         }

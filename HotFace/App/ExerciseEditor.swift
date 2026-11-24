@@ -43,6 +43,20 @@ struct ExerciseEditor: View {
                     exercise.segments.append(exercise.segments.last ?? .repetitions(8))
                 }
             }
+            if let holds = exercise.timedHolds, holds.count > 1 {
+                Section("Hold timing") {
+                    Stepper(
+                        "Pause between holds: \(exercise.pauseBetweenHolds ?? 0) s",
+                        value: Binding(
+                            get: { exercise.pauseBetweenHolds ?? 0 }, set: { exercise.pauseBetweenHolds = $0 }),
+                        in: 0...Int.max)
+                    Toggle(
+                        "Start next hold automatically",
+                        isOn: Binding(
+                            get: { exercise.automaticallyStartsHolds ?? false },
+                            set: { exercise.automaticallyStartsHolds = $0 }))
+                }
+            }
             Section("Equipment and load") {
                 let assigned = gym.equipment(withID: exercise.equipmentID)
                 if exercise.equipmentID != nil && assigned == nil {

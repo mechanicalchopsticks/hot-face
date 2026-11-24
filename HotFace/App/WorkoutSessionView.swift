@@ -5,6 +5,7 @@ import TrainingInterface
 import TrainingRepositories
 
 struct WorkoutSessionView: View {
+    @EnvironmentObject private var audio: HoldAudioDelegate
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) private var scenePhase
     @State var workout: OpenWorkout
@@ -54,9 +55,11 @@ struct WorkoutSessionView: View {
                     Section {
                         WorkoutSetHeader(name: set.exercise.name, number: set.number, count: set.count)
                         if let timer = workout.timer {
-                            TimelineView(.periodic(from: .now, by: 1)) { tick in
-                                WorkoutPhaseView(workout: timer, at: tick.date)
+                            if set.exercise.perSide { Text("Side \(timer.sideNumber) of 2") }
+                            if set.exercise.segments.count > 1 {
+                                Text("Hold \(timer.holdNumber) of \(set.exercise.segments.count)")
                             }
+                            WorkoutPhaseView(workout: timer, at: date)
                         }
                         WorkoutSetPrescription(
                             exercise: set.exercise, equipment: set.equipment, gymID: workout.prescription.gymID)
@@ -100,7 +103,7 @@ struct WorkoutSessionView: View {
                     try apply(.correctSet(id: record.id, performance: performance))
                 }
             }
-            .safeAreaInset(edge: .bottom) { primaryAction(rest: rest) }
+            .safeAreaInset(edge: .bottom) { primaryAction(rest: rest, at: date) }
             .onChange(of: scenePhase, initial: true) {
                 if scenePhase == .active { refresh() }
             }
@@ -123,20 +126,34 @@ struct WorkoutSessionView: View {
         }
     }
 
-    private func primaryAction(rest: OpenWorkout.Rest?) -> some View {
+    private func primaryAction(rest: OpenWorkout.Rest?, at date: Date) -> some View {
         Group {
             if let rest {
                 action("End rest") { adjustRest(rest, by: .end) }
             } else if let set = workout.nextSet {
                 if let timer = workout.timer {
                     VStack {
-                        if timer.pausedSeconds == nil {
+                        if timer.exerciseEnd == nil && timer.pausedSeconds == nil {
+                            let sideStart = timer.sideNumber == 2 && timer.holdNumber == 1
+                            action(sideStart ? "Start second side" : "Start next hold") {
+                                control(.start, set: set, revision: timer.revision)
+                            }.disabled(date < (timer.holdAvailableAt ?? .distantPast))
+                        } else if timer.pausedSeconds == nil {
                             action("Pause") { control(.pause, set: set, revision: timer.revision) }
                         } else {
                             action("Resume") { control(.resume, set: set, revision: timer.revision) }
                         }
-                        Button("Finish set early") { control(.complete, set: set, revision: timer.revision) }
-                            .buttonStyle(.bordered)
+                        Button {
+                            control(.complete, set: set, revision: timer.revision)
+                        } label: {
+                            if set.exercise.perSide && timer.sideNumber == 1 {
+                                Text("Finish side early")
+                            } else {
+                                Text("Finish set early")
+                            }
+                        }
+                        .buttonStyle(.bordered)
+                        .disabled(timer.exerciseStart == nil && timer.pausedSeconds == nil && timer.holdNumber == 1)
                     }
                 } else if set.timedDuration != nil {
                     action("Start set") { control(.start, set: set, revision: 0) }
@@ -179,9 +196,14 @@ struct WorkoutSessionView: View {
 
     private func control(_ action: WorkoutAction, set: OpenWorkout.PendingSet, revision: Int) {
         do {
+            let firstSide = set.exercise.perSide && workout.timer?.sideNumber == 1
             try apply(
                 .controlTimer(
                     exerciseID: set.exercise.id, number: set.number, expectedRevision: revision, action: action))
+            audio.schedule(summary == nil ? workout.timingCues : [])
+            if action == .complete {
+                audio.play(firstSide ? .sideCompleted : (set.number == set.count ? .lastSetCompleted : .setCompleted))
+            }
         } catch {
             refresh()
             actionError = "Could not update workout"
@@ -202,7 +224,10 @@ struct WorkoutSessionView: View {
     }
 
     private func finish() {
-        do { try apply(.finish) } catch { actionError = "Could not finish workout" }
+        do {
+            try apply(.finish)
+            audio.schedule([])
+        } catch { actionError = "Could not finish workout" }
     }
 }
 
@@ -224,16 +249,28 @@ struct FinishedWorkoutView: View {
                         ForEach(exercise.sets) { set in
                             VStack(alignment: .leading) {
                                 Label("Set \(set.number) completed", systemImage: "checkmark.circle")
+                                if set.performance.secondSideSegments != nil { Text("First side").font(.caption) }
                                 ForEach(set.performance.segments.indices, id: \.self) { i in
                                     switch set.performance.segments[i] {
                                     case .toFailure: Text("To failure · Reps unspecified")
-                                    case .seconds(let seconds): Text("\(seconds) s")
+                                    case .seconds(let seconds):
+                                        if set.performance.perSide && set.performance.secondSideSegments == nil {
+                                            Text("\(seconds) s per side")
+                                        } else {
+                                            Text("\(seconds) s")
+                                        }
                                     case .repetitions(let count):
                                         if set.performance.perSide {
                                             Text("\(count) reps per side")
                                         } else {
                                             Text("\(count) reps")
                                         }
+                                    }
+                                }
+                                if let second = set.performance.secondSideSegments {
+                                    Text("Second side").font(.caption)
+                                    ForEach(second.indices, id: \.self) { index in
+                                        if case .seconds(let seconds) = second[index] { Text("\(seconds) s") }
                                     }
                                 }
                                 if let load = set.performance.load {
@@ -371,20 +408,28 @@ private struct SetCorrectionView: View {
     let record: OpenWorkout.Rest
     let save: (SetPerformance) throws -> Void
     @State private var values: [String] = []
+    @State private var secondSide: [String] = []
     @State private var weight = ""
     @State private var failed = false
 
     var body: some View {
         NavigationStack {
             Form {
+                if !secondSide.isEmpty { Text("First side") }
                 ForEach(values.indices, id: \.self) { index in
                     let seconds = if case .seconds = record.prescribedSegments[index] { true } else { false }
                     TextField(seconds ? "Seconds" : "Actual repetitions", text: $values[index]).keyboardType(.numberPad)
                 }
+                if !secondSide.isEmpty {
+                    Text("Second side")
+                    ForEach(secondSide.indices, id: \.self) { index in
+                        TextField("Seconds", text: $secondSide[index]).keyboardType(.numberPad)
+                    }
+                }
                 if record.prescribedSegments.contains(.toFailure) {
                     Text("Leave repetitions blank if you did not count them.")
                 }
-                if record.performance.perSide { Text("Enter repetitions per side.") }
+                if record.performance.perSide && secondSide.isEmpty { Text("Enter repetitions per side.") }
                 if let load = record.performance.load {
                     LabeledContent(load.unit.rawValue) {
                         TextField("Actual load", text: $weight).keyboardType(.decimalPad)
@@ -412,6 +457,14 @@ private struct SetCorrectionView: View {
                     case .seconds(let n), .repetitions(let n): String(n)
                     }
                 }
+                if record.performance.perSide,
+                    record.prescribedSegments.allSatisfy({ if case .seconds = $0 { true } else { false } })
+                {
+                    secondSide =
+                        record.performance.secondSideSegments?.compactMap {
+                            if case .seconds(let seconds) = $0 { String(seconds) } else { nil }
+                        } ?? values
+                }
                 if let load = record.performance.load {
                     weight = TrainingDisplayFormat.editableWeight(load.amount, locale: locale)
                 }
@@ -428,12 +481,20 @@ private struct SetCorrectionView: View {
                 result.segments.append(.toFailure)
                 continue
             }
-            guard let n = Int(value), n > 0 else { return nil }
+            guard let n = Int(value) else { return nil }
             if case .seconds = prescribed {
+                guard n >= 0 else { return nil }
                 result.segments.append(.seconds(n))
             } else {
+                guard n > 0 else { return nil }
                 result.segments.append(.repetitions(n))
             }
+        }
+        if !secondSide.isEmpty {
+            let seconds = secondSide.compactMap(Int.init)
+            guard seconds.count == values.count, seconds.allSatisfy({ $0 >= 0 }) else { return nil }
+            let segments = seconds.map(ExerciseSegment.seconds)
+            result.secondSideSegments = segments == result.segments ? nil : segments
         }
         if result.load != nil {
             guard let amount = TrainingDisplayFormat.parseWeight(weight, locale: locale) else { return nil }
