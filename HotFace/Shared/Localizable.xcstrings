@@ -73,11 +73,23 @@
       }
     },
     "+15 s" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "+15 s"
+          }
+        }
+      }
+    },
+    "−15 s" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "−15 s"
           }
         }
       }
@@ -303,6 +315,7 @@
       }
     },
     "After superset" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -523,6 +536,7 @@
       }
     },
     "Between rounds" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -951,6 +965,7 @@
       }
     },
     "Custom rest after superset" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -961,6 +976,7 @@
       }
     },
     "Custom rest between rounds" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -1261,6 +1277,7 @@
       }
     },
     "End rest" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -1400,6 +1417,7 @@
       }
     },
     "Extend rest by 15 seconds" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -2177,6 +2195,16 @@
         }
       }
     },
+    "Ready" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En espera"
+          }
+        }
+      }
+    },
     "Red" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2287,6 +2315,7 @@
       }
     },
     "Rest complete" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -2700,6 +2729,7 @@
       }
     },
     "Shorten rest by 15 seconds" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -2873,6 +2903,7 @@
       }
     },
     "Superset rests" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -3233,16 +3264,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aquí aparecerán tus días de entrenamiento cuando tengas una rutina activa."
-          }
-        }
-      }
-    },
-    "−15 s" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "−15 s"
           }
         }
       }

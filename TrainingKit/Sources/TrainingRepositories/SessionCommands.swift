@@ -197,7 +197,7 @@ struct SessionWriter {
         case .adjustRest(let id, let adjustment):
             let session = try openSession()
             let workout = try workout(session)
-            guard let rest = workout.rest, rest.id == id, rest.endsAt > date else {
+            guard let rest = workout.activeRest(at: date), rest.id == id else {
                 throw SessionCommandError.restUnavailable
             }
             var snapshot = workout.prescription

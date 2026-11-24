@@ -101,6 +101,51 @@ struct OpenWorkoutTests {
         #expect(try store.openWorkout()?.rest?.betweenExercises == true)
     }
 
+    @Test(arguments: [false, true])
+    func reopeningAfterRestLeavesTheNextSetWaiting(betweenExercises: Bool) throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        func reopen() -> CoordinatedModelStore { CoordinatedModelStore(trainingDirectory: directory) }
+
+        let gymID = try #require(reopen().createGym(name: "Gym").activeGymID)
+        let row = ExercisePrescription(name: "Row", sets: betweenExercises ? 1 : 2, segments: [.seconds(10)])
+        let curl = ExercisePrescription(name: "Curl", sets: 1, segments: [.seconds(8)])
+        let day = RoutineDay(name: "Day", exercises: [row, curl])
+        var routine = ManualRoutine(gymID: gymID)
+        routine.plan = RoutinePlan(name: "Routine", days: [day], restBetweenSets: 30, restBetweenExercises: 45)
+        try reopen().saveRoutine(routine)
+
+        let sessionID = UUID()
+        func command(_ action: SessionCommand.Action, at seconds: TimeInterval) throws {
+            _ = try reopen().apply(SessionCommand(sessionID: sessionID, action: action), clock: SetClock(seconds))
+        }
+        try command(.start(routineID: routine.id, gymID: gymID, dayID: day.id, cycleID: nil), at: 0)
+        try command(.logSet(exerciseID: row.id, number: 1, performance: .init(asPrescribed: row)), at: 10)
+
+        let active = try #require(try reopen().openWorkout())
+        let deadline = betweenExercises ? 55.0 : 40.0
+        #expect(active.activeRest(at: SetClock(deadline - 1).now)?.endsAt == SetClock(deadline).now)
+
+        let reopened = try #require(try reopen().openWorkout())
+        #expect(reopened.activeRest(at: SetClock(deadline).now) == nil)
+        #expect(reopened.activeRest(at: SetClock(3_600).now) == nil)
+        let next = try #require(reopened.nextSet)
+        #expect(next.exercise.id == (betweenExercises ? curl.id : row.id))
+        #expect(next.number == (betweenExercises ? 1 : 2))
+        try reopen().withContext { context in
+            let count = try context.fetchCount(FetchDescriptor<TrainingSchemaV1.PerformedSet>())
+            #expect(count == 1)
+        }
+        try command(
+            .logSet(exerciseID: next.exercise.id, number: next.number, performance: .init(asPrescribed: next.exercise)),
+            at: 3_601)
+        try reopen().withContext { context in
+            let count = try context.fetchCount(FetchDescriptor<TrainingSchemaV1.PerformedSet>())
+            #expect(count == 2)
+        }
+    }
+
     @Test func occupiedStationAndReplacementsRespectSessionScope() throws {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)

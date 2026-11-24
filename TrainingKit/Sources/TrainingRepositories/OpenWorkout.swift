@@ -33,6 +33,11 @@ public struct OpenWorkout: Identifiable, Sendable {
     public let rest: Rest?
     public var timer: WorkoutTimeline? { prescription.timer }
 
+    public func activeRest(at date: Date) -> Rest? {
+        guard timer == nil, let rest, date < rest.endsAt else { return nil }
+        return rest
+    }
+
     init(session: TrainingSchemaV1.Session, performed: [TrainingSchemaV1.PerformedSet]) throws {
         id = session.id
         let prescription = try session.prescription
