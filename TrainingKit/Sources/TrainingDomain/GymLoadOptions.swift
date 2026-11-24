@@ -28,7 +28,9 @@ extension GymInventory {
         switch equipment.kind {
         case .barbell, .plateLoadedMachine:
             return plateLoadOptions(unit: equipment.unit, maximumPerSide: equipment.maximumAddedWeightPerSide)
-        case .bodyweight, .band, .cardio:
+        case .selectorizedMachine where equipment.availableLoads.isEmpty:
+            return loadOptions(for: .selectorizedMachine)
+        case .selectorizedMachine, .bodyweight, .band, .cardio:
             return equipment.availableLoads.map {
                 ExerciseLoad(amount: $0, unit: equipment.unit, representation: .combined, implementCount: 1)
             }
