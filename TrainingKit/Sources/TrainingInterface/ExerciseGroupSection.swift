@@ -44,6 +44,6 @@ public struct ExerciseGroupSection: Identifiable {
 
     public func delete(_ offsets: IndexSet, from day: inout RoutineDay) {
         let ids = Set(offsets.map { exercises[$0].id })
-        day.exercises.removeAll { ids.contains($0.id) }
+        day.removeExercises(withIDs: ids)
     }
 }

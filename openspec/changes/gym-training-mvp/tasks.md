@@ -82,7 +82,7 @@ Once both flows are defined, connect the agreed screens to the domain, persisten
 - [x] 5.2 Implement rests of 1:45 and 2:15 with routine, exercise and superset settings, ±15-second adjustments and early completion. Test that adjustments preserve future defaults and never produce negative times.
 - [x] 5.3 Implement transitions to the next set or exercise in a waiting state. Verify expiration outside the app and that the next activity starts only when requested.
 - [x] 5.4 Implement per-side timing, holds and configurable restart. Test the cue and transition after the first side and rest only after both sides.
-- [ ] 5.5 Implement creation and dissolution of usual and temporary supersets. Test rounds, equal set counts, mixed prescriptions and preservation of progress when dissolving a superset.
+- [x] 5.5 Implement creation and dissolution of usual and temporary supersets. Test rounds, equal set counts, mixed prescriptions and preservation of progress when dissolving a superset.
 - [ ] 5.6 Integrate localized lock-screen controls and cues. Verify a real session with music and headphones and with permissions granted and denied. Verify that inoperative controls do not report success.
 - [ ] 5.7 Document verified capabilities, system limits and permission steps. Cross-check the guide against the device matrix.
 

@@ -75,11 +75,17 @@ The app SHALL retain progress after an unexpected closure and allow the user to 
 - **THEN** the app offers to continue the session or finish the work already saved, and only finishing marks the cycle day complete
 
 ### Requirement: Supersets
-The app SHALL support usual and temporary supersets, including exercises from different groups, with equal set counts and different repetitions or durations. Each round SHALL include one set of each member and rest at the end. The user SHALL be able to dissolve a superset during a workout and explicitly save a change as usual.
+The app SHALL support usual and temporary supersets, including exercises from different groups, with equal prescribed set counts and different repetitions or durations. Starting when the superset is formed, each round SHALL include the next pending set of each member that still has work, in day order. The app SHALL rest between rounds, including when only one member remains. The user SHALL be able to dissolve a superset during a workout and explicitly save a change as usual.
 
 #### Scenario: Group exercises with incompatible set counts
 - **WHEN** the user groups exercises with different set counts
 - **THEN** the app requires a common set count before activating the superset
+
+#### Scenario: Form a superset after starting an exercise
+- **WHEN** the user groups row and press in that order for three sets each after completing row sets 1 and 2
+- **THEN** round 1 contains row set 3 followed immediately by press set 1, round 2 contains press set 2, and round 3 contains press set 3
+- **AND** the app starts the configured between-round rest after press set 1 and again after press set 2
+- **AND** if the user reopens the workout immediately after logging row set 3, the app shows press set 1 in round 1 of 3, ready to start
 
 #### Scenario: Dissolve a superset during a session
 - **WHEN** the user dissolves the superset

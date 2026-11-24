@@ -64,6 +64,8 @@ public struct SessionPrescription: Codable, Equatable, Sendable {
     public var timer: WorkoutTimeline?
     public var restOverride: RestOverride?
     public var temporaryExerciseIDs: Set<UUID>?
+    /// Set numbers already recorded for each exercise when its current superset was formed.
+    public var setsBeforeSuperset: [UUID: Set<Int>]?
     public var equipment: [EquipmentDescription]
     public let restBetweenSets: TimeInterval
     public let restBetweenExercises: TimeInterval
@@ -87,6 +89,18 @@ public struct SessionPrescription: Codable, Equatable, Sendable {
         self.restBetweenSets = plan.restBetweenSets
         self.restBetweenExercises = plan.restBetweenExercises
     }
+    public func roundNumber(for exercise: ExercisePrescription, set: Int) -> Int {
+        guard exercise.supersetID != nil, let previous = setsBeforeSuperset?[exercise.id] else { return set }
+        if previous.contains(set) { return 0 }
+        return set - previous.count { $0 < set }
+    }
+
+    public func roundCount(in supersetID: UUID) -> Int {
+        day.exercises.filter { $0.supersetID == supersetID }.map {
+            ($0.sets ?? 0) - (setsBeforeSuperset?[$0.id]?.count ?? 0)
+        }.max() ?? 0
+    }
+
     public func restDuration(
         after exercise: ExercisePrescription, completedSet: Int,
         before nextExercise: ExercisePrescription, nextSet: Int
@@ -94,7 +108,9 @@ public struct SessionPrescription: Codable, Equatable, Sendable {
         if let supersetID = exercise.supersetID {
             let settings = day.supersetRests[supersetID]
             if supersetID == nextExercise.supersetID {
-                return nextSet == completedSet ? 0 : settings?.restBetweenRounds ?? restBetweenSets
+                let completedRound = roundNumber(for: exercise, set: completedSet)
+                let nextRound = roundNumber(for: nextExercise, set: nextSet)
+                return nextRound > completedRound ? settings?.restBetweenRounds ?? restBetweenSets : 0
             }
             return settings?.restAfterSuperset ?? restBetweenExercises
         }

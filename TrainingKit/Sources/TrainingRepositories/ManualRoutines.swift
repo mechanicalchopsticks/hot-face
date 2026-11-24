@@ -151,6 +151,7 @@ func validateForEditing(_ plan: RoutinePlan) throws {
     else { throw RoutineEditorError.incompletePlan }
 
     for day in plan.days {
+        try day.validateSupersets(defaultSets: plan.defaultSets)
         guard hasName(day.name), !day.exercises.isEmpty else { throw RoutineEditorError.incompletePlan }
         for settings in day.supersetRests.values {
             guard settings.restBetweenRounds.map(validRest) != false,

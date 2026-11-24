@@ -41,6 +41,10 @@ public struct OpenWorkout: Identifiable, Sendable {
     public let nextSet: PendingSet?
     public let rest: Rest?
     public var timer: WorkoutTimeline? { prescription.timer }
+    public var nextSupersetRound: (number: Int, count: Int)? {
+        guard let set = nextSet, let id = set.exercise.supersetID else { return nil }
+        return (prescription.roundNumber(for: set.exercise, set: set.number), prescription.roundCount(in: id))
+    }
 
     public func activeRest(at date: Date) -> Rest? {
         guard timer == nil, let rest, date < rest.endsAt else { return nil }
@@ -80,13 +84,24 @@ public struct OpenWorkout: Identifiable, Sendable {
         let skipped = Set(session.skippedExerciseIDs)
         var pending: PendingSet?
         var remaining: [ExercisePrescription] = []
-        for exercise in prescription.day.exercises where !skipped.contains(exercise.id) {
+        var firstMemberIndex: [UUID: Int] = [:]
+        var pendingPriority = (Int.max, Int.max)
+        for (index, exercise) in prescription.day.exercises.enumerated() where !skipped.contains(exercise.id) {
+            // Schedule the entire block at its first member, even when that member has finished.
+            let block =
+                exercise.supersetID.map { id in
+                    if let first = firstMemberIndex[id] { return first }
+                    firstMemberIndex[id] = index
+                    return index
+                } ?? index
             guard let count = exercise.sets, count > 0 else { throw CocoaError(.coderReadCorrupt) }
             let completed = Set(byExercise[exercise.id, default: []].map(\.number))
             if let number = (1...count).first(where: { !completed.contains($0) }) {
                 let equipment = prescription.equipment.first { $0.id == exercise.equipmentID }
                 remaining.append(exercise)
-                if pending == nil {
+                let priority = (block, prescription.roundNumber(for: exercise, set: number))
+                if priority < pendingPriority {
+                    pendingPriority = priority
                     pending = PendingSet(exercise: exercise, equipment: equipment, number: number, count: count)
                 }
             }

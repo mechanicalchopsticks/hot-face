@@ -1,6 +1,116 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Supersets" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Superseries"
+          }
+        }
+      }
+    },
+    "Create superset" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crear superserie"
+          }
+        }
+      }
+    },
+    "Dissolve superset" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desarmar superserie"
+          }
+        }
+      }
+    },
+    "Rounds: %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rondas: %lld"
+          }
+        }
+      }
+    },
+    "Each selected exercise will use the chosen number of rounds." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cada ejercicio seleccionado tendrá el número de rondas elegido."
+          }
+        }
+      }
+    },
+    "Choose enough rounds to include all completed sets." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige suficientes rondas para incluir todas las series realizadas."
+          }
+        }
+      }
+    },
+    "Could not update superset" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo actualizar la superserie"
+          }
+        }
+      }
+    },
+    "Apply superset change" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplicar el cambio de superserie"
+          }
+        }
+      }
+    },
+    "This workout only" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solo este entrenamiento"
+          }
+        }
+      }
+    },
+    "Use the same set count for all members of a superset." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usa el mismo número de series para todos los ejercicios de la superserie."
+          }
+        }
+      }
+    },
+    "Superset · Round %lld of %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Superserie · Ronda %lld de %lld"
+          }
+        }
+      }
+    },
     "%lld s per side" : {
       "localizations" : {
         "es" : {
