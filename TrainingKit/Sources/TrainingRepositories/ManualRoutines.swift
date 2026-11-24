@@ -42,6 +42,12 @@ extension CoordinatedModelStore {
         }
     }
 
+    public func routine(id: UUID) throws -> ManualRoutine? {
+        try withContext { context in
+            try routineRecord(id: id, context: context).map(ManualRoutine.init)
+        }
+    }
+
     public func editableRoutines(in gymID: UUID) throws -> [ManualRoutine] {
         try routines(in: gymID, archived: false)
     }
@@ -120,6 +126,10 @@ func requireClosedSession(in context: ModelContext) throws {
 
 func unarchivedRoutines(in context: ModelContext) throws -> [TrainingSchemaV1.Routine] {
     try context.fetch(FetchDescriptor<TrainingSchemaV1.Routine>(predicate: #Predicate { !$0.isArchived }))
+}
+
+func routineRecord(id: UUID, context: ModelContext) throws -> TrainingSchemaV1.Routine? {
+    try context.fetch(FetchDescriptor<TrainingSchemaV1.Routine>(predicate: #Predicate { $0.id == id })).first
 }
 
 func activeRoutineRecord(in gymID: UUID, context: ModelContext) throws -> TrainingSchemaV1.Routine? {

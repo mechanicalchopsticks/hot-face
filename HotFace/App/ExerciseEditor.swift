@@ -235,7 +235,7 @@ private struct BandColorPicker: View {
     }
 }
 
-private struct BandColorLabel: View {
+struct BandColorLabel: View {
     let color: ResistanceBandColor?
 
     var body: some View {

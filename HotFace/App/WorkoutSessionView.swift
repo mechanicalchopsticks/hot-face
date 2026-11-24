@@ -180,6 +180,14 @@ struct FinishedWorkoutView: View {
                                 }
                                 if let load = set.performance.load {
                                     Text(verbatim: TrainingDisplayFormat.load(load, locale: locale))
+                                    Text(load.representation.title).font(.caption)
+                                    if load.representation == .perImplement
+                                        || (load.representation == .combined && load.implementCount > 1)
+                                    {
+                                        LabeledContent(
+                                            "Dumbbells used",
+                                            value: load.implementCount.formatted(.number.locale(locale)))
+                                    }
                                 }
                             }
                         }
@@ -289,6 +297,9 @@ private struct WorkoutSetPrescription: View {
                 Text("None")
             }
         }
+        if let color = exercise.bandColor {
+            LabeledContent("Band color") { BandColorLabel(color: color) }
+        }
         if let instructions = exercise.instructions {
             LabeledContent("Instructions", value: instructions)
         }
@@ -386,6 +397,7 @@ private struct WorkoutAdjustmentView: View {
     @State var exercise: ExercisePrescription
     let workout: OpenWorkout
     let save: (SessionCommand.Action) throws -> Void
+    @State private var canSaveAsUsual = false
     @State private var previous: ExercisePrescription?
     @State private var gym: GymProfile?
     @State private var usual = false
@@ -422,7 +434,7 @@ private struct WorkoutAdjustmentView: View {
                 if let gym, let equipment = gym.equipment(withID: exercise.equipmentID) {
                     NavigationLink("Load") { ExerciseLoadEditor(load: $exercise.load, gym: gym, equipment: equipment) }
                 }
-                Toggle("Save as usual", isOn: $usual)
+                if canSaveAsUsual { Toggle("Save as usual", isOn: $usual) }
             }
             .navigationTitle("Adjust exercise")
             .toolbar {
@@ -443,6 +455,11 @@ private struct WorkoutAdjustmentView: View {
                 do {
                     let store = try TrainingStorage.openStore()
                     gym = try store.gymCatalog().gyms.first { $0.id == workout.prescription.gymID }
+                    let routine = try store.routine(id: workout.prescription.routineID)
+                    canSaveAsUsual =
+                        routine?.plan.days.first { $0.id == workout.prescription.day.id }?.exercises.contains {
+                            $0.id == exercise.id
+                        } == true
                     previous = try store.previousAdjustment(for: exercise.id, in: workout.prescription.routineID)
                 } catch { failed = true }
             }
@@ -486,7 +503,9 @@ private struct WorkoutExerciseList: View {
             .navigationTitle("Exercises")
             .toolbar { Button("Close") { dismiss() } }
             .task {
-                do { plan = try TrainingStorage.openStore().activeRoutine()?.plan } catch { failed = true }
+                do { plan = try TrainingStorage.openStore().routine(id: workout.prescription.routineID)?.plan } catch {
+                    failed = true
+                }
             }
             .alert("Could not update workout", isPresented: $failed) { Button("OK") {} }
         }
