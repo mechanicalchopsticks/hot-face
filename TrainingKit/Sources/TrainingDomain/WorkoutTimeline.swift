@@ -1,6 +1,6 @@
 import Foundation
 
-public enum WorkoutAction: String, Sendable {
+public enum WorkoutAction: String, Codable, Sendable {
     case start, pause, resume, complete
 }
 
@@ -34,6 +34,13 @@ public struct WorkoutTimeline: Codable, Hashable, Sendable {
         [exerciseStart, exerciseEnd, restEnd].compactMap { $0 }.first { $0 > date }
     }
 
+    /// Remaining work excludes preparation and time spent paused.
+    public func remainingExerciseTime(at date: Date) -> TimeInterval {
+        if let pausedSeconds { return pausedSeconds }
+        guard let exerciseStart, let exerciseEnd else { return 0 }
+        return max(0, exerciseEnd.timeIntervalSince(max(date, exerciseStart)))
+    }
+
     public func currentSet(at date: Date) -> Int {
         if let restEnd, date >= restEnd { return setNumber + 1 }
         return setNumber
@@ -59,8 +66,7 @@ public struct WorkoutTimeline: Codable, Hashable, Sendable {
             next.exerciseEnd = end
             next.restEnd = end.addingTimeInterval(restDuration)
         case (.pause, .preparation), (.pause, .exercise):
-            guard let exerciseStart, let exerciseEnd else { return nil }
-            next.pausedSeconds = exerciseEnd.timeIntervalSince(max(now, exerciseStart))
+            next.pausedSeconds = remainingExerciseTime(at: now)
         case (.complete, .ready), (.complete, .preparation), (.complete, .exercise), (.complete, .paused):
             next.restEnd = now.addingTimeInterval(restDuration)
         default:

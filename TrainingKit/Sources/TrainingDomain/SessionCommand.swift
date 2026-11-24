@@ -9,6 +9,7 @@ public struct SessionCommand: Codable, Equatable, Sendable {
         case moveExercise(id: UUID, toFront: Bool)
         case insertExercise(sourceID: UUID, replacing: UUID?, saveAsUsual: Bool)
         case logSet(exerciseID: UUID, number: Int, performance: SetPerformance)
+        case controlTimer(exerciseID: UUID, number: Int, expectedRevision: Int, action: WorkoutAction)
         case skipAndAdvance(exerciseID: UUID)
         case rateFinished(exerciseID: UUID, effort: Effort)
         case correctSet(id: UUID, performance: SetPerformance)

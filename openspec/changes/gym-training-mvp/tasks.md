@@ -78,7 +78,7 @@ Once both flows are defined, connect the agreed screens to the domain, persisten
 
 ## 5. Timers, audio and supersets
 
-- [ ] 5.1 Integrate the validated timing solution with persisted states and an injectable clock. Test pauses, three seconds of preparation, early completion and remaining time.
+- [x] 5.1 Integrate the validated timing solution with persisted states and an injectable clock. Test pauses, three seconds of preparation, early completion and remaining time.
 - [ ] 5.2 Implement rests of 1:45 and 2:15 with routine, exercise and superset settings, ±15-second adjustments and early completion. Test that adjustments preserve future defaults and never produce negative times.
 - [ ] 5.3 Implement transitions to the next set or exercise in a waiting state. Verify expiration outside the app and that the next activity starts only when requested.
 - [ ] 5.4 Implement per-side timing, holds and configurable restart. Test the cue and transition after the first side and rest only after both sides.

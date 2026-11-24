@@ -51,6 +51,7 @@ public struct SessionPrescription: Codable, Equatable, Sendable {
     }
 
     public var restPrescription: RestPrescription?
+    public var timer: WorkoutTimeline?
     public var temporaryExerciseIDs: Set<UUID>?
     public var equipment: [EquipmentDescription]
     public let restBetweenSets: TimeInterval

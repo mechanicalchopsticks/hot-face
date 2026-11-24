@@ -6,6 +6,7 @@ import TrainingRepositories
 
 struct WorkoutSessionView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.scenePhase) private var scenePhase
     @State var workout: OpenWorkout
     @State private var reviewedRestID: UUID?
     @State private var actionError: LocalizedStringKey?
@@ -20,7 +21,8 @@ struct WorkoutSessionView: View {
     @State private var summary: WorkoutSummary?
 
     private var rest: OpenWorkout.Rest? {
-        workout.rest.flatMap { $0.id == reviewedRestID ? nil : $0 }
+        guard workout.timer == nil else { return nil }
+        return workout.rest.flatMap { $0.id == reviewedRestID ? nil : $0 }
     }
 
     var body: some View {
@@ -42,6 +44,11 @@ struct WorkoutSessionView: View {
                 if let set = workout.nextSet {
                     Section {
                         WorkoutSetHeader(name: set.exercise.name, number: set.number, count: set.count)
+                        if let timer = workout.timer {
+                            TimelineView(.periodic(from: .now, by: 1)) { tick in
+                                WorkoutPhaseView(workout: timer, at: tick.date)
+                            }
+                        }
                         WorkoutSetPrescription(
                             exercise: set.exercise, equipment: set.equipment, gymID: workout.prescription.gymID)
                     } header: {
@@ -61,7 +68,11 @@ struct WorkoutSessionView: View {
                     ToolbarItem(placement: .primaryAction) {
                         Menu {
                             Button("Exercises") { choosingExercise = true }
-                            if let next = workout.nextSet { Button("Adjust exercise") { adjusting = next.exercise } }
+                                .disabled(workout.timer != nil)
+                            if let next = workout.nextSet {
+                                Button("Adjust exercise") { adjusting = next.exercise }
+                                    .disabled(workout.timer != nil)
+                            }
                             Button("Finish workout") { confirmsFinish = true }
                         } label: {
                             Label("More", systemImage: "ellipsis.circle")
@@ -77,15 +88,18 @@ struct WorkoutSessionView: View {
             }
             .sheet(item: $correcting) { record in
                 SetCorrectionView(record: record) { performance in
-                    let store = try TrainingStorage.openStore()
-                    _ = try store.apply(
-                        SessionCommand(
-                            sessionID: workout.id, action: .correctSet(id: record.id, performance: performance)),
-                        clock: SystemWorkoutClock())
-                    if let updated = try store.openWorkout(), updated.id == workout.id { workout = updated }
+                    try apply(.correctSet(id: record.id, performance: performance))
                 }
             }
             .safeAreaInset(edge: .bottom) { primaryAction }
+            .onChange(of: scenePhase, initial: true) {
+                if scenePhase == .active { refresh() }
+            }
+            .task(id: workout.timer?.exerciseEnd) {
+                guard let end = workout.timer?.exerciseEnd else { return }
+                try? await Task.sleep(for: .seconds(max(0, end.timeIntervalSinceNow)))
+                if !Task.isCancelled { refresh() }
+            }
             .confirmationDialog("Finish workout", isPresented: $confirmsFinish, titleVisibility: .visible) {
                 Button("Finish workout", action: finish)
             } message: {
@@ -108,7 +122,21 @@ struct WorkoutSessionView: View {
                         .disabled(timeline.date < rest.endsAt)
                 }
             } else if let set = workout.nextSet {
-                action("Complete set") { complete(set) }
+                if let timer = workout.timer {
+                    VStack {
+                        if timer.pausedSeconds == nil {
+                            action("Pause") { control(.pause, set: set, revision: timer.revision) }
+                        } else {
+                            action("Resume") { control(.resume, set: set, revision: timer.revision) }
+                        }
+                        Button("Finish set early") { control(.complete, set: set, revision: timer.revision) }
+                            .buttonStyle(.bordered)
+                    }
+                } else if set.timedDuration != nil {
+                    action("Start set") { control(.start, set: set, revision: 0) }
+                } else {
+                    action("Complete set") { complete(set) }
+                }
             } else {
                 action("Finish workout", perform: finish)
             }
@@ -128,10 +156,29 @@ struct WorkoutSessionView: View {
     private func apply(_ action: SessionCommand.Action) throws {
         let store = try TrainingStorage.openStore()
         _ = try store.apply(SessionCommand(sessionID: workout.id, action: action), clock: SystemWorkoutClock())
+        try reload(from: store)
+    }
+
+    private func refresh() {
+        do { try reload(from: TrainingStorage.openStore()) } catch { actionError = "Could not update workout" }
+    }
+
+    private func reload(from store: CoordinatedModelStore) throws {
         if let updated = try store.openWorkout(), updated.id == workout.id {
             workout = updated
         } else {
             summary = try store.workoutSummary(id: workout.id)
+        }
+    }
+
+    private func control(_ action: WorkoutAction, set: OpenWorkout.PendingSet, revision: Int) {
+        do {
+            try apply(
+                .controlTimer(
+                    exerciseID: set.exercise.id, number: set.number, expectedRevision: revision, action: action))
+        } catch {
+            refresh()
+            actionError = "Could not update workout"
         }
     }
 

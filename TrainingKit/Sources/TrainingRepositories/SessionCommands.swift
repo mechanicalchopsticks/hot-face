@@ -14,6 +14,7 @@ public enum SessionCommandError: Error, Equatable {
     case missingRoutine, missingGym, missingCycle, dayUnavailable
     case unknownExercise, skippedExercise, invalidSetNumber, conflictingSet
     case exerciseNotStarted, conflictingRating, missingEquipment
+    case invalidTimerTransition
 }
 
 extension CoordinatedModelStore {
@@ -28,7 +29,11 @@ extension CoordinatedModelStore {
             }
 
             let writer = SessionWriter(context: context, sessionID: command.sessionID)
-            let result = try writer.perform(command.action, at: clock.now)
+            let date = clock.now
+            if let session = try writer.session(), session.finishedAt == nil {
+                try writer.reconcileTimer(in: session, at: date)
+            }
+            let result = try writer.perform(command.action, at: date)
             context.insert(try Receipt(command))
             try context.save()
             return result
@@ -36,19 +41,38 @@ extension CoordinatedModelStore {
     }
 }
 
-private struct SessionWriter {
+struct SessionWriter {
     let context: ModelContext
     let sessionID: UUID
 
-    func perform(_ action: SessionCommand.Action, at date: Date) throws -> SessionCommandResult {
+    func session() throws -> TrainingSchemaV1.Session? {
         let sessions = FetchDescriptor<V1.Session>(predicate: #Predicate { $0.id == sessionID })
-        let existing = try context.fetch(sessions).first
+        return try context.fetch(sessions).first
+    }
+
+    func workout(_ session: TrainingSchemaV1.Session) throws -> OpenWorkout {
+        let sets = try context.fetch(
+            FetchDescriptor<V1.PerformedSet>(
+                predicate: #Predicate { $0.sessionID == sessionID },
+                sortBy: [SortDescriptor(\.performedAt, order: .reverse)]))
+        return try OpenWorkout(session: session, performed: sets)
+    }
+
+    func perform(_ action: SessionCommand.Action, at date: Date) throws -> SessionCommandResult {
+        let existing = try session()
         func openSession() throws -> V1.Session {
             guard let existing else { throw SessionCommandError.sessionNotFound }
             guard existing.finishedAt == nil else { throw SessionCommandError.sessionClosed }
             return existing
         }
 
+        if try existing?.prescription.timer != nil {
+            switch action {
+            case .adjust, .moveExercise, .insertExercise, .skip, .skipAndAdvance, .completeSet, .logSet:
+                throw SessionCommandError.invalidTimerTransition
+            default: break
+            }
+        }
         switch action {
         case .start(let routineID, let gymID, let dayID, let cycleID):
             if let existing {
@@ -62,6 +86,26 @@ private struct SessionWriter {
         case .logSet(let id, let number, let performance):
             _ = try perform(.completeSet(exerciseID: id, number: number, performance: performance), at: date)
             try finishIfResolved(openSession(), at: date)
+        case .controlTimer(let id, let number, let revision, let action):
+            let session = try openSession()
+            let state = try workout(session)
+            guard let set = state.nextSet, set.exercise.id == id, set.number == number,
+                let duration = set.timedDuration,
+                state.timer != nil || (action == .start && (state.rest?.endsAt ?? .distantPast) <= date)
+            else { throw SessionCommandError.invalidTimerTransition }
+            let timer = state.timer ?? WorkoutTimeline(setNumber: number)
+            guard
+                let next = timer.applying(
+                    action, expectedRevision: revision, expectedSet: number,
+                    exerciseDuration: duration, restDuration: 0, clock: CommandClock(now: date))
+            else { throw SessionCommandError.invalidTimerTransition }
+            if action == .complete {
+                try completeTimer(set: set, timer: timer, in: session, at: date)
+            } else {
+                var plan = state.prescription
+                plan.timer = next
+                try session.updatePrescription(plan)
+            }
         case .skipAndAdvance(let id):
             _ = try perform(.skip(exerciseID: id), at: date)
             try finishIfResolved(openSession(), at: date)
@@ -181,7 +225,11 @@ private struct SessionWriter {
         case .finish:
             guard let session = existing else { throw SessionCommandError.sessionNotFound }
             guard session.finishedAt == nil else { return .alreadyApplied }
-            let plan = try session.prescription
+            var plan = try session.prescription
+            if plan.timer != nil {
+                plan.timer = nil
+                try session.updatePrescription(plan)
+            }
             let sets = try context.fetch(
                 FetchDescriptor<V1.PerformedSet>(predicate: #Predicate { $0.sessionID == sessionID }))
             let byExercise = Dictionary(grouping: sets, by: \.exerciseID)
@@ -199,10 +247,36 @@ private struct SessionWriter {
     }
 
     private func finishIfResolved(_ session: V1.Session, at date: Date) throws {
-        let sets = try context.fetch(
-            FetchDescriptor<V1.PerformedSet>(predicate: #Predicate { $0.sessionID == sessionID }))
-        let state = try OpenWorkout(session: session, performed: sets)
-        if state.nextSet == nil { _ = try perform(.finish, at: date) }
+        if try workout(session).nextSet == nil { _ = try perform(.finish, at: date) }
+    }
+
+    func reconcileTimer(in session: TrainingSchemaV1.Session, at date: Date) throws {
+        guard let timer = try session.prescription.timer, let end = timer.exerciseEnd, end <= date else { return }
+        guard let set = try workout(session).nextSet, set.number == timer.setNumber else {
+            throw CocoaError(.coderReadCorrupt)
+        }
+        try completeTimer(set: set, timer: timer, in: session, at: end)
+        // Expiry is already due even if the command that woke the app turns out to be stale.
+        try context.save()
+    }
+
+    private func completeTimer(
+        set: OpenWorkout.PendingSet, timer: WorkoutTimeline, in session: V1.Session, at date: Date
+    ) throws {
+        guard let duration = set.timedDuration, case .seconds(let target) = set.exercise.segments.first else {
+            throw SessionCommandError.invalidTimerTransition
+        }
+        let remaining = timer.remainingExerciseTime(at: date)
+        var performance = SetPerformance(asPrescribed: set.exercise)
+        if remaining > 0 {
+            let elapsed = max(0, duration - remaining).rounded(.down)
+            performance.segments = [.seconds(Int(exactly: elapsed) ?? target)]
+            performance.isPartial = true
+        }
+        var plan = try session.prescription
+        plan.timer = nil
+        try session.updatePrescription(plan)
+        _ = try perform(.logSet(exerciseID: set.exercise.id, number: set.number, performance: performance), at: date)
     }
 
     private func insertExercise(_ sourceID: UUID, replacing: UUID?, usual: Bool, in session: V1.Session, at date: Date)
@@ -292,6 +366,10 @@ private struct SessionWriter {
         guard let cycle = try context.fetch(cycles).first else { throw SessionCommandError.missingCycle }
         return cycle
     }
+}
+
+private struct CommandClock: WorkoutClock {
+    let now: Date
 }
 
 extension ExercisePrescription {
