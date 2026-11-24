@@ -51,12 +51,20 @@ extension GymInventory {
                 .filter { !$0.isNaN && $0 > 0 && $0 <= limit }
         ).sorted()
         var reachable: Set<Decimal> = [0]
+        // Bound the picker even for saved fractional sizes. Visit combinations with fewer plates first.
+        let maximumOptions = 1024
         var pending: [Decimal] = [0]
-        while let weight = pending.popLast() {
+        var index = 0
+        search: while index < pending.count {
+            let weight = pending[index]
+            index += 1
             for size in sizes {
                 let next = weight + size
                 if next > limit { break }
-                if reachable.insert(next).inserted { pending.append(next) }
+                if reachable.insert(next).inserted {
+                    pending.append(next)
+                    if reachable.count == maximumOptions { break search }
+                }
             }
         }
         return reachable.sorted().map {
