@@ -1,0 +1,65 @@
+{
+  "day" : {
+    "exercises" : [
+      {
+        "group" : "Back",
+        "id" : "DFA6229E-68DB-4DCB-AA47-36AB2750526F",
+        "load" : {
+          "undefined" : {
+
+          }
+        },
+        "name" : "Row",
+        "perSide" : false,
+        "segments" : [
+          {
+            "repetitions" : {
+              "_0" : 8
+            }
+          }
+        ],
+        "sets" : 3,
+        "supersetID" : "45246A7F-269B-41FB-BD6B-2F0E0B8CD529"
+      },
+      {
+        "group" : "Chest",
+        "id" : "102A6C68-7C57-4B18-9371-70461F590E03",
+        "load" : {
+          "undefined" : {
+
+          }
+        },
+        "name" : "Press",
+        "perSide" : false,
+        "segments" : [
+          {
+            "toFailure" : {
+
+            }
+          }
+        ],
+        "sets" : 3,
+        "supersetID" : "45246A7F-269B-41FB-BD6B-2F0E0B8CD529"
+      }
+    ],
+    "groupNames" : [
+      "Back",
+      "Chest"
+    ],
+    "id" : "572EE00A-699F-49C4-AAD8-9350383DD76A",
+    "name" : "Day",
+    "supersetRests" : [
+
+    ]
+  },
+  "equipment" : [
+
+  ],
+  "gymID" : "DC9B4ADF-4EF1-497A-9ECF-D2D5830B6A22",
+  "gymName" : "Gym",
+  "restBetweenExercises" : 135,
+  "restBetweenSets" : 105,
+  "routineID" : "573B41A0-9A95-4759-97D9-170188115A5F",
+  "routineName" : "Routine",
+  "routineRevision" : 1
+}

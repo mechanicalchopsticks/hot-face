@@ -69,7 +69,7 @@ struct SessionWriter {
 
         if try existing?.prescription.timer != nil {
             switch action {
-            case .adjust, .moveExercise, .insertExercise, .skip, .skipAndAdvance, .completeSet, .logSet:
+            case .adjust, .editSuperset, .moveExercise, .insertExercise, .skip, .skipAndAdvance, .completeSet, .logSet:
                 throw SessionCommandError.invalidTimerTransition
             default: break
             }
@@ -131,6 +131,12 @@ struct SessionWriter {
                 return .alreadyApplied
             }
             guard !session.skippedExerciseIDs.contains(id) else { throw SessionCommandError.skippedExercise }
+            if target.supersetID != nil {
+                let next = try workout(session).nextSet
+                guard next?.exercise.id == id, next?.number == number else {
+                    throw SessionCommandError.invalidSetNumber
+                }
+            }
             context.insert(
                 try V1.PerformedSet(
                     sessionID: sessionID, exerciseID: id, number: number,
@@ -141,9 +147,20 @@ struct SessionWriter {
             guard let index = plan.day.exercises.firstIndex(where: { $0.id == id }) else {
                 throw SessionCommandError.unknownExercise
             }
-            let exercise = plan.day.exercises.remove(at: index)
-            plan.day.exercises.insert(exercise, at: toFront ? 0 : plan.day.exercises.endIndex)
+            let exercise = plan.day.exercises[index]
+            var block = plan.day.exercises.filter {
+                $0.id == id || (exercise.supersetID != nil && $0.supersetID == exercise.supersetID)
+            }
+            if toFront {
+                block.removeAll { $0.id == id }
+                block.insert(exercise, at: 0)
+            }
+            let ids = Set(block.map(\.id))
+            plan.day.exercises.removeAll { ids.contains($0.id) }
+            plan.day.exercises.insert(contentsOf: block, at: toFront ? 0 : plan.day.exercises.endIndex)
             try session.updatePrescription(plan)
+        case .editSuperset(let edit, let usual):
+            try editSuperset(edit, saveAsUsual: usual, in: openSession(), at: date)
         case .insertExercise(let sourceID, let replacing, let usual):
             try insertExercise(sourceID, replacing: replacing, usual: usual, in: openSession(), at: date)
         case .adjust(let id, let sets, let segments, let load, let saveAsUsual):
@@ -183,6 +200,7 @@ struct SessionWriter {
                 let previous = plan.days[d].exercises[e]
                 adjust(&plan.days[d].exercises[e], count: countChanged ? sets : previous.sets)
                 if previous != plan.days[d].exercises[e] {
+                    try plan.days[d].validateSupersets(defaultSets: plan.defaultSets)
                     try routine.replacePlan(plan)
                     context.insert(
                         try V1.PrescriptionChange(
@@ -266,6 +284,45 @@ struct SessionWriter {
         if try workout(session).nextSet == nil { _ = try perform(.finish, at: date) }
     }
 
+    private func editSuperset(_ edit: SupersetEdit, saveAsUsual: Bool, in session: V1.Session, at date: Date) throws {
+        let current = try workout(session)
+        var snapshot = current.prescription
+        var priorSets = snapshot.setsBeforeSuperset ?? [:]
+        switch edit {
+        case .create(_, let members, let rounds, _):
+            guard members.isSubset(of: current.pendingExercises.map(\.id)) else { throw SupersetError.invalidMembers }
+            let sets = FetchDescriptor<V1.PerformedSet>(predicate: #Predicate { $0.sessionID == sessionID })
+            for member in members { priorSets[member] = nil }
+            for set in try context.fetch(sets) where members.contains(set.exerciseID) {
+                guard set.number <= rounds else { throw SupersetError.incompatibleSetCounts }
+                priorSets[set.exerciseID, default: []].insert(set.number)
+            }
+        case .dissolve(let id):
+            for member in snapshot.day.exercises where member.supersetID == id { priorSets[member.id] = nil }
+        }
+        snapshot.setsBeforeSuperset = priorSets.isEmpty ? nil : priorSets
+        try snapshot.day.apply(edit, defaultSets: 1)
+        try validateForEditing(RoutinePlan(name: snapshot.routineName, days: [snapshot.day]))
+        if saveAsUsual {
+            guard let routine = try routineRecord(id: snapshot.routineID, context: context) else {
+                throw SessionCommandError.missingRoutine
+            }
+            var plan = try routine.plan
+            guard let index = plan.days.firstIndex(where: { $0.id == snapshot.day.id }) else {
+                throw SessionCommandError.dayUnavailable
+            }
+            try plan.days[index].apply(edit, defaultSets: plan.defaultSets)
+            try routine.replacePlan(plan)
+        }
+        try session.updatePrescription(snapshot)
+        // Editing membership must not restart a rest that ended, or invent one mid-round.
+        if let rest = try workout(session).rest {
+            snapshot.restOverride = .init(setID: rest.id, endsAt: current.rest?.endsAt ?? date)
+            try session.updatePrescription(snapshot)
+        }
+        try finishIfResolved(session, at: date)
+    }
+
     func reconcileTimer(in session: TrainingSchemaV1.Session, at date: Date) throws {
         var plan = try session.prescription
         guard var timer = plan.timer, let end = timer.exerciseEnd, end <= date else { return }
@@ -325,9 +382,11 @@ struct SessionWriter {
             }
             let records = FetchDescriptor<V1.PerformedSet>(
                 predicate: #Predicate { $0.sessionID == sessionID && $0.exerciseID == replacing })
-            if try context.fetchCount(records) == 0 {
-                snapshot.day.exercises.remove(at: index)
-            } else {
+            var previous = snapshot.day.exercises[index]
+            snapshot.day.removeExercises(withIDs: [replacing])
+            if try context.fetchCount(records) > 0 {
+                previous.supersetID = nil
+                snapshot.day.exercises.insert(previous, at: index)
                 session.skippedExerciseIDs.append(replacing)
             }
             snapshot.day.exercises.insert(newExercise, at: index)
@@ -340,7 +399,8 @@ struct SessionWriter {
                     throw SessionCommandError.unknownExercise
                 }
                 let old = plan.days[d].exercises[index]
-                plan.days[d].exercises[index] = newExercise
+                plan.days[d].removeExercises(withIDs: [replacing])
+                plan.days[d].exercises.insert(newExercise, at: index)
                 context.insert(
                     try V1.PrescriptionChange(
                         routineID: routine.id, date: date, origin: "replacement", previous: old, updated: newExercise))
@@ -372,6 +432,7 @@ struct SessionWriter {
         let session = try V1.Session(
             id: sessionID, routine: routine, gym: gym, dayID: dayID, cycle: cycle, startedAt: date)
         let snapshot = try session.prescription
+        try snapshot.day.validateSupersets(defaultSets: 1)
         let available = Set(snapshot.equipment.map(\.id))
         guard snapshot.day.exercises.compactMap(\.equipmentID).allSatisfy(available.contains) else {
             throw SessionCommandError.missingEquipment

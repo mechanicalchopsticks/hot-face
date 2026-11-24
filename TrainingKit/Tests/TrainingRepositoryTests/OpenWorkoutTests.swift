@@ -67,11 +67,13 @@ struct OpenWorkoutTests {
         let supersetID = UUID()
         var row = ExercisePrescription(name: "Row", sets: 2, segments: [.repetitions(10)])
         var curl = ExercisePrescription(name: "Curl", sets: 2, segments: [.seconds(30)])
+        var plank = ExercisePrescription(name: "Plank", sets: 2, segments: [.seconds(5)])
         row.supersetID = supersetID
         curl.supersetID = supersetID
+        plank.supersetID = supersetID
         let squat = ExercisePrescription(name: "Squat", sets: 1, segments: [.repetitions(8)])
         let settings = SupersetRest(restBetweenRounds: 40, restAfterSuperset: 70)
-        let day = RoutineDay(name: "Day", exercises: [row, curl, squat], supersetRests: [supersetID: settings])
+        let day = RoutineDay(name: "Day", exercises: [row, squat, curl, plank], supersetRests: [supersetID: settings])
         var routine = ManualRoutine(gymID: gymID)
         routine.plan = RoutinePlan(name: "Routine", days: [day])
         try store.saveRoutine(routine)
@@ -92,13 +94,112 @@ struct OpenWorkoutTests {
         }
         try command(.start(routineID: routine.id, gymID: gymID, dayID: day.id, cycleID: nil), at: 0)
         try log(row, 1, at: 5)
-        try log(curl, 1, at: 10)
-        #expect(try store.openWorkout()?.rest?.endsAt == SetClock(50).now)
-        try log(row, 2, at: 55)
+        #expect(try store.openWorkout()?.nextSet?.exercise.id == curl.id)
         #expect(try store.openWorkout()?.rest == nil)
-        try log(curl, 2, at: 90)
-        #expect(try store.openWorkout()?.rest?.endsAt == SetClock(160).now)
+        #expect(throws: SessionCommandError.invalidSetNumber) { try log(row, 2, at: 6) }
+        try command(.controlTimer(exerciseID: curl.id, number: 1, expectedRevision: 0, action: .start), at: 10)
+        let waiting = try #require(try store.openWorkout(clock: SetClock(43)))
+        #expect(waiting.nextSet?.exercise.id == plank.id && waiting.timer == nil && waiting.rest == nil)
+        try command(.controlTimer(exerciseID: plank.id, number: 1, expectedRevision: 0, action: .start), at: 50)
+        let roundEnd = try #require(try store.openWorkout(clock: SetClock(58)))
+        #expect(roundEnd.nextSet?.exercise.id == row.id && roundEnd.nextSet?.number == 2)
+        #expect(roundEnd.timer == nil && roundEnd.rest?.endsAt == SetClock(98).now)
+        try log(row, 2, at: 100)
+        #expect(try store.openWorkout()?.nextSet?.exercise.id == curl.id)
+        #expect(try store.openWorkout()?.rest == nil)
+        try log(curl, 2, at: 110)
+        try log(plank, 2, at: 120)
+        #expect(try store.openWorkout()?.rest?.endsAt == SetClock(190).now)
         #expect(try store.openWorkout()?.rest?.betweenExercises == true)
+    }
+
+    @Test(arguments: [(false, false), (true, false), (true, true)])
+    func sessionSupersetEditsKeepScopeAndPerformedSetsAfterReopening(createAsUsual: Bool, dissolveAsUsual: Bool) throws
+    {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        func reopen() -> CoordinatedModelStore { CoordinatedModelStore(trainingDirectory: directory) }
+        let gymID = try #require(reopen().createGym(name: "Gym").activeGymID)
+        var row = ExercisePrescription(name: "Row", sets: 4, segments: [.repetitions(8)])
+        row.group = "Back"
+        var press = ExercisePrescription(name: "Press", sets: 2, segments: [.toFailure])
+        press.group = "Chest"
+        let day = RoutineDay(name: "Day", exercises: [row, press])
+        var routine = ManualRoutine(gymID: gymID)
+        routine.plan = RoutinePlan(name: "Routine", days: [day])
+        let group = UUID()
+        var invalid = routine
+        invalid.plan.days[0].exercises[0].supersetID = group
+        invalid.plan.days[0].exercises[1].supersetID = group
+        #expect(throws: SupersetError.incompatibleSetCounts) { try reopen().saveRoutine(invalid) }
+        try reopen().saveRoutine(routine)
+        let session = UUID()
+        func apply(_ action: SessionCommand.Action, at time: TimeInterval) throws {
+            let command = SessionCommand(sessionID: session, action: action)
+            _ = try reopen().apply(command, clock: SetClock(time))
+        }
+        func recordNext(_ exercise: ExercisePrescription, _ number: Int, at time: TimeInterval) throws {
+            let next = try #require(try reopen().openWorkout(clock: SetClock(time))?.nextSet)
+            #expect(next.exercise.id == exercise.id && next.number == number)
+            try apply(
+                .logSet(
+                    exerciseID: next.exercise.id, number: next.number, performance: .init(asPrescribed: next.exercise)),
+                at: time)
+        }
+        try apply(.start(routineID: routine.id, gymID: gymID, dayID: day.id, cycleID: nil), at: 0)
+        try recordNext(row, 1, at: 1)
+        try recordNext(row, 2, at: 120)
+        func creation(rounds: Int) -> SessionCommand {
+            let edit = SupersetEdit.create(id: group, members: [row.id, press.id], rounds: rounds, rest: .init())
+            return SessionCommand(sessionID: session, action: .editSuperset(edit, saveAsUsual: createAsUsual))
+        }
+        #expect(throws: SupersetError.incompatibleSetCounts) {
+            try reopen().apply(creation(rounds: 1), clock: SetClock(121))
+        }
+        let create = creation(rounds: 3)
+        #expect(try reopen().apply(create, clock: SetClock(122)) == .applied)
+        #expect(try reopen().apply(create, clock: SetClock(123)) == .alreadyApplied)
+        let grouped = try #require(try reopen().openWorkout())
+        #expect(grouped.prescription.day.exercises.map(\.sets) == [3, 3])
+        #expect(grouped.prescription.day.exercises.map(\.group) == ["Back", "Chest"])
+        let usual = try #require(try reopen().activeRoutine()?.plan.days.first)
+        #expect(usual == (createAsUsual ? grouped.prescription.day : day))
+        #expect(grouped.nextSupersetRound?.number == 1 && grouped.nextSupersetRound?.count == 3)
+        try recordNext(row, 3, at: 240)
+        #expect(try reopen().openWorkout()?.rest == nil)
+        #expect(try reopen().openWorkout()?.nextSupersetRound?.number == 1)
+        try recordNext(press, 1, at: 241)
+        #expect(try reopen().openWorkout()?.rest?.endsAt == SetClock(346).now)
+        #expect(try reopen().openWorkout()?.nextSupersetRound?.number == 2)
+        var expectedUsual = usual
+        if createAsUsual {
+            try apply(.editSuperset(.dissolve(id: group), saveAsUsual: dissolveAsUsual), at: 242)
+            let independent = try #require(try reopen().openWorkout())
+            #expect(independent.prescription.day.exercises.allSatisfy { $0.supersetID == nil })
+            if dissolveAsUsual { expectedUsual = independent.prescription.day }
+        }
+        try recordNext(press, 2, at: 550)
+        #expect(try reopen().openWorkout()?.rest?.endsAt == SetClock(655).now)
+        try recordNext(press, 3, at: 700)
+        let summary = try reopen().workoutSummary(id: session)
+        #expect(!summary.partial && summary.exercises.map { $0.sets.map(\.number) } == [[1, 2, 3], [1, 2, 3]])
+        let final = try #require(try reopen().activeRoutine()?.plan.days.first)
+        #expect(final == expectedUsual)
+    }
+
+    @Test func previousSupersetSnapshotKeepsItsRoundNumbers() throws {
+        let url = try #require(
+            Bundle.module.url(
+                forResource: "before-remaining-superset-rounds", withExtension: "json", subdirectory: "Fixtures"))
+        let snapshot = try JSONDecoder().decode(SessionPrescription.self, from: Data(contentsOf: url))
+        let row = try #require(snapshot.day.exercises.first)
+        let press = try #require(snapshot.day.exercises.last)
+        let id = try #require(row.supersetID)
+        #expect(snapshot.roundCount(in: id) == 3)
+        #expect(snapshot.roundNumber(for: row, set: 3) == 3)
+        #expect(snapshot.restDuration(after: row, completedSet: 1, before: press, nextSet: 1) == 0)
+        #expect(snapshot.restDuration(after: press, completedSet: 1, before: row, nextSet: 2) == 105)
     }
 
     @Test(arguments: [false, true])

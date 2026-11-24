@@ -40,7 +40,7 @@ struct RoutineLifecycleTests {
         func reopen() -> CoordinatedModelStore { CoordinatedModelStore(trainingDirectory: directory) }
         let gymA = try #require(reopen().createGym(name: "A").activeGymID)
         let gymB = try #require(reopen().createGym(name: "B").gyms.first { $0.id != gymA }?.id)
-        var curl = ExercisePrescription(name: "Curl", sets: 2, segments: [.repetitions(7), .repetitions(7)])
+        var curl = ExercisePrescription(name: "Curl", sets: 3, segments: [.repetitions(7), .repetitions(7)])
         curl.supersetID = UUID()
         curl.load = .estimated(.init(amount: 20, unit: .lb, representation: .perImplement, implementCount: 1))
         curl.group = "Arms"
@@ -120,7 +120,7 @@ struct RoutineLifecycleTests {
         #expect(exercises[0].segments == curl.segments && exercises[0].variant == curl.variant)
         #expect(exercises[0].instructions == curl.instructions && exercises[0].group == curl.group)
         #expect(exercises[0].perSide && exercises[0].restAfterExercise == 80)
-        #expect(exercises[0].sets == 2 && exercises[1].sets == nil)
+        #expect(exercises[0].sets == 3 && exercises[1].sets == nil)
 
         try reopen().withContext { context in
             let balances = try context.fetch(FetchDescriptor<V1.Progression>())

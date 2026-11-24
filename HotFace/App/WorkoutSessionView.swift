@@ -54,6 +54,9 @@ struct WorkoutSessionView: View {
                 if let set = workout.nextSet {
                     Section {
                         WorkoutSetHeader(name: set.exercise.name, number: set.number, count: set.count)
+                        if let round = workout.nextSupersetRound {
+                            Text("Superset · Round \(round.number) of \(round.count)")
+                        }
                         if let timer = workout.timer {
                             if set.exercise.perSide { Text("Side \(timer.sideNumber) of 2") }
                             if set.exercise.segments.count > 1 {
@@ -608,6 +611,21 @@ private struct WorkoutExerciseList: View {
                     }
                 }
                 NavigationLink("Add exercise") { catalog(replacing: nil) }
+                if workout.pendingExercises.filter({ $0.supersetID == nil }).count >= 2
+                    || workout.pendingExercises.contains(where: { $0.supersetID != nil })
+                {
+                    NavigationLink("Supersets") {
+                        SupersetEditor(
+                            day: workout.prescription.day, available: workout.pendingExercises,
+                            defaultSets: plan?.defaultSets ?? 1, roundRest: workout.prescription.restBetweenSets,
+                            finalRest: workout.prescription.restBetweenExercises, isWorkout: true,
+                            usualDay: plan?.days.first { $0.id == workout.prescription.day.id }
+                        ) { edit, usual in
+                            try apply(.editSuperset(edit, saveAsUsual: usual))
+                            dismiss()
+                        }
+                    }
+                }
                 if let next = workout.nextSet {
                     NavigationLink("Replace exercise") { catalog(replacing: next.exercise.id) }
                 }

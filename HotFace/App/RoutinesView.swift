@@ -270,6 +270,16 @@ private struct RoutineEditor: View {
                     exercise.supersetID.map { (id: $0, name: exercise.name) }
                 }, by: \.id)
             let groups = supersets.keys.sorted { $0.uuidString < $1.uuidString }
+            if day.wrappedValue.exercises.count >= 2 || !groups.isEmpty {
+                NavigationLink("Supersets") {
+                    SupersetEditor(
+                        day: day.wrappedValue, available: day.wrappedValue.exercises,
+                        defaultSets: draft.plan.defaultSets,
+                        roundRest: draft.plan.restBetweenSets, finalRest: draft.plan.restBetweenExercises,
+                        isWorkout: false
+                    ) { edit, _ in try day.wrappedValue.apply(edit, defaultSets: draft.plan.defaultSets) }
+                }
+            }
             if !groups.isEmpty {
                 Section("Superset rests") {
                     ForEach(groups, id: \.self) { id in
@@ -303,6 +313,8 @@ private struct RoutineEditor: View {
                 "Name the routine, each day and each exercise. Add at least one day, an exercise per day and a segment per exercise."
         } catch RoutineEditorError.changedRoutine {
             errorMessage = "This routine changed. Reopen it to edit the latest version."
+        } catch is SupersetError {
+            errorMessage = "Use the same set count for all members of a superset."
         } catch {
             errorMessage = "Try saving the routine again."
         }
