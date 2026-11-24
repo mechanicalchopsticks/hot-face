@@ -152,6 +152,11 @@ struct SessionCommandTests {
         routine.plan.days[0].exercises[1].sets = 2
         try reopen().saveRoutine(routine)
 
+        try apply(
+            .adjust(exerciseID: curl.id, sets: 3, segments: [.repetitions(9)], load: .undefined, saveAsUsual: true))
+        let saved = try #require(try reopen().activeRoutine())
+        #expect(saved.plan.days[0].exercises[0].sets == nil)
+
         func checkSnapshot(finished: Bool) throws {
             try reopen().withContext { context in
                 let session = try #require(context.fetch(FetchDescriptor<V1.Session>()).first)

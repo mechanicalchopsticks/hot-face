@@ -106,8 +106,9 @@ private struct SessionWriter {
             guard sets > 0, try context.fetch(performed).allSatisfy({ $0.number <= sets }) else {
                 throw SessionCommandError.invalidSetNumber
             }
-            func adjust(_ exercise: inout ExercisePrescription) {
-                exercise.sets = sets
+            let countChanged = sets != snapshot.day.exercises[index].sets
+            func adjust(_ exercise: inout ExercisePrescription, count: Int?) {
+                exercise.sets = count
                 exercise.segments = segments
                 exercise.load = load
             }
@@ -118,19 +119,18 @@ private struct SessionWriter {
             {
                 snapshot.restPrescription = .init(setID: last.id, segments: snapshot.day.exercises[index].segments)
             }
-            adjust(&snapshot.day.exercises[index])
+            adjust(&snapshot.day.exercises[index], count: sets)
             try validateForEditing(RoutinePlan(name: snapshot.routineName, days: [snapshot.day]))
             var temporaryIDs = snapshot.temporaryExerciseIDs ?? []
             if saveAsUsual {
-                guard let routine = try activeRoutineRecord(in: snapshot.gymID, context: context),
-                    routine.id == snapshot.routineID
+                guard let routine = try routineRecord(id: snapshot.routineID, context: context)
                 else { throw SessionCommandError.missingRoutine }
                 var plan = try routine.plan
                 guard let d = plan.days.firstIndex(where: { $0.id == snapshot.day.id }),
                     let e = plan.days[d].exercises.firstIndex(where: { $0.id == id })
                 else { throw SessionCommandError.unknownExercise }
                 let previous = plan.days[d].exercises[e]
-                adjust(&plan.days[d].exercises[e])
+                adjust(&plan.days[d].exercises[e], count: countChanged ? sets : previous.sets)
                 if previous != plan.days[d].exercises[e] {
                     try routine.replacePlan(plan)
                     context.insert(
@@ -209,8 +209,7 @@ private struct SessionWriter {
         throws
     {
         var snapshot = try session.prescription
-        guard let routine = try activeRoutineRecord(in: snapshot.gymID, context: context),
-            routine.id == snapshot.routineID
+        guard let routine = try routineRecord(id: snapshot.routineID, context: context)
         else { throw SessionCommandError.missingRoutine }
         var plan = try routine.plan
         guard let source = plan.days.flatMap(\.exercises).first(where: { $0.id == sourceID }),
