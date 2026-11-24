@@ -2,6 +2,7 @@
   "sourceLanguage" : "en",
   "strings" : {
     "%@ added" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -12,6 +13,7 @@
       }
     },
     "%@ per dumbbell" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -20,6 +22,12 @@
           }
         }
       }
+    },
+    "%@ reps" : {
+
+    },
+    "%@ reps per side" : {
+
     },
     "%@ s" : {
       "localizations" : {
@@ -32,6 +40,7 @@
       }
     },
     "%lld reps" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -42,6 +51,7 @@
       }
     },
     "%lld reps per side" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -130,6 +140,7 @@
       }
     },
     "Actual load" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -140,6 +151,7 @@
       }
     },
     "Actual repetitions" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -259,6 +271,7 @@
       }
     },
     "Adjust exercise" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -297,6 +310,7 @@
       }
     },
     "All sets completed" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -577,6 +591,7 @@
       }
     },
     "Check your routine and try again." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -608,6 +623,7 @@
       }
     },
     "Close" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -646,6 +662,7 @@
       }
     },
     "Continue workout" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -706,6 +723,7 @@
       }
     },
     "Correct set" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -848,6 +866,7 @@
       }
     },
     "Could not start workout" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -858,6 +877,7 @@
       }
     },
     "Could not update workout" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -956,6 +976,7 @@
       }
     },
     "Day 3" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -1053,6 +1074,7 @@
       }
     },
     "Done" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -1085,6 +1107,7 @@
       }
     },
     "Easy" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -1316,6 +1339,17 @@
         }
       }
     },
+    "Finish set early" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminar serie antes de tiempo"
+          }
+        }
+      }
+    },
     "Finish the workout before changing gyms or routines. Your completed sets will be kept." : {
       "localizations" : {
         "es" : {
@@ -1453,6 +1487,7 @@
       }
     },
     "Hard" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -1633,6 +1668,7 @@
       }
     },
     "Load" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -1664,6 +1700,7 @@
       }
     },
     "Lock Screen controls are unavailable." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -1685,6 +1722,7 @@
       }
     },
     "More" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -1717,6 +1755,7 @@
       }
     },
     "Next exercise" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -1727,6 +1766,7 @@
       }
     },
     "Next set" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -1849,6 +1889,7 @@
       }
     },
     "Open HotFace to check the current set." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -2012,6 +2053,7 @@
       }
     },
     "Postpone exercise" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -2055,6 +2097,7 @@
       }
     },
     "Rate exercise" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -2117,6 +2160,7 @@
       }
     },
     "Replace exercise" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -2227,6 +2271,7 @@
       }
     },
     "Reuse previous adjustment" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -2309,6 +2354,7 @@
       }
     },
     "Sample load" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -2319,6 +2365,7 @@
       }
     },
     "Sample loads and progress are for this walkthrough only." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -2340,6 +2387,7 @@
       }
     },
     "Sample workout" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -2372,6 +2420,7 @@
       }
     },
     "Save as usual" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -2414,6 +2463,7 @@
       }
     },
     "Select exercise" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -2454,6 +2504,16 @@
     "Set %@" : {
 
     },
+    "Set %@ of %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Set %1$@ of %2$@"
+          }
+        }
+      }
+    },
     "Set %lld" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2466,6 +2526,7 @@
       }
     },
     "Set %lld completed" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -2476,6 +2537,7 @@
       }
     },
     "Set %lld of %lld" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -2568,6 +2630,7 @@
       }
     },
     "Show on Lock Screen" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -2578,6 +2641,7 @@
       }
     },
     "Skip exercise" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -2638,6 +2702,7 @@
       }
     },
     "Start day" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -2663,6 +2728,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Iniciar segunda serie"
+          }
+        }
+      }
+    },
+    "Start set" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Iniciar serie"
           }
         }
       }
@@ -2747,6 +2823,9 @@
           }
         }
       }
+    },
+    "To failure" : {
+
     },
     "To failure · Reps unspecified" : {
       "localizations" : {
@@ -2881,7 +2960,11 @@
         }
       }
     },
+    "Unperformed sets: %@" : {
+
+    },
     "Unperformed sets: %lld" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -2924,6 +3007,7 @@
       }
     },
     "Variant" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -2989,6 +3073,7 @@
       }
     },
     "Workout summary" : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {

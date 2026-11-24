@@ -13,13 +13,17 @@ private struct FixedClock: WorkoutClock {
 
 private struct Fixture {
     let directory: URL
-    let exercise = ExercisePrescription(name: "Curl", sets: 2, segments: [.repetitions(10)])
+    let exercise: ExercisePrescription
     let performance = SetPerformance(segments: [.repetitions(9)])
     let sessionID = UUID()
     let start: SessionCommand
     var store: CoordinatedModelStore { CoordinatedModelStore(trainingDirectory: directory) }
 
-    init(withExistingSet: Bool = false) throws {
+    init(
+        withExistingSet: Bool = false,
+        exercise: ExercisePrescription = .init(name: "Curl", sets: 2, segments: [.repetitions(10)])
+    ) throws {
+        self.exercise = exercise
         directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         let day = RoutineDay(name: "A", exercises: [exercise])
@@ -29,7 +33,6 @@ private struct Fixture {
             storeURL: directory.appendingPathComponent("training.store"),
             lockURL: directory.appendingPathComponent("training.lock"))
         let sessionID = self.sessionID
-        let exercise = self.exercise
         let performance = self.performance
         let action = try oldStore.withContext { context in
             let gym = try V1.Gym(name: "Gym")
@@ -71,6 +74,55 @@ private struct Fixture {
 }
 
 struct SessionCommandTests {
+    @Test func preTimerSessionPreservesTheTimedPrescription() throws {
+        let url = try #require(
+            Bundle.module.url(forResource: "pre-session-timer", withExtension: "json", subdirectory: "Fixtures"))
+        let plan = try JSONDecoder().decode(SessionPrescription.self, from: Data(contentsOf: url))
+        #expect(plan.timer == nil && plan.day.exercises.first?.segments == [.seconds(20)])
+    }
+
+    @Test func timedWorkoutRecoversPauseAndLogsOnlyPerformedSeconds() throws {
+        let f = try Fixture(exercise: .init(name: "Plank", sets: 2, segments: [.seconds(20)]))
+        defer { try? FileManager.default.removeItem(at: f.directory) }
+        _ = try f.store.apply(f.start, clock: FixedClock(0))
+        func control(_ action: WorkoutAction, set: Int = 1, revision: Int, at seconds: Double) throws {
+            let command = f.command(
+                .controlTimer(exerciseID: f.exercise.id, number: set, expectedRevision: revision, action: action))
+            #expect(try f.store.apply(command, clock: FixedClock(seconds)) == .applied)
+            #expect(try f.store.apply(command, clock: FixedClock(seconds)) == .alreadyApplied)
+        }
+        func timer(at seconds: Double) throws -> WorkoutTimeline {
+            try #require(try f.store.openWorkout(clock: FixedClock(seconds))?.timer)
+        }
+        try control(.start, revision: 0, at: 10)
+        #expect(try timer(at: 12.999).phase(at: FixedClock(12.999).now) == .preparation)
+        try control(.pause, revision: 1, at: 12)
+        #expect(try timer(at: 40).pausedSeconds == 20)
+        try control(.resume, revision: 2, at: 40)
+        #expect(try timer(at: 42).exerciseStart == FixedClock(43).now)
+        try control(.pause, revision: 3, at: 48.5)
+        #expect(try timer(at: 70).pausedSeconds == 14.5)
+        #expect(throws: SessionCommandError.invalidTimerTransition) {
+            try control(.resume, revision: 2, at: 70)
+        }
+        try control(.resume, revision: 4, at: 80)
+        #expect(try timer(at: 83).exerciseEnd == FixedClock(97.5).now)
+        try control(.complete, revision: 5, at: 85)
+        let resting = try #require(try f.store.openWorkout(clock: FixedClock(90)))
+        #expect(resting.timer == nil && resting.nextSet?.number == 2)
+        #expect(resting.rest?.performance == SetPerformance(segments: [.seconds(7)], isPartial: true))
+        #expect(resting.rest?.endsAt == FixedClock(190).now)
+        #expect(throws: SessionCommandError.invalidTimerTransition) {
+            try control(.start, set: 2, revision: 0, at: 189)
+        }
+        try control(.start, set: 2, revision: 0, at: 190)
+        #expect(try f.store.openWorkout(clock: FixedClock(1000)) == nil)
+        #expect(try f.store.openWorkout(clock: FixedClock(1001)) == nil)
+        let summary = try f.store.workoutSummary(id: f.sessionID)
+        #expect(summary.finishedAt == FixedClock(213).now)
+        #expect(summary.exercises[0].sets.map(\.performance.segments) == [[.seconds(7)], [.seconds(20)]])
+    }
+
     @Test func nextDayRecoveryOffersTheOriginalSetOrPartialClosure() throws {
         for resume in [false, true] {
             let f = try Fixture()

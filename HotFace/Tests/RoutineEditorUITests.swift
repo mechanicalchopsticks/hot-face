@@ -200,6 +200,48 @@ final class RoutineEditorUITests: XCTestCase {
         XCTAssertFalse(button("Continue workout", in: app).exists)
     }
 
+    func testTimedSetResumesAfterRelaunchAndFinishesEarly() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchEnvironment["HOTFACE_UI_TEST_STORE_ID"] = UUID().uuidString
+        func press(_ title: String) { tap(button(title, in: app)) }
+        launch(app, spanish: false)
+        press("Settings")
+        press("Add gym")
+        enter("Gym", in: app.textFields["Gym name"])
+        press("Save")
+        press("Routines")
+        press("Add routine")
+        press("Add day")
+        press("Add exercise")
+        enter("Plank", in: app.textFields["Exercise name"])
+        let seconds = app.segmentedControls.buttons["Seconds"]
+        for _ in 0..<5 where !seconds.isHittable { app.swipeUp() }
+        tap(seconds)
+        tap(app.navigationBars["Edit exercise"].buttons["BackButton"])
+        tap(app.navigationBars["Edit day"].buttons["BackButton"])
+        let activate = button("Save and activate", in: app)
+        if !activate.exists { tap(app.navigationBars.buttons["More"]) }
+        tap(activate)
+
+        press("Train")
+        press("Day 1")
+        press("Start set")
+        XCTAssertTrue(app.staticTexts["Get ready"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.staticTexts["Exercise"].waitForExistence(timeout: 5))
+        press("Pause")
+        XCTAssertTrue(app.staticTexts["Paused"].waitForExistence(timeout: 2))
+        app.terminate()
+        launch(app, spanish: true)
+        press("Continuar entrenamiento")
+        XCTAssertTrue(app.staticTexts["En pausa"].waitForExistence(timeout: 5))
+        press("Reanudar")
+        XCTAssertTrue(app.staticTexts["Prepárate"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.staticTexts["Ejercicio"].waitForExistence(timeout: 5))
+        press("Terminar serie antes de tiempo")
+        XCTAssertTrue(app.staticTexts["Serie 1 completada"].waitForExistence(timeout: 5))
+    }
+
     private func launch(_ app: XCUIApplication, spanish: Bool) {
         app.launchArguments = [
             "-AppleLanguages", spanish ? "(es)" : "(en)", "-AppleLocale", spanish ? "es_CR" : "en_US",

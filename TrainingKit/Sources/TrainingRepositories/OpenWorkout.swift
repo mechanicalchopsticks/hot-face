@@ -8,6 +8,13 @@ public struct OpenWorkout: Identifiable, Sendable {
         public let equipment: EquipmentDescription?
         public let number: Int
         public let count: Int
+
+        public var timedDuration: TimeInterval? {
+            guard !exercise.perSide, exercise.segments.count == 1, case .seconds(let seconds) = exercise.segments[0],
+                seconds > 0
+            else { return nil }
+            return TimeInterval(seconds)
+        }
     }
 
     public struct Rest: Identifiable, Sendable {
@@ -24,6 +31,7 @@ public struct OpenWorkout: Identifiable, Sendable {
     public let pendingExercises: [ExercisePrescription]
     public let nextSet: PendingSet?
     public let rest: Rest?
+    public var timer: WorkoutTimeline? { prescription.timer }
 
     init(session: TrainingSchemaV1.Session, performed: [TrainingSchemaV1.PerformedSet]) throws {
         id = session.id
@@ -92,18 +100,15 @@ extension CoordinatedModelStore {
         }
     }
 
-    public func openWorkout() throws -> OpenWorkout? {
+    public func openWorkout(clock: (any WorkoutClock)? = nil) throws -> OpenWorkout? {
         try withContext { context in
             var sessions = FetchDescriptor<TrainingSchemaV1.Session>(predicate: #Predicate { $0.finishedAt == nil })
             sessions.fetchLimit = 1
             guard let session = try context.fetch(sessions).first else { return nil }
-
-            let id = session.id
-            let performed = try context.fetch(
-                FetchDescriptor<TrainingSchemaV1.PerformedSet>(
-                    predicate: #Predicate { $0.sessionID == id },
-                    sortBy: [SortDescriptor(\.performedAt, order: .reverse)]))
-            return try OpenWorkout(session: session, performed: performed)
+            let writer = SessionWriter(context: context, sessionID: session.id)
+            try writer.reconcileTimer(in: session, at: clock?.now ?? .now)
+            guard session.finishedAt == nil else { return nil }
+            return try writer.workout(session)
         }
     }
 }
