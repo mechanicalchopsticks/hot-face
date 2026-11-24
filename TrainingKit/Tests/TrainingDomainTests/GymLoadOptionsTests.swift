@@ -51,6 +51,19 @@ struct GymLoadOptionsTests {
                 })
     }
 
+    @Test func tinyPlateSizesProduceABoundedSelection() throws {
+        let size = try #require(Decimal(string: "0.00001"))
+        var inventory = GymInventory()
+        inventory[.plates] = [.init(size, .kg)]
+        var machine = EquipmentDescription(name: "Press", kind: .plateLoadedMachine, unit: .kg)
+        machine.maximumAddedWeightPerSide = size * 2000
+
+        let amounts = inventory.loadOptions(for: machine).map(\.amount)
+
+        #expect(amounts.count <= 1024)
+        #expect(amounts.starts(with: [0, size, size * 2]))
+    }
+
     @Test func mixesPlateUnitsBeforeApplyingTheEquipmentLimit() throws {
         var inventory = GymInventory()
         inventory[.plates] = [.init(5, .lb), .init(2.5, .kg)]
