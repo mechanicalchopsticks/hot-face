@@ -78,17 +78,32 @@ public struct ExercisePrescription: Identifiable, Codable, Equatable, Sendable {
 
 }
 
+public struct SupersetRest: Codable, Equatable, Sendable {
+    public var restBetweenRounds: TimeInterval?
+    public var restAfterSuperset: TimeInterval?
+
+    public init(restBetweenRounds: TimeInterval? = nil, restAfterSuperset: TimeInterval? = nil) {
+        self.restBetweenRounds = restBetweenRounds
+        self.restAfterSuperset = restAfterSuperset
+    }
+}
+
 public struct RoutineDay: Identifiable, Codable, Equatable, Sendable {
     public let id: UUID
     public var name: String
     public var exercises: [ExercisePrescription]
     public private(set) var groupNames: [String]
+    public var supersetRests: [UUID: SupersetRest]
 
-    public init(id: UUID = UUID(), name: String, exercises: [ExercisePrescription], groupNames: [String] = []) {
+    public init(
+        id: UUID = UUID(), name: String, exercises: [ExercisePrescription], groupNames: [String] = [],
+        supersetRests: [UUID: SupersetRest] = [:]
+    ) {
         self.id = id
         self.name = name
         self.exercises = exercises
         self.groupNames = groupNames
+        self.supersetRests = supersetRests
         for index in self.exercises.indices {
             let group = registerGroup(exercises[index].group)
             self.exercises[index].group = group
@@ -101,7 +116,8 @@ public struct RoutineDay: Identifiable, Codable, Equatable, Sendable {
             id: try values.decode(UUID.self, forKey: .id),
             name: try values.decode(String.self, forKey: .name),
             exercises: try values.decode([ExercisePrescription].self, forKey: .exercises),
-            groupNames: try values.decodeIfPresent([String].self, forKey: .groupNames) ?? [])
+            groupNames: try values.decodeIfPresent([String].self, forKey: .groupNames) ?? [],
+            supersetRests: try values.decodeIfPresent([UUID: SupersetRest].self, forKey: .supersetRests) ?? [:])
     }
 
     public mutating func assignGroup(_ name: String?, to exerciseID: UUID) {
@@ -151,17 +167,19 @@ public struct RoutinePlan: Codable, Equatable, Sendable {
         var copy = self
         var supersets: [UUID: UUID] = [:]
         copy.days = days.map { day in
-            RoutineDay(
-                name: day.name,
-                exercises: day.exercises.map { exercise in
-                    let group = exercise.supersetID.map { id in
-                        if let existing = supersets[id] { return existing }
-                        let newID = UUID()
-                        supersets[id] = newID
-                        return newID
-                    }
-                    return exercise.copied(supersetID: group)
-                }, groupNames: day.groupNames)
+            let exercises = day.exercises.map { exercise in
+                let group = exercise.supersetID.map { id in
+                    if let existing = supersets[id] { return existing }
+                    let newID = UUID()
+                    supersets[id] = newID
+                    return newID
+                }
+                return exercise.copied(supersetID: group)
+            }
+            let rests = day.supersetRests.compactMap { id, settings in supersets[id].map { ($0, settings) } }
+            return RoutineDay(
+                name: day.name, exercises: exercises, groupNames: day.groupNames,
+                supersetRests: Dictionary(uniqueKeysWithValues: rests))
         }
         return copy
     }

@@ -1,5 +1,17 @@
 import Foundation
 
+public enum RestAdjustment: String, Codable, Sendable {
+    case shorten, extend, end
+
+    public func applying(to deadline: Date, at now: Date) -> Date {
+        switch self {
+        case .shorten: max(now, deadline.addingTimeInterval(-15))
+        case .extend: deadline.addingTimeInterval(15)
+        case .end: now
+        }
+    }
+}
+
 /// Keep the command and session identifiers when retrying an action from the app or an extension.
 public struct SessionCommand: Codable, Equatable, Sendable {
     public enum Action: Codable, Equatable, Sendable {
@@ -15,6 +27,7 @@ public struct SessionCommand: Codable, Equatable, Sendable {
         case correctSet(id: UUID, performance: SetPerformance)
         case rate(exerciseID: UUID, effort: Effort)
         case skip(exerciseID: UUID)
+        case adjustRest(setID: UUID, adjustment: RestAdjustment)
         case finish
     }
 

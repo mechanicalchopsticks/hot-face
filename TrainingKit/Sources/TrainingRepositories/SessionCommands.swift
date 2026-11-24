@@ -15,6 +15,7 @@ public enum SessionCommandError: Error, Equatable {
     case unknownExercise, skippedExercise, invalidSetNumber, conflictingSet
     case exerciseNotStarted, conflictingRating, missingEquipment
     case invalidTimerTransition
+    case restUnavailable
 }
 
 extension CoordinatedModelStore {
@@ -192,6 +193,15 @@ struct SessionWriter {
                 temporaryIDs.insert(id)
             }
             snapshot.temporaryExerciseIDs = temporaryIDs
+            try session.updatePrescription(snapshot)
+        case .adjustRest(let id, let adjustment):
+            let session = try openSession()
+            let workout = try workout(session)
+            guard let rest = workout.rest, rest.id == id, rest.endsAt > date else {
+                throw SessionCommandError.restUnavailable
+            }
+            var snapshot = workout.prescription
+            snapshot.restOverride = .init(setID: id, endsAt: adjustment.applying(to: rest.endsAt, at: date))
             try session.updatePrescription(snapshot)
         case .correctSet(let id, let performance):
             _ = try openSession()

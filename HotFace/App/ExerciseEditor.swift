@@ -115,10 +115,10 @@ struct ExerciseEditor: View {
                         value: Binding(get: { defaults.setCount(for: exercise) }, set: { exercise.sets = $0 }),
                         in: 1...Int.max)
                 }
-                optionalRest(
+                RestOverrideEditor(
                     "Custom rest between sets", title: "Between sets", value: $exercise.restBetweenSets,
                     inherited: defaults.restBetweenSets)
-                optionalRest(
+                RestOverrideEditor(
                     "Custom rest after exercise", title: "After exercise", value: $exercise.restAfterExercise,
                     inherited: defaults.restBetweenExercises)
             }
@@ -188,21 +188,6 @@ struct ExerciseEditor: View {
                     if kind == .seconds { Text("\(quantity) s") } else { Text("Reps: \(quantity)") }
                 }
             }
-        }
-    }
-
-    @ViewBuilder
-    private func optionalRest(
-        _ toggle: LocalizedStringKey, title: LocalizedStringKey, value: Binding<TimeInterval?>,
-        inherited: TimeInterval
-    ) -> some View {
-        Toggle(
-            toggle,
-            isOn: Binding(get: { value.wrappedValue != nil }, set: { value.wrappedValue = $0 ? inherited : nil }))
-        if value.wrappedValue != nil {
-            RestStepper(
-                title: title,
-                seconds: Binding(get: { value.wrappedValue ?? inherited }, set: { value.wrappedValue = $0 }))
         }
     }
 }
@@ -342,6 +327,47 @@ private struct HistoricalLoadReview: View {
                 Button("Leave undefined") { dismiss() }
             }
         }.navigationTitle("Review previous load")
+    }
+}
+
+struct SupersetRestEditor: View {
+    @Binding var settings: SupersetRest
+    let defaultRoundRest: TimeInterval
+    let defaultFinalRest: TimeInterval
+
+    var body: some View {
+        Form {
+            RestOverrideEditor(
+                "Custom rest between rounds", title: "Between rounds",
+                value: $settings.restBetweenRounds, inherited: defaultRoundRest)
+            RestOverrideEditor(
+                "Custom rest after superset", title: "After superset",
+                value: $settings.restAfterSuperset, inherited: defaultFinalRest)
+        }
+        .navigationTitle("Superset rests")
+    }
+}
+
+private struct RestOverrideEditor: View {
+    let toggle: LocalizedStringKey
+    let title: LocalizedStringKey
+    @Binding var value: TimeInterval?
+    let inherited: TimeInterval
+
+    init(
+        _ toggle: LocalizedStringKey, title: LocalizedStringKey, value: Binding<TimeInterval?>, inherited: TimeInterval
+    ) {
+        self.toggle = toggle
+        self.title = title
+        self._value = value
+        self.inherited = inherited
+    }
+
+    var body: some View {
+        Toggle(toggle, isOn: Binding(get: { value != nil }, set: { value = $0 ? inherited : nil }))
+        if value != nil {
+            RestStepper(title: title, seconds: Binding(get: { value ?? inherited }, set: { value = $0 }))
+        }
     }
 }
 
