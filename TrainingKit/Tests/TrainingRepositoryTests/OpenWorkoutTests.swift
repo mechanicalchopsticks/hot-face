@@ -5,6 +5,102 @@ import TrainingDomain
 import TrainingRepositories
 
 struct OpenWorkoutTests {
+    @Test func restAdjustmentsPersistOnlyForTheCurrentSet() throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        func reopen() -> CoordinatedModelStore { CoordinatedModelStore(trainingDirectory: directory) }
+
+        let gymID = try #require(reopen().createGym(name: "Gym").activeGymID)
+        let row = ExercisePrescription(name: "Row", sets: 3, segments: [.repetitions(10)])
+        let curl = ExercisePrescription(name: "Curl", sets: 1, segments: [.repetitions(8)])
+        let day = RoutineDay(name: "Day", exercises: [row, curl])
+        var routine = ManualRoutine(gymID: gymID)
+        routine.plan = RoutinePlan(name: "Routine", days: [day])
+        try reopen().saveRoutine(routine)
+
+        let sessionID = UUID()
+        func command(_ action: SessionCommand.Action, at seconds: TimeInterval) throws {
+            _ = try reopen().apply(SessionCommand(sessionID: sessionID, action: action), clock: SetClock(seconds))
+        }
+        func rest() throws -> OpenWorkout.Rest {
+            try #require(try reopen().openWorkout()?.rest)
+        }
+        func completeRowSet(_ number: Int, at seconds: TimeInterval) throws {
+            try command(.logSet(exerciseID: row.id, number: number, performance: .init(asPrescribed: row)), at: seconds)
+        }
+        try command(.start(routineID: routine.id, gymID: gymID, dayID: day.id, cycleID: nil), at: 0)
+        try completeRowSet(1, at: 10)
+        let first = try rest()
+        #expect(first.endsAt == SetClock(115).now)
+        try command(.adjustRest(setID: first.id, adjustment: .extend), at: 20)
+        #expect(try rest().endsAt == SetClock(130).now)
+        try command(.adjustRest(setID: first.id, adjustment: .shorten), at: 120)
+        #expect(try rest().endsAt == SetClock(120).now)
+        #expect(throws: SessionCommandError.restUnavailable) {
+            try command(.adjustRest(setID: first.id, adjustment: .extend), at: 121)
+        }
+
+        try completeRowSet(2, at: 125)
+        let second = try rest()
+        #expect(second.endsAt == SetClock(230).now)
+        #expect(throws: SessionCommandError.restUnavailable) {
+            try command(.adjustRest(setID: first.id, adjustment: .end), at: 130)
+        }
+        try command(.adjustRest(setID: second.id, adjustment: .end), at: 135)
+        #expect(try rest().endsAt == SetClock(135).now)
+
+        try completeRowSet(3, at: 140)
+        let afterExercise = try rest()
+        #expect(afterExercise.betweenExercises)
+        #expect(afterExercise.endsAt == SetClock(275).now)
+        #expect(try reopen().activeRoutine()?.plan == routine.plan)
+    }
+
+    @Test func supersetRestSettingsApplyToRoundBoundariesAndSurviveRoutineCopy() throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let store = CoordinatedModelStore(trainingDirectory: directory)
+
+        let gymID = try #require(store.createGym(name: "Gym").activeGymID)
+        let supersetID = UUID()
+        var row = ExercisePrescription(name: "Row", sets: 2, segments: [.repetitions(10)])
+        var curl = ExercisePrescription(name: "Curl", sets: 2, segments: [.seconds(30)])
+        row.supersetID = supersetID
+        curl.supersetID = supersetID
+        let squat = ExercisePrescription(name: "Squat", sets: 1, segments: [.repetitions(8)])
+        let settings = SupersetRest(restBetweenRounds: 40, restAfterSuperset: 70)
+        let day = RoutineDay(name: "Day", exercises: [row, curl, squat], supersetRests: [supersetID: settings])
+        var routine = ManualRoutine(gymID: gymID)
+        routine.plan = RoutinePlan(name: "Routine", days: [day])
+        try store.saveRoutine(routine)
+
+        let copy = try #require(routine.plan.copiedForNewRoutine().days.first)
+        let copiedSuperset = try #require(copy.exercises.first?.supersetID)
+        #expect(copiedSuperset != supersetID)
+        #expect(copy.supersetRests == [copiedSuperset: settings])
+
+        let sessionID = UUID()
+        func command(_ action: SessionCommand.Action, at seconds: TimeInterval) throws {
+            _ = try store.apply(SessionCommand(sessionID: sessionID, action: action), clock: SetClock(seconds))
+        }
+        func log(_ exercise: ExercisePrescription, _ number: Int, at seconds: TimeInterval) throws {
+            try command(
+                .logSet(exerciseID: exercise.id, number: number, performance: .init(asPrescribed: exercise)),
+                at: seconds)
+        }
+        try command(.start(routineID: routine.id, gymID: gymID, dayID: day.id, cycleID: nil), at: 0)
+        try log(row, 1, at: 5)
+        try log(curl, 1, at: 10)
+        #expect(try store.openWorkout()?.rest?.endsAt == SetClock(50).now)
+        try log(row, 2, at: 55)
+        #expect(try store.openWorkout()?.rest == nil)
+        try log(curl, 2, at: 90)
+        #expect(try store.openWorkout()?.rest?.endsAt == SetClock(160).now)
+        #expect(try store.openWorkout()?.rest?.betweenExercises == true)
+    }
+
     @Test func occupiedStationAndReplacementsRespectSessionScope() throws {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)

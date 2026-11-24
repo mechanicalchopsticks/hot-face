@@ -152,6 +152,11 @@ func validateForEditing(_ plan: RoutinePlan) throws {
 
     for day in plan.days {
         guard hasName(day.name), !day.exercises.isEmpty else { throw RoutineEditorError.incompletePlan }
+        for settings in day.supersetRests.values {
+            guard settings.restBetweenRounds.map(validRest) != false,
+                settings.restAfterSuperset.map(validRest) != false
+            else { throw RoutineEditorError.incompletePlan }
+        }
         for exercise in day.exercises {
             guard hasName(exercise.name), plan.setCount(for: exercise) > 0, !exercise.segments.isEmpty,
                 exercise.restBetweenSets.map(validRest) != false, exercise.restAfterExercise.map(validRest) != false

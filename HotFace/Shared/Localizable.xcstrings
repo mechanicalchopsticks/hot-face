@@ -72,6 +72,16 @@
         }
       }
     },
+    "+15 s" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "+15 s"
+          }
+        }
+      }
+    },
     "1" : {
 
     },
@@ -292,6 +302,16 @@
         }
       }
     },
+    "After superset" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Después de la superserie"
+          }
+        }
+      }
+    },
     "Alarms" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -498,6 +518,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Entre ejercicios"
+          }
+        }
+      }
+    },
+    "Between rounds" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entre rondas"
           }
         }
       }
@@ -920,6 +950,26 @@
         }
       }
     },
+    "Custom rest after superset" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descanso personalizado después de la superserie"
+          }
+        }
+      }
+    },
+    "Custom rest between rounds" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descanso personalizado entre rondas"
+          }
+        }
+      }
+    },
     "Custom rest between sets" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1210,6 +1260,16 @@
         }
       }
     },
+    "End rest" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminar descanso"
+          }
+        }
+      }
+    },
     "Enter a valid weight for each load and a positive weight and count for each plate entry." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1335,6 +1395,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ejercicios"
+          }
+        }
+      }
+    },
+    "Extend rest by 15 seconds" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir 15 segundos de descanso"
           }
         }
       }
@@ -2629,6 +2699,16 @@
         }
       }
     },
+    "Shorten rest by 15 seconds" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reducir el descanso 15 segundos"
+          }
+        }
+      }
+    },
     "Show on Lock Screen" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2788,6 +2868,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Prueba de almacenamiento"
+          }
+        }
+      }
+    },
+    "Superset rests" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descansos de superserie"
           }
         }
       }
@@ -3143,6 +3233,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aquí aparecerán tus días de entrenamiento cuando tengas una rutina activa."
+          }
+        }
+      }
+    },
+    "−15 s" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "−15 s"
           }
         }
       }

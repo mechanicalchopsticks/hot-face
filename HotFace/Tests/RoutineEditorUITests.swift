@@ -176,7 +176,7 @@ final class RoutineEditorUITests: XCTestCase {
         XCTAssertTrue(containsText("Set 1 completed").waitForExistence(timeout: 5), app.debugDescription)
         XCTAssertTrue(containsText("Set 2 of 4").exists)
         XCTAssertTrue(containsText("Rest").exists)
-        XCTAssertTrue(button("Next set", in: app).exists)
+        XCTAssertTrue(button("End rest", in: app).exists)
         XCTAssertFalse(app.textFields["Actual repetitions"].exists)
         XCTAssertFalse(button("Complete set", in: app).exists)
 

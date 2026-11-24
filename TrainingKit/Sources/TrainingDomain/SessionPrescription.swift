@@ -50,8 +50,19 @@ public struct SessionPrescription: Codable, Equatable, Sendable {
         }
     }
 
+    public struct RestOverride: Codable, Equatable, Sendable {
+        public let setID: UUID
+        public let endsAt: Date
+
+        public init(setID: UUID, endsAt: Date) {
+            self.setID = setID
+            self.endsAt = endsAt
+        }
+    }
+
     public var restPrescription: RestPrescription?
     public var timer: WorkoutTimeline?
+    public var restOverride: RestOverride?
     public var temporaryExerciseIDs: Set<UUID>?
     public var equipment: [EquipmentDescription]
     public let restBetweenSets: TimeInterval
@@ -76,4 +87,19 @@ public struct SessionPrescription: Codable, Equatable, Sendable {
         self.restBetweenSets = plan.restBetweenSets
         self.restBetweenExercises = plan.restBetweenExercises
     }
+    public func restDuration(
+        after exercise: ExercisePrescription, completedSet: Int,
+        before nextExercise: ExercisePrescription, nextSet: Int
+    ) -> TimeInterval {
+        if let supersetID = exercise.supersetID {
+            let settings = day.supersetRests[supersetID]
+            if supersetID == nextExercise.supersetID {
+                return nextSet == completedSet ? 0 : settings?.restBetweenRounds ?? restBetweenSets
+            }
+            return settings?.restAfterSuperset ?? restBetweenExercises
+        }
+        if exercise.id == nextExercise.id { return exercise.restBetweenSets ?? restBetweenSets }
+        return exercise.restAfterExercise ?? restBetweenExercises
+    }
+
 }

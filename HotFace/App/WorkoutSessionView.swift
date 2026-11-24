@@ -35,6 +35,18 @@ struct WorkoutSessionView: View {
                 if let rest {
                     Section {
                         WorkoutRestCountdown(end: rest.endsAt)
+                        TimelineView(.periodic(from: .now, by: 1)) { timeline in
+                            if timeline.date < rest.endsAt {
+                                HStack {
+                                    Button("−15 s") { adjustRest(rest, by: .shorten) }
+                                        .accessibilityLabel("Shorten rest by 15 seconds")
+                                    Spacer()
+                                    Button("+15 s") { adjustRest(rest, by: .extend) }
+                                        .accessibilityLabel("Extend rest by 15 seconds")
+                                }
+                                .buttonStyle(.bordered)
+                            }
+                        }
                         Button("Correct set") { correcting = rest }
                         Label("Set \(rest.completedSetNumber) completed", systemImage: "checkmark.circle")
                     } header: {
@@ -118,8 +130,11 @@ struct WorkoutSessionView: View {
         Group {
             if let rest {
                 TimelineView(.periodic(from: .now, by: 1)) { timeline in
-                    action(rest.betweenExercises ? "Next exercise" : "Next set") { reviewedRestID = rest.id }
-                        .disabled(timeline.date < rest.endsAt)
+                    if timeline.date < rest.endsAt {
+                        action("End rest") { adjustRest(rest, by: .end) }
+                    } else {
+                        action(rest.betweenExercises ? "Next exercise" : "Next set") { reviewedRestID = rest.id }
+                    }
                 }
             } else if let set = workout.nextSet {
                 if let timer = workout.timer {
@@ -188,6 +203,11 @@ struct WorkoutSessionView: View {
                 .logSet(exerciseID: set.exercise.id, number: set.number, performance: .init(asPrescribed: set.exercise))
             )
         } catch { actionError = "Could not update workout" }
+    }
+
+    private func adjustRest(_ rest: OpenWorkout.Rest, by adjustment: RestAdjustment) {
+        do { try apply(.adjustRest(setID: rest.id, adjustment: adjustment)) } catch SessionCommandError.restUnavailable
+        {} catch { actionError = "Could not update workout" }
     }
 
     private func finish() {

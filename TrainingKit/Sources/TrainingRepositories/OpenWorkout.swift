@@ -60,11 +60,12 @@ public struct OpenWorkout: Identifiable, Sendable {
         if let pending, let last = performed.first,
             let exercise = prescription.day.exercises.first(where: { $0.id == last.exerciseID })
         {
-            let betweenExercises = pending.exercise.id != last.exerciseID
-            let seconds =
-                betweenExercises
-                ? exercise.restAfterExercise ?? prescription.restBetweenExercises
-                : exercise.restBetweenSets ?? prescription.restBetweenSets
+            let sameSuperset = exercise.supersetID != nil && exercise.supersetID == pending.exercise.supersetID
+            let betweenExercises = !sameSuperset && pending.exercise.id != last.exerciseID
+            let seconds = prescription.restDuration(
+                after: exercise, completedSet: last.number, before: pending.exercise, nextSet: pending.number)
+            let override = prescription.restOverride
+            let deadline = override?.setID == last.id ? override?.endsAt : nil
             let performance = try last.performance
             let original = prescription.restPrescription
             let segments = original?.setID == last.id ? original?.segments : exercise.segments
@@ -74,7 +75,7 @@ public struct OpenWorkout: Identifiable, Sendable {
                 ? Rest(
                     id: last.id, performance: performance,
                     prescribedSegments: prescribedSegments ?? performance.segments, completedSetNumber: last.number,
-                    endsAt: last.performedAt.addingTimeInterval(seconds),
+                    endsAt: deadline ?? last.performedAt.addingTimeInterval(seconds),
                     betweenExercises: betweenExercises)
                 : nil
         } else {

@@ -265,6 +265,27 @@ private struct RoutineEditor: View {
                     path.append(.exercise(day: day.wrappedValue.id, exercise: exercise.id))
                 }
             }
+            let supersets = Dictionary(
+                grouping: day.wrappedValue.exercises.compactMap { exercise in
+                    exercise.supersetID.map { (id: $0, name: exercise.name) }
+                }, by: \.id)
+            let groups = supersets.keys.sorted { $0.uuidString < $1.uuidString }
+            if !groups.isEmpty {
+                Section("Superset rests") {
+                    ForEach(groups, id: \.self) { id in
+                        NavigationLink {
+                            SupersetRestEditor(
+                                settings: Binding(
+                                    get: { day.wrappedValue.supersetRests[id] ?? SupersetRest() },
+                                    set: { day.wrappedValue.supersetRests[id] = $0 }),
+                                defaultRoundRest: draft.plan.restBetweenSets,
+                                defaultFinalRest: draft.plan.restBetweenExercises)
+                        } label: {
+                            Text(verbatim: supersets[id, default: []].map(\.name).joined(separator: " + "))
+                        }
+                    }
+                }
+            }
         }
         .navigationTitle("Edit day")
         .navigationBarTitleDisplayMode(.inline)
