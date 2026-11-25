@@ -153,7 +153,7 @@ extension Notification.Name {
 extension WorkoutTimingCue.Kind {
     var notificationTitle: LocalizedStringResource {
         switch self {
-        case .holdStarted: "First hold"
+        case .holdStarted: "Hold started"
         case .lastHoldStarted: "Last hold"
         case .holdEnded: "Pause between holds"
         case .sideCompleted: "Side complete"

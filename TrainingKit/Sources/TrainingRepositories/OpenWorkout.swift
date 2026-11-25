@@ -11,6 +11,24 @@ public struct WorkoutTimingCue: Equatable, Sendable {
     public let kind: Kind
 }
 
+/// Keeps an undelivered boundary cue when reconciliation publishes the next hold or set.
+public struct ForegroundWorkoutCues {
+    private var pending: [WorkoutTimingCue] = []
+
+    public init() {}
+
+    public var nextDate: Date? { pending.first?.date }
+
+    public mutating func update(_ cues: [WorkoutTimingCue], at date: Date) {
+        pending = pending.filter { $0.date <= date } + cues.filter { $0.date > date }
+    }
+
+    public mutating func takeDue(at date: Date) -> WorkoutTimingCue? {
+        guard let first = pending.first, first.date <= date else { return nil }
+        return pending.removeFirst()
+    }
+}
+
 public struct OpenWorkout: Identifiable, Sendable {
     public struct PendingSet: Sendable {
         public let exercise: ExercisePrescription

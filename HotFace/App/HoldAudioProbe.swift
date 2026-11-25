@@ -29,22 +29,34 @@ final class HoldAudioDelegate: NSObject, ObservableObject, UIApplicationDelegate
 {
     private var player: AVAudioPlayer?
     private var playback: Task<Void, Never>?
+    private var foregroundCues = ForegroundWorkoutCues()
     private let audioLog = Logger(subsystem: "HotFace", category: "WorkoutAudio")
 
     func schedule(_ cues: [WorkoutTimingCue]) {
         playback?.cancel()
-        let pending = cues.filter { $0.date > .now }
-        guard !pending.isEmpty else { return }
+        foregroundCues.update(cues, at: .now)
+        guard foregroundCues.nextDate != nil else { return }
         playback = Task {
             // When authorized, iOS delivers the same cue in either app state.
             let settings = await UNUserNotificationCenter.current().notificationSettings()
-            if settings.authorizationStatus == .authorized && settings.soundSetting == .enabled { return }
-            for cue in pending {
-                do { try await Task.sleep(for: .seconds(max(0, cue.date.timeIntervalSinceNow))) } catch { return }
+            guard !Task.isCancelled else { return }
+            if settings.authorizationStatus == .authorized && settings.soundSetting == .enabled {
+                foregroundCues = ForegroundWorkoutCues()
+                return
+            }
+            while let deadline = foregroundCues.nextDate {
+                do { try await Task.sleep(for: .seconds(max(0, deadline.timeIntervalSinceNow))) } catch { return }
                 guard !Task.isCancelled else { return }
-                if UIApplication.shared.applicationState == .active { play(cue.kind) }
+                if let cue = foregroundCues.takeDue(at: .now), UIApplication.shared.applicationState == .active {
+                    play(cue.kind)
+                }
             }
         }
+    }
+
+    func stopScheduling() {
+        playback?.cancel()
+        foregroundCues = ForegroundWorkoutCues()
     }
 
     func play(_ kind: WorkoutTimingCue.Kind) {

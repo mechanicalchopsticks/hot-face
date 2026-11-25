@@ -20,7 +20,7 @@ struct HotFace: App {
                             let workout = try? TrainingStorage.openStore().openWorkout()
                             audioDelegate.schedule(workout?.timingCues ?? [])
                         } else {
-                            audioDelegate.schedule([])
+                            audioDelegate.stopScheduling()
                         }
                     }
                     .task { await StorageTrialRunner.runIfRequested() }
