@@ -47,6 +47,34 @@ struct ProgressionAdviceTests {
         #expect(suggestion.load.amount == 30 && suggestion.repetitions == 6)
     }
 
+    @Test(arguments: [2, -2], [ExerciseLoad.Representation.perSide, .totalAdded, .includingEquipment])
+    func progressesByOneKilogramOnAPoundBar(balance: Int, representation: ExerciseLoad.Representation) throws {
+        var bar = EquipmentDescription(name: "Bar", kind: .barbell, unit: .lb)
+        bar.baseWeight = 45
+        var inventory = GymInventory()
+        inventory[.plates] = [.init(1, .kg)]
+        var exercise = ExercisePrescription(name: "Squat", sets: 1, segments: [.repetitions(10)])
+        exercise.equipmentID = bar.id
+        let current = ExerciseLoad(amount: 10, unit: .kg, representation: .perSide, implementCount: 2)
+        let picker = try inventory.loadOptions(for: bar).map {
+            try $0.displayed(as: representation, equipmentWeightInLoadUnit: bar.baseWeight)
+        }
+        let metric = try current.displayed(
+            as: representation, equipmentWeightInLoadUnit: bar.unit.converted(45, to: .kg))
+        for load in [metric, picker[10]] {
+            exercise.load = .confirmed(load)
+            let advice = ProgressionAdvice.evaluate(
+                for: exercise, balance: balance, equipment: bar, inventory: inventory)
+            guard case .suggested(let suggestion) = advice else {
+                Issue.record("Expected the adjacent plate load")
+                continue
+            }
+            #expect(suggestion.load == picker[balance == 2 ? 11 : 9])
+            #expect(suggestion.repetitions == 10)
+            #expect(suggestion.reason == (balance == 2 ? .higherLoad : .lowerLoad))
+        }
+    }
+
     @Test func manualAdjustmentAtLimitsAndForSpecialExercises() {
         #expect(advice(-2, segments: [.repetitions(6)]) == .adjustManually)
         #expect(advice(2, segments: [.repetitions(15)]) == .adjustManually)

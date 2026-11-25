@@ -13,14 +13,12 @@ public enum ProgressionAdvice: Equatable, Sendable {
         guard balance == 2 || balance == -2 else { return nil }
         guard let equipment, usual.equipmentID == equipment.id, usual.segments.count == 1,
             case .repetitions(let repetitions) = usual.segments[0], let current = usual.load.value,
-            let kilograms = try? current.addedKilograms(equipment: equipment)
+            let currentKilograms = try? current.addedKilograms(equipment: equipment)
         else { return .adjustManually }
 
-        let options = inventory.loadOptions(for: equipment, displayedLike: current)
-        let candidates = options.compactMap { option -> (load: ExerciseLoad, kilograms: Decimal)? in
-            guard let weight = try? option.addedKilograms(equipment: equipment) else { return nil }
-            return (option, weight)
-        }
+        let candidates = inventory.weightedOptions(for: equipment, displayedLike: current)
+        // A load saved from the picker may already be rounded by the conversion from kilograms to pounds.
+        let kilograms = candidates.first { $0.load == current }?.kilograms ?? currentKilograms
         func suggest(_ load: ExerciseLoad, _ reps: Int, _ reason: WeightSuggestion.Reason, bridge: Int? = nil) -> Self {
             .suggested(.init(load: load, repetitions: reps, returnRepetitionsOnAcceptance: bridge, reason: reason))
         }

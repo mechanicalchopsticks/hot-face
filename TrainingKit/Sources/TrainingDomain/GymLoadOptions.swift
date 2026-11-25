@@ -1,53 +1,59 @@
 import Foundation
 
 extension GymInventory {
+    typealias WeightedLoad = (load: ExerciseLoad, kilograms: Decimal)
+
     public func loadOptions(for kind: EquipmentDescription.Kind, dumbbellCount: Int = 1) -> [ExerciseLoad] {
-        switch kind {
-        case .dumbbell:
-            guard (1...2).contains(dumbbellCount) else { return [] }
-            return dumbbells.map {
-                ExerciseLoad(
-                    amount: $0.amount, unit: $0.unit, representation: .perImplement, implementCount: dumbbellCount)
-            }
-        case .fixedBar:
-            return fixedBars.map {
-                ExerciseLoad(amount: $0.amount, unit: $0.unit, representation: .combined, implementCount: 1)
-            }
-        case .selectorizedMachine:
-            return stride(from: 5, through: 150, by: 5).map {
-                ExerciseLoad(amount: Decimal($0), unit: .kg, representation: .combined, implementCount: 1)
-            }
-        case .barbell, .plateLoadedMachine:
-            return plateLoadOptions(unit: .lb, maximumPerSide: nil)
-        case .bodyweight, .band, .cardio:
-            return []
-        }
+        inventoryOptions(for: kind, equipment: nil, dumbbellCount: dumbbellCount).map(\.load)
     }
 
     public func loadOptions(for equipment: EquipmentDescription, dumbbellCount: Int = 1) -> [ExerciseLoad] {
-        switch equipment.kind {
-        case .barbell, .plateLoadedMachine:
-            return plateLoadOptions(unit: equipment.unit, maximumPerSide: equipment.maximumAddedWeightPerSide)
-        case .selectorizedMachine where equipment.availableLoads.isEmpty:
-            return loadOptions(for: .selectorizedMachine)
-        case .selectorizedMachine, .bodyweight, .band, .cardio:
-            return equipment.availableLoads.map {
-                ExerciseLoad(amount: $0, unit: equipment.unit, representation: .combined, implementCount: 1)
-            }
-        default:
-            return loadOptions(for: equipment.kind, dumbbellCount: dumbbellCount)
-        }
+        inventoryOptions(for: equipment.kind, equipment: equipment, dumbbellCount: dumbbellCount).map(\.load)
     }
 
     public func loadOptions(for equipment: EquipmentDescription, displayedLike current: ExerciseLoad) -> [ExerciseLoad]
     {
-        loadOptions(for: equipment, dumbbellCount: current.implementCount).compactMap { option in
-            let base = equipment.baseWeight.map { equipment.unit.converted($0, to: option.unit) }
-            return try? option.displayed(as: current.representation, equipmentWeightInLoadUnit: base)
+        weightedOptions(for: equipment, displayedLike: current).map(\.load)
+    }
+
+    func weightedOptions(for equipment: EquipmentDescription, displayedLike current: ExerciseLoad) -> [WeightedLoad] {
+        inventoryOptions(for: equipment.kind, equipment: equipment, dumbbellCount: current.implementCount).compactMap {
+            option in
+            let base = equipment.baseWeight.map { equipment.unit.converted($0, to: option.load.unit) }
+            guard let load = try? option.load.displayed(as: current.representation, equipmentWeightInLoadUnit: base)
+            else { return nil }
+            return (load, option.kilograms)
         }
     }
 
-    private func plateLoadOptions(unit: ExerciseLoad.Unit, maximumPerSide: Decimal?) -> [ExerciseLoad] {
+    private func inventoryOptions(
+        for kind: EquipmentDescription.Kind, equipment: EquipmentDescription?, dumbbellCount: Int
+    ) -> [WeightedLoad] {
+        let weights: [InventoryWeight]
+        switch kind {
+        case .barbell, .plateLoadedMachine:
+            return plateLoadOptions(unit: equipment?.unit ?? .lb, maximumPerSide: equipment?.maximumAddedWeightPerSide)
+        case .dumbbell:
+            guard (1...2).contains(dumbbellCount) else { return [] }
+            weights = dumbbells
+        case .fixedBar:
+            weights = fixedBars
+        case .selectorizedMachine where equipment?.availableLoads.isEmpty ?? true:
+            weights = stride(from: 5, through: 150, by: 5).map { InventoryWeight(Decimal($0), .kg) }
+        case .selectorizedMachine, .bodyweight, .band, .cardio:
+            guard let equipment else { return [] }
+            weights = equipment.availableLoads.map { InventoryWeight($0, equipment.unit) }
+        }
+        let count = kind == .dumbbell ? dumbbellCount : 1
+        return weights.map { weight in
+            let load = ExerciseLoad(
+                amount: weight.amount, unit: weight.unit,
+                representation: kind == .dumbbell ? .perImplement : .combined, implementCount: count)
+            return (load, weight.unit.converted(weight.amount * Decimal(count), to: .kg))
+        }
+    }
+
+    private func plateLoadOptions(unit: ExerciseLoad.Unit, maximumPerSide: Decimal?) -> [WeightedLoad] {
         let globalMaximum = ExerciseLoad.Unit.lb.converted(250, to: .kg)
         let equipmentMaximum = maximumPerSide.map { unit.converted($0, to: .kg) } ?? globalMaximum
         guard !equipmentMaximum.isNaN, equipmentMaximum >= 0 else { return [] }
@@ -75,10 +81,11 @@ extension GymInventory {
                 }
             }
         }
-        return reachable.sorted().map {
-            ExerciseLoad(
-                amount: ExerciseLoad.Unit.kg.converted($0, to: unit), unit: unit, representation: .perSide,
+        return reachable.sorted().map { perSide in
+            let load = ExerciseLoad(
+                amount: ExerciseLoad.Unit.kg.converted(perSide, to: unit), unit: unit, representation: .perSide,
                 implementCount: 2)
+            return (load, perSide * 2)
         }
     }
 }
