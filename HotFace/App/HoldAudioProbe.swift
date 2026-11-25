@@ -24,10 +24,39 @@ extension HoldCue {
     }
 }
 
+private actor WorkoutCuePlayer {
+    private var player: AVAudioPlayer?
+
+    func start(_ next: AVAudioPlayer) -> Bool {
+        let session = AVAudioSession.sharedInstance()
+        do {
+            try session.setCategory(.playback, options: .duckOthers)
+            try session.setActive(true)
+            player = next
+            // AVAudioPlayer.play() also activates its session synchronously.
+            if next.play() { return true }
+        } catch {
+            // The notification delegate can fall back to the system sound.
+        }
+        deactivate()
+        return false
+    }
+
+    func release(_ finished: AVAudioPlayer) {
+        guard player === finished else { return }
+        deactivate()
+    }
+
+    private func deactivate() {
+        player = nil
+        try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+    }
+}
+
 final class HoldAudioDelegate: NSObject, ObservableObject, UIApplicationDelegate, UNUserNotificationCenterDelegate,
     AVAudioPlayerDelegate
 {
-    private var player: AVAudioPlayer?
+    private let cuePlayer = WorkoutCuePlayer()
     private var playback: Task<Void, Never>?
     private var foregroundCues = ForegroundWorkoutCues()
     private let audioLog = Logger(subsystem: "HotFace", category: "WorkoutAudio")
@@ -60,10 +89,12 @@ final class HoldAudioDelegate: NSObject, ObservableObject, UIApplicationDelegate
     }
 
     func play(_ kind: WorkoutTimingCue.Kind) {
-        if play(soundFile: kind.soundFile) {
-            audioLog.info("Started workout cue \(kind.rawValue, privacy: .public)")
-        } else {
-            audioLog.error("Could not play workout cue \(kind.rawValue, privacy: .public)")
+        Task {
+            if await self.play(soundFile: kind.soundFile) {
+                self.audioLog.info("Started workout cue \(kind.rawValue, privacy: .public)")
+            } else {
+                self.audioLog.error("Could not play workout cue \(kind.rawValue, privacy: .public)")
+            }
         }
     }
 
@@ -82,42 +113,30 @@ final class HoldAudioDelegate: NSObject, ObservableObject, UIApplicationDelegate
         if let raw = notification.request.content.userInfo["workoutCue"] as? String,
             let kind = WorkoutTimingCue.Kind(rawValue: raw)
         {
-            return play(soundFile: kind.soundFile) ? [.banner] : [.banner, .sound]
+            let started = await play(soundFile: kind.soundFile)
+            return started ? [.banner] : [.banner, .sound]
         }
         guard let cue = HoldCue(rawValue: notification.request.content.userInfo["holdCue"] as? String ?? "") else {
             return [.banner, .sound]
         }
-        return play(soundFile: cue.soundFile) ? [] : [.sound]
+        let started = await play(soundFile: cue.soundFile)
+        return started ? [] : [.sound]
     }
 
-    private func play(soundFile: String) -> Bool {
-        guard let url = Bundle.main.url(forResource: soundFile, withExtension: nil) else { return false }
-        let session = AVAudioSession.sharedInstance()
-        do {
-            let next = try AVAudioPlayer(contentsOf: url)
-            try session.setCategory(.playback, options: .duckOthers)
-            try session.setActive(true)
-            next.delegate = self
-            player = next
-            if next.play() { return true }
-        } catch {
-            // Fall back to the notification sound if the audio session is unavailable.
-        }
-        releaseAudio()
-        return false
+    private func play(soundFile: String) async -> Bool {
+        guard let url = Bundle.main.url(forResource: soundFile, withExtension: nil),
+            let next = try? AVAudioPlayer(contentsOf: url)
+        else { return false }
+        next.delegate = self
+        return await cuePlayer.start(next)
     }
 
     func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
-        if self.player === player { releaseAudio() }
+        Task { await cuePlayer.release(player) }
     }
 
     func audioPlayerDecodeErrorDidOccur(_ player: AVAudioPlayer, error: Error?) {
-        if self.player === player { releaseAudio() }
-    }
-
-    private func releaseAudio() {
-        player = nil
-        try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+        Task { await cuePlayer.release(player) }
     }
 }
 
