@@ -39,6 +39,7 @@ final class RoutineEditorUITests: XCTestCase {
         tap(activate)
         press("Train")
         press("Day 1")
+        allowWorkoutAccessIfRequested(app)
         XCTAssertTrue(app.staticTexts["Superset · Round 1 of 4"].waitForExistence(timeout: 5))
         press("Complete set")
         XCTAssertTrue(app.staticTexts["Press"].exists)
@@ -215,6 +216,7 @@ final class RoutineEditorUITests: XCTestCase {
 
         press("Train")
         press("Day 1")
+        allowWorkoutAccessIfRequested(app)
         for text in ["Push-up", "A7", "Bodyweight", "Slow lowering", "To failure", "Set 1 of 4"] {
             XCTAssertTrue(containsText(text).waitForExistence(timeout: 5), app.debugDescription)
         }
@@ -276,6 +278,8 @@ final class RoutineEditorUITests: XCTestCase {
 
         press("Train")
         press("Day 1")
+        allowWorkoutAccessIfRequested(app)
+        verifyActiveHealthSession(in: app, spanish: false)
         press("Start set")
         XCTAssertTrue(app.staticTexts["Get ready"].waitForExistence(timeout: 2))
         XCTAssertTrue(app.staticTexts["Exercise"].waitForExistence(timeout: 5))
@@ -285,11 +289,19 @@ final class RoutineEditorUITests: XCTestCase {
         launch(app, spanish: true)
         press("Continuar entrenamiento")
         XCTAssertTrue(app.staticTexts["En pausa"].waitForExistence(timeout: 5))
+
         press("Reanudar")
         XCTAssertTrue(app.staticTexts["Prepárate"].waitForExistence(timeout: 2))
         XCTAssertTrue(app.staticTexts["Ejercicio"].waitForExistence(timeout: 5))
         press("Terminar serie antes de tiempo")
         XCTAssertTrue(app.staticTexts["Serie 1 completada"].waitForExistence(timeout: 5))
+        press("Terminar descanso")
+        XCTAssertTrue(app.staticTexts["Serie 2 de 4"].waitForExistence(timeout: 5))
+        verifyActiveHealthSession(in: app, spanish: true)
+        press("Iniciar serie")
+        XCTAssertTrue(app.staticTexts["Prepárate"].waitForExistence(timeout: 2))
+        press("Cerrar")
+        XCTAssertTrue(button("Continuar entrenamiento", in: app).isHittable)
     }
 
     func testTimedHoldsWaitForManualRestartAndSecondSide() {
@@ -332,6 +344,7 @@ final class RoutineEditorUITests: XCTestCase {
         tap(activate)
         press("Train")
         press("Day 1")
+        allowWorkoutAccessIfRequested(app)
         press("Start set")
         XCTAssertTrue(app.staticTexts["Side 1 of 2"].waitForExistence(timeout: 5))
         let next = button("Start next hold", in: app)
@@ -345,6 +358,27 @@ final class RoutineEditorUITests: XCTestCase {
         press("Start second side")
         press("Finish set early")
         XCTAssertTrue(app.staticTexts["Set 1 completed"].waitForExistence(timeout: 5))
+        press("Close")
+    }
+
+    private func verifyActiveHealthSession(in app: XCUIApplication, spanish: Bool) {
+        let more = app.navigationBars["Day 1"].buttons[spanish ? "Más" : "More"]
+        let available = expectation(for: NSPredicate(format: "hittable == true"), evaluatedWith: more)
+        wait(for: [available], timeout: 8)
+        tap(more)
+        XCTAssertTrue(
+            app.descendants(matching: .any)[spanish ? "Sesión de Salud activa" : "Health session active"].firstMatch
+                .waitForExistence(timeout: 5))
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.15, dy: 0.8)).tap()
+    }
+
+    private func allowWorkoutAccessIfRequested(_ app: XCUIApplication) {
+        let workouts = app.switches["UIA.Health.Write.Workouts.SwitchCell.Switch"]
+        if workouts.waitForExistence(timeout: 5) {
+            if workouts.value as? String == "0" { workouts.tap() }
+            tap(app.buttons["UIA.Health.Allow.Button"])
+            XCTAssertTrue(workouts.waitForNonExistence(timeout: 8))
+        }
     }
 
     private func launch(_ app: XCUIApplication, spanish: Bool) {

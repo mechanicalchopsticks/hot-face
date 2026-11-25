@@ -16,6 +16,7 @@ struct HotFace: App {
                 TrainingTabView()
                     .onChange(of: scenePhase, initial: true) {
                         if scenePhase == .active {
+                            SessionActivityController.shared.refresh()
                             let workout = try? TrainingStorage.openStore().openWorkout()
                             audioDelegate.schedule(workout?.timingCues ?? [])
                         } else {

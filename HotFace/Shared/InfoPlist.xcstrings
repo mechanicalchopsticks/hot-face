@@ -30,6 +30,22 @@
         }
       }
     },
+    "NSHealthUpdateUsageDescription" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HotFace uses workout permission to keep Lock Screen timers up to date while you train."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HotFace usa el permiso de entrenamientos para mantener actualizados los temporizadores en la pantalla bloqueada mientras entrenas."
+          }
+        }
+      }
+    },
     "NSAlarmKitUsageDescription" : {
       "comment" : "Privacy - Alarm Kit Usage Description",
       "localizations" : {

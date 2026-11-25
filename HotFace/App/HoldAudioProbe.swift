@@ -34,7 +34,11 @@ final class HoldAudioDelegate: NSObject, ObservableObject, UIApplicationDelegate
     func schedule(_ cues: [WorkoutTimingCue]) {
         playback?.cancel()
         let pending = cues.filter { $0.date > .now }
+        guard !pending.isEmpty else { return }
         playback = Task {
+            // When authorized, iOS delivers the same cue in either app state.
+            let settings = await UNUserNotificationCenter.current().notificationSettings()
+            if settings.authorizationStatus == .authorized && settings.soundSetting == .enabled { return }
             for cue in pending {
                 do { try await Task.sleep(for: .seconds(max(0, cue.date.timeIntervalSinceNow))) } catch { return }
                 guard !Task.isCancelled else { return }
@@ -44,16 +48,7 @@ final class HoldAudioDelegate: NSObject, ObservableObject, UIApplicationDelegate
     }
 
     func play(_ kind: WorkoutTimingCue.Kind) {
-        let soundFile: String =
-            switch kind {
-            case .holdStarted: HoldCue.firstHold.soundFile
-            case .lastHoldStarted: HoldCue.lastHold.soundFile
-            case .holdEnded: HoldCue.holdPause.soundFile
-            case .sideCompleted: "sideComplete.wav"
-            case .setCompleted: HoldCue.lastHoldComplete.soundFile
-            case .lastSetCompleted: HoldCue.lastSetComplete.soundFile
-            }
-        if play(soundFile: soundFile) {
+        if play(soundFile: kind.soundFile) {
             audioLog.info("Started workout cue \(kind.rawValue, privacy: .public)")
         } else {
             audioLog.error("Could not play workout cue \(kind.rawValue, privacy: .public)")
@@ -65,12 +60,18 @@ final class HoldAudioDelegate: NSObject, ObservableObject, UIApplicationDelegate
         didFinishLaunchingWithOptions options: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
         UNUserNotificationCenter.current().delegate = self
+        HealthWorkoutController.shared.configure()
         return true
     }
 
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification) async
         -> UNNotificationPresentationOptions
     {
+        if let raw = notification.request.content.userInfo["workoutCue"] as? String,
+            let kind = WorkoutTimingCue.Kind(rawValue: raw)
+        {
+            return play(soundFile: kind.soundFile) ? [.banner] : [.banner, .sound]
+        }
         guard let cue = HoldCue(rawValue: notification.request.content.userInfo["holdCue"] as? String ?? "") else {
             return [.banner, .sound]
         }

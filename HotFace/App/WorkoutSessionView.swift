@@ -34,6 +34,20 @@ struct WorkoutSessionView: View {
         let rest = workout.activeRest(at: date)
         return NavigationStack {
             List {
+                let activity = SessionActivityController.shared
+                if activity.showingSession != workout.id {
+                    Button("Show on Lock Screen") { Task { await activity.show(workout.id) } }
+                    if activity.controlsUnavailable { Text("Lock Screen controls are unavailable.") }
+                }
+                switch HealthWorkoutController.shared.status {
+                case .denied: Text("Allow workouts in Health for reliable Lock Screen updates.")
+                case .unavailable: Text("Health is unavailable. Lock Screen updates may be delayed.")
+                default: EmptyView()
+                }
+                if activity.canRequestSounds {
+                    Button("Enable workout sounds on Lock Screen") { Task { await activity.requestSounds() } }
+                }
+                if activity.cuesUnavailable { Text("Lock Screen sounds are unavailable. Check notification settings.") }
                 if let rest {
                     Section {
                         WorkoutRestCountdown(remaining: rest.endsAt.timeIntervalSince(date))
@@ -88,6 +102,9 @@ struct WorkoutSessionView: View {
                                 Button("Adjust exercise") { adjusting = next.exercise }
                                     .disabled(workout.timer != nil)
                             }
+                            if HealthWorkoutController.shared.status == .running {
+                                Label("Health session active", systemImage: "heart")
+                            }
                             Button("Finish workout") { confirmsFinish = true }
                         } label: {
                             Label("More", systemImage: "ellipsis.circle")
@@ -107,8 +124,12 @@ struct WorkoutSessionView: View {
                 }
             }
             .safeAreaInset(edge: .bottom) { primaryAction(rest: rest, at: date) }
+            .onReceive(NotificationCenter.default.publisher(for: .workoutControlPerformed)) { _ in refresh() }
             .onChange(of: scenePhase, initial: true) {
-                if scenePhase == .active { refresh() }
+                if scenePhase == .active {
+                    refresh()
+                    if summary == nil { HealthWorkoutController.shared.begin(workout.id) }
+                }
             }
             .task(id: workout.timer?.exerciseEnd) {
                 guard let end = workout.timer?.exerciseEnd else { return }
@@ -190,7 +211,10 @@ struct WorkoutSessionView: View {
     }
 
     private func reload(from store: CoordinatedModelStore) throws {
-        if let updated = try store.openWorkout(), updated.id == workout.id {
+        let open = try store.openWorkout()
+        audio.schedule(open?.timingCues ?? [])
+        SessionActivityController.shared.refresh()
+        if let updated = open, updated.id == workout.id {
             workout = updated
         } else {
             summary = try store.workoutSummary(id: workout.id)
@@ -203,7 +227,6 @@ struct WorkoutSessionView: View {
             try apply(
                 .controlTimer(
                     exerciseID: set.exercise.id, number: set.number, expectedRevision: revision, action: action))
-            audio.schedule(summary == nil ? workout.timingCues : [])
             if action == .complete {
                 audio.play(firstSide ? .sideCompleted : (set.number == set.count ? .lastSetCompleted : .setCompleted))
             }
@@ -215,9 +238,8 @@ struct WorkoutSessionView: View {
 
     private func complete(_ set: OpenWorkout.PendingSet) {
         do {
-            try apply(
-                .logSet(exerciseID: set.exercise.id, number: set.number, performance: .init(asPrescribed: set.exercise))
-            )
+            try apply(.logCurrentSet(exerciseID: set.exercise.id, number: set.number))
+            audio.play(set.number == set.count ? .lastSetCompleted : .setCompleted)
         } catch { actionError = "Could not update workout" }
     }
 
@@ -229,7 +251,6 @@ struct WorkoutSessionView: View {
     private func finish() {
         do {
             try apply(.finish)
-            audio.schedule([])
         } catch { actionError = "Could not finish workout" }
     }
 }

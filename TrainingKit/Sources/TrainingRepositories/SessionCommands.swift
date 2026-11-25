@@ -84,6 +84,13 @@ struct SessionWriter {
                 return .alreadyApplied
             }
             try start(routineID: routineID, gymID: gymID, dayID: dayID, cycleID: cycleID, at: date)
+        case .logCurrentSet(let id, let number):
+            let state = try workout(openSession())
+            guard state.timer == nil, state.activeRest(at: date) == nil, let set = state.nextSet,
+                set.exercise.id == id, set.number == number, set.timedDuration == nil
+            else { throw SessionCommandError.invalidSetNumber }
+            return try perform(
+                .logSet(exerciseID: id, number: number, performance: .init(asPrescribed: set.exercise)), at: date)
         case .logSet(let id, let number, let performance):
             _ = try perform(.completeSet(exerciseID: id, number: number, performance: performance), at: date)
             try finishIfResolved(openSession(), at: date)

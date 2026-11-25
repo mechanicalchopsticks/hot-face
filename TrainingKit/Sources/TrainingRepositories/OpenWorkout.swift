@@ -4,7 +4,7 @@ import TrainingDomain
 
 public struct WorkoutTimingCue: Equatable, Sendable {
     public enum Kind: String, Codable, Sendable {
-        case holdStarted, lastHoldStarted, holdEnded, sideCompleted, setCompleted, lastSetCompleted
+        case holdStarted, lastHoldStarted, holdEnded, sideCompleted, setCompleted, lastSetCompleted, restCompleted
     }
 
     public let date: Date
@@ -39,6 +39,8 @@ public struct OpenWorkout: Identifiable, Sendable {
     public let prescription: SessionPrescription
     public let pendingExercises: [ExercisePrescription]
     public let nextSet: PendingSet?
+    /// The pending set after the current one completes, including superset round order.
+    public let followingSet: PendingSet?
     public let rest: Rest?
     public var timer: WorkoutTimeline? { prescription.timer }
     public var nextSupersetRound: (number: Int, count: Int)? {
@@ -53,7 +55,9 @@ public struct OpenWorkout: Identifiable, Sendable {
 
     /// Pending cues stop at the next transition that requires user input.
     public var timingCues: [WorkoutTimingCue] {
-        guard let set = nextSet, var hold = timer, let durations = set.exercise.timedHolds else { return [] }
+        guard let set = nextSet, var hold = timer, let durations = set.exercise.timedHolds else {
+            return rest.map { [.init(date: $0.endsAt, kind: .restCompleted)] } ?? []
+        }
         var cues: [WorkoutTimingCue] = []
         while let start = hold.exerciseStart, let end = hold.exerciseEnd {
             let lastHold = hold.holdNumber == durations.count
@@ -69,10 +73,21 @@ public struct OpenWorkout: Identifiable, Sendable {
             let next = hold.followingHold(in: set.exercise)
             // Back-to-back holds share a boundary and sound the next hold's start cue once.
             if next?.exerciseStart != end { cues.append(.init(date: end, kind: kind)) }
-            guard let next else { break }
+            guard let next else {
+                if let duration = restAfterCurrentSet, duration > 0 {
+                    cues.append(.init(date: end.addingTimeInterval(duration), kind: .restCompleted))
+                }
+                break
+            }
             hold = next
         }
         return cues
+    }
+
+    public var restAfterCurrentSet: TimeInterval? {
+        guard let set = nextSet, let followingSet else { return nil }
+        return prescription.restDuration(
+            after: set.exercise, completedSet: set.number, before: followingSet.exercise, nextSet: followingSet.number)
     }
 
     init(session: TrainingSchemaV1.Session, performed: [TrainingSchemaV1.PerformedSet]) throws {
@@ -82,12 +97,10 @@ public struct OpenWorkout: Identifiable, Sendable {
 
         let byExercise = Dictionary(grouping: performed, by: \.exerciseID)
         let skipped = Set(session.skippedExerciseIDs)
-        var pending: PendingSet?
+        var candidates: [(set: PendingSet, block: Int, round: Int, index: Int)] = []
         var remaining: [ExercisePrescription] = []
         var firstMemberIndex: [UUID: Int] = [:]
-        var pendingPriority = (Int.max, Int.max)
         for (index, exercise) in prescription.day.exercises.enumerated() where !skipped.contains(exercise.id) {
-            // Schedule the entire block at its first member, even when that member has finished.
             let block =
                 exercise.supersetID.map { id in
                     if let first = firstMemberIndex[id] { return first }
@@ -96,18 +109,22 @@ public struct OpenWorkout: Identifiable, Sendable {
                 } ?? index
             guard let count = exercise.sets, count > 0 else { throw CocoaError(.coderReadCorrupt) }
             let completed = Set(byExercise[exercise.id, default: []].map(\.number))
-            if let number = (1...count).first(where: { !completed.contains($0) }) {
-                let equipment = prescription.equipment.first { $0.id == exercise.equipmentID }
-                remaining.append(exercise)
-                let priority = (block, prescription.roundNumber(for: exercise, set: number))
-                if priority < pendingPriority {
-                    pendingPriority = priority
-                    pending = PendingSet(exercise: exercise, equipment: equipment, number: number, count: count)
-                }
+            let numbers = (1...count).lazy.filter { !completed.contains($0) }.prefix(2)
+            guard !numbers.isEmpty else { continue }
+            remaining.append(exercise)
+            let equipment = prescription.equipment.first { $0.id == exercise.equipmentID }
+            for number in numbers {
+                let set = PendingSet(exercise: exercise, equipment: equipment, number: number, count: count)
+                candidates.append((set, block, prescription.roundNumber(for: exercise, set: number), index))
             }
         }
+        candidates.sort {
+            ($0.block, $0.round, $0.index, $0.set.number) < ($1.block, $1.round, $1.index, $1.set.number)
+        }
         pendingExercises = remaining
+        let pending = candidates.first?.set
         nextSet = pending
+        followingSet = candidates.dropFirst().first?.set
 
         // The set's saved timestamp is the start of rest, including when a completion is retried.
         if let pending, let last = performed.first,

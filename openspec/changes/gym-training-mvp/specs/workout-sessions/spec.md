@@ -74,6 +74,26 @@ The app SHALL retain progress after an unexpected closure and allow the user to 
 - **WHEN** the user opens the app the next day with a pending session
 - **THEN** the app offers to continue the session or finish the work already saved, and only finishing marks the cycle day complete
 
+### Requirement: An active HealthKit session during training
+With workout permission, HotFace SHALL start a HealthKit workout session when the user starts or continues training. It SHALL keep that session active across sets, pauses, rests, exercise changes and normal iPhone locking. Closing the workout screen or finishing the workout SHALL end the HealthKit session and discard its Health data. When Health is unavailable or permission is denied, the local workout SHALL remain usable.
+
+#### Scenario: Continue through rest without reopening HotFace
+- **WHEN** a timed set and its rest expire while the iPhone is locked with Live Activities enabled
+- **THEN** the card shows the next set ready for the user and the same HealthKit session continues into that set
+
+#### Scenario: Leave a workout for later
+- **WHEN** the user closes a workout and later chooses **Continue workout**
+- **THEN** HealthKit ends when the user leaves and starts again when they continue, and HotFace retains the saved progress
+
+### Requirement: Show the latest workout cue
+HotFace SHALL keep the most recently delivered workout cue visible and remove older delivered workout cues when it can run, including when it resumes after suspension.
+
+#### Scenario: A rest cue follows a hold cue
+- **WHEN** iOS delivers the hold and end-of-rest notifications in sequence while the iPhone is locked and workout sounds are enabled
+- **THEN** HotFace keeps the end-of-rest notification and removes the earlier hold notification
+- **AND** the user hears both cues
+- **AND** future cue sounds remain scheduled and unrelated notifications are preserved
+
 ### Requirement: Supersets
 The app SHALL support usual and temporary supersets, including exercises from different groups, with equal prescribed set counts and different repetitions or durations. Starting when the superset is formed, each round SHALL include the next pending set of each member that still has work, in day order. The app SHALL rest between rounds, including when only one member remains. The user SHALL be able to dissolve a superset during a workout and explicitly save a change as usual.
 
