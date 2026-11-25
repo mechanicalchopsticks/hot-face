@@ -95,6 +95,27 @@ struct SessionCommandTests {
         #expect(try f.store.workoutSummary(id: f.sessionID).exercises.first?.sets.count == 2)
     }
 
+    @Test(arguments: [true, false])
+    func foregroundCueIsDeliveredOnceWhenExpiryAndPlaybackCoincide(playbackFirst: Bool) throws {
+        let f = try Fixture(exercise: .init(name: "Plank", sets: 1, segments: [.seconds(5)]))
+        defer { try? FileManager.default.removeItem(at: f.directory) }
+        _ = try f.store.apply(f.start, clock: FixedClock(0))
+        _ = try f.store.apply(
+            f.command(.controlTimer(exerciseID: f.exercise.id, number: 1, expectedRevision: 0, action: .start)),
+            clock: FixedClock(0))
+        let running = try #require(try f.store.openWorkout(clock: FixedClock(1)))
+        var queue = ForegroundWorkoutCues()
+        queue.update(running.timingCues, at: FixedClock(1).now)
+        #expect(queue.takeDue(at: FixedClock(3).now)?.kind == .holdStarted)
+        let end = FixedClock(8)
+        var heard: [WorkoutTimingCue.Kind] = []
+        if playbackFirst, let cue = queue.takeDue(at: end.now) { heard.append(cue.kind) }
+        queue.update(try f.store.openWorkout(clock: end)?.timingCues ?? [], at: end.now)
+        if let cue = queue.takeDue(at: end.now) { heard.append(cue.kind) }
+        #expect(heard == [.lastSetCompleted])
+        #expect(queue.nextDate == nil)
+    }
+
     @Test func mixedPrescriptionWaitsForManualCompletion() throws {
         let exercise = ExercisePrescription(
             name: "Mixed", sets: 1, segments: [.seconds(5), .repetitions(10), .toFailure])

@@ -1777,6 +1777,17 @@
         }
       }
     },
+    "Hold started" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inicio del sostenimiento"
+          }
+        }
+      }
+    },
     "Hold timing" : {
       "extractionState" : "stale",
       "localizations" : {
