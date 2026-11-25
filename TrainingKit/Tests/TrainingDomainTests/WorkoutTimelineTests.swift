@@ -3,6 +3,20 @@ import Testing
 import TrainingDomain
 
 struct WorkoutTimelineTests {
+    @Test func correctingEitherTimedSideReevaluatesCompletionAgainstTheOriginalHolds() {
+        let target: [ExerciseSegment] = [.seconds(5), .seconds(8)]
+        var performance = SetPerformance(segments: target, perSide: true, isPartial: true)
+        performance.updateTimedCompletion(prescribed: target)
+        #expect(!performance.isPartial)
+        performance.secondSideSegments = [.seconds(5), .seconds(6)]
+        performance.updateTimedCompletion(prescribed: target)
+        #expect(performance.isPartial)
+        performance.secondSideSegments = target
+        performance.segments = [.seconds(4), .seconds(8)]
+        performance.updateTimedCompletion(prescribed: target)
+        #expect(performance.isPartial)
+    }
+
     @Test func timedSetTransitions() throws {
         let origin = Date(timeIntervalSinceReferenceDate: 1000)
         func at(_ seconds: Double) -> Date { origin.addingTimeInterval(seconds) }
