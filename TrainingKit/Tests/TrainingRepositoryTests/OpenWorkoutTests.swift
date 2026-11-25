@@ -57,7 +57,8 @@ struct OpenWorkoutTests {
         #expect(try reopen().activeRoutine()?.plan == routine.plan)
     }
 
-    @Test func supersetRestSettingsApplyToRoundBoundariesAndSurviveRoutineCopy() throws {
+    @Test(arguments: [true, false])
+    func supersetRestSettingsApplyToRoundBoundariesAndSurviveRoutineCopy(skipFirst: Bool) throws {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: directory) }
@@ -110,9 +111,16 @@ struct OpenWorkoutTests {
         let roundEnd = try #require(try store.openWorkout(clock: SetClock(58)))
         #expect(roundEnd.nextSet?.exercise.id == row.id && roundEnd.nextSet?.number == 2)
         #expect(roundEnd.timer == nil && roundEnd.rest?.endsAt == SetClock(98).now)
-        try log(row, 2, at: 100)
+        if skipFirst {
+            try command(.skipAndAdvance(exerciseID: row.id), at: 60)
+            let next = try #require(try store.openWorkout(clock: SetClock(61)))
+            #expect(next.nextSet?.exercise.id == curl.id)
+            #expect(next.rest?.endsAt == SetClock(98).now)
+        } else {
+            try log(row, 2, at: 100)
+            #expect(try store.openWorkout()?.rest == nil)
+        }
         #expect(try store.openWorkout()?.nextSet?.exercise.id == curl.id)
-        #expect(try store.openWorkout()?.rest == nil)
         try log(curl, 2, at: 110)
         try log(plank, 2, at: 120)
         #expect(try store.openWorkout()?.rest?.endsAt == SetClock(190).now)
