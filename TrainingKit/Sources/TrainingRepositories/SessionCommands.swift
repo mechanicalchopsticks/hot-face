@@ -51,12 +51,12 @@ struct SessionWriter {
         return try context.fetch(sessions).first
     }
 
-    func workout(_ session: TrainingSchemaV1.Session) throws -> OpenWorkout {
+    func workout(_ session: TrainingSchemaV1.Session, at date: Date) throws -> OpenWorkout {
         let sets = try context.fetch(
             FetchDescriptor<V1.PerformedSet>(
                 predicate: #Predicate { $0.sessionID == sessionID },
                 sortBy: [SortDescriptor(\.performedAt, order: .reverse)]))
-        return try OpenWorkout(session: session, performed: sets)
+        return try OpenWorkout(session: session, performed: sets, at: date)
     }
 
     func perform(_ action: SessionCommand.Action, at date: Date) throws -> SessionCommandResult {
@@ -85,7 +85,7 @@ struct SessionWriter {
             }
             try start(routineID: routineID, gymID: gymID, dayID: dayID, cycleID: cycleID, at: date)
         case .logCurrentSet(let id, let number):
-            let state = try workout(openSession())
+            let state = try workout(openSession(), at: date)
             guard state.timer == nil, state.activeRest(at: date) == nil, let set = state.nextSet,
                 set.exercise.id == id, set.number == number, set.timedDuration == nil
             else { throw SessionCommandError.invalidSetNumber }
@@ -96,12 +96,13 @@ struct SessionWriter {
             try finishIfResolved(openSession(), at: date)
         case .controlTimer(let id, let number, let revision, let action):
             let session = try openSession()
-            let state = try workout(session)
+            let state = try workout(session, at: date)
             guard let set = state.nextSet, set.exercise.id == id, set.number == number,
                 let holds = set.exercise.timedHolds,
                 state.timer != nil || (action == .start && (state.rest?.endsAt ?? .distantPast) <= date)
             else { throw SessionCommandError.invalidTimerTransition }
-            let timer = state.timer ?? WorkoutTimeline(setNumber: number)
+            let timer =
+                state.timer ?? WorkoutTimeline(setNumber: number, revision: state.prescription.timerStartRevision ?? 0)
             guard timer.holdNumber <= holds.count,
                 action != .complete || timer.exerciseStart != nil || timer.pausedSeconds != nil || timer.holdNumber > 1,
                 let next = timer.applying(
@@ -117,7 +118,12 @@ struct SessionWriter {
                 try completeTimer(set: set, timer: timer, in: session, at: date)
             } else {
                 var plan = state.prescription
-                plan.timer = next
+                if action == .cancel {
+                    plan.timer = nil
+                    plan.timerStartRevision = next.revision
+                } else {
+                    plan.timer = next
+                }
                 try session.updatePrescription(plan)
             }
         case .skipAndAdvance(let id):
@@ -139,7 +145,7 @@ struct SessionWriter {
             }
             guard !session.skippedExerciseIDs.contains(id) else { throw SessionCommandError.skippedExercise }
             if target.supersetID != nil {
-                let next = try workout(session).nextSet
+                let next = try workout(session, at: date).nextSet
                 guard next?.exercise.id == id, next?.number == number else {
                     throw SessionCommandError.invalidSetNumber
                 }
@@ -227,7 +233,7 @@ struct SessionWriter {
             try session.updatePrescription(snapshot)
         case .adjustRest(let id, let adjustment):
             let session = try openSession()
-            let workout = try workout(session)
+            let workout = try workout(session, at: date)
             guard let rest = workout.activeRest(at: date), rest.id == id else {
                 throw SessionCommandError.restUnavailable
             }
@@ -288,7 +294,7 @@ struct SessionWriter {
     }
 
     private func finishIfResolved(_ session: V1.Session, at date: Date) throws {
-        guard try workout(session).nextSet == nil else { return }
+        guard try workout(session, at: date).nextSet == nil else { return }
         var plan = try session.prescription
         plan.summaryPending = true
         try session.updatePrescription(plan)
@@ -296,7 +302,7 @@ struct SessionWriter {
     }
 
     private func editSuperset(_ edit: SupersetEdit, saveAsUsual: Bool, in session: V1.Session, at date: Date) throws {
-        let current = try workout(session)
+        let current = try workout(session, at: date)
         var snapshot = current.prescription
         var priorSets = snapshot.setsBeforeSuperset ?? [:]
         switch edit {
@@ -327,7 +333,7 @@ struct SessionWriter {
         }
         try session.updatePrescription(snapshot)
         // Editing membership must not restart a rest that ended, or invent one mid-round.
-        if let rest = try workout(session).rest {
+        if let rest = try workout(session, at: date).rest {
             snapshot.restOverride = .init(setID: rest.id, endsAt: current.rest?.endsAt ?? date)
             try session.updatePrescription(snapshot)
         }
@@ -337,7 +343,7 @@ struct SessionWriter {
     func reconcileTimer(in session: TrainingSchemaV1.Session, at date: Date) throws {
         var plan = try session.prescription
         guard var timer = plan.timer, let end = timer.exerciseEnd, end <= date else { return }
-        guard let set = try workout(session).nextSet, set.number == timer.setNumber else {
+        guard let set = try workout(session, at: date).nextSet, set.number == timer.setNumber else {
             throw CocoaError(.coderReadCorrupt)
         }
         while let end = timer.exerciseEnd, end <= date, let next = timer.followingHold(in: set.exercise) {

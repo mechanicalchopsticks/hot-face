@@ -167,6 +167,12 @@ struct WorkoutSessionView: View {
                         } else {
                             action("Resume") { control(.resume, set: set, revision: timer.revision) }
                         }
+                        if let duration = set.exercise.timedHolds?.first,
+                            timer.canCancel(firstHoldDuration: TimeInterval(duration), at: date)
+                        {
+                            Button("Cancel set") { control(.cancel, set: set, revision: timer.revision) }
+                                .buttonStyle(.bordered)
+                        }
                         Button {
                             control(.complete, set: set, revision: timer.revision)
                         } label: {
@@ -180,7 +186,9 @@ struct WorkoutSessionView: View {
                         .disabled(timer.exerciseStart == nil && timer.pausedSeconds == nil && timer.holdNumber == 1)
                     }
                 } else if set.timedDuration != nil {
-                    action("Start set") { control(.start, set: set, revision: 0) }
+                    action("Start set") {
+                        control(.start, set: set, revision: workout.prescription.timerStartRevision ?? 0)
+                    }
                 } else {
                     action("Complete set") { complete(set) }
                 }

@@ -95,6 +95,66 @@ struct SessionCommandTests {
         #expect(try f.store.workoutSummary(id: f.sessionID).exercises.first?.sets.count == 2)
     }
 
+    @Test func cancelledPreparationUnlocksExercisesAndRejectsOldControlsAfterRestart() throws {
+        let f = try Fixture(exercise: .init(name: "Plank", sets: 1, segments: [.seconds(20)]))
+        defer { try? FileManager.default.removeItem(at: f.directory) }
+        _ = try f.store.apply(f.start, clock: FixedClock(0))
+        func control(_ action: WorkoutAction, revision: Int, at time: Double) throws {
+            _ = try f.store.apply(
+                f.command(
+                    .controlTimer(exerciseID: f.exercise.id, number: 1, expectedRevision: revision, action: action)),
+                clock: FixedClock(time))
+        }
+        try control(.start, revision: 0, at: 0)
+        try control(.pause, revision: 1, at: 2)
+        try control(.cancel, revision: 2, at: 9)
+        let ready = try #require(try f.store.openWorkout(clock: FixedClock(10)))
+        #expect(ready.timer == nil && ready.rest == nil && ready.timingCues.isEmpty)
+        #expect(ready.nextSet?.number == 1)
+        #expect(throws: SessionCommandError.invalidTimerTransition) { try control(.start, revision: 0, at: 10) }
+        let revision = try #require(WorkoutActivityState(ready).timerStartRevision)
+        try control(.start, revision: revision, at: 10)
+        #expect(throws: SessionCommandError.invalidTimerTransition) { try control(.pause, revision: 1, at: 11) }
+        try control(.cancel, revision: revision + 1, at: 11)
+        _ = try f.store.apply(f.command(.skipAndAdvance(exerciseID: f.exercise.id)), clock: FixedClock(12))
+        #expect(try f.store.workoutSummary(id: f.sessionID).exercises[0].sets.isEmpty)
+    }
+
+    @Test func delayedPublicationUsesTheReadBoundaryAndSuppressesExpiredControls() throws {
+        var exercise = ExercisePrescription(name: "Plank", sets: 1, segments: [.seconds(3), .seconds(4), .seconds(5)])
+        exercise.automaticallyStartsHolds = true
+        let f = try Fixture(exercise: exercise)
+        defer { try? FileManager.default.removeItem(at: f.directory) }
+        _ = try f.store.apply(f.start, clock: FixedClock(0))
+        _ = try f.store.apply(
+            f.command(.controlTimer(exerciseID: exercise.id, number: 1, expectedRevision: 0, action: .start)),
+            clock: FixedClock(0))
+        let read = try #require(try f.store.openWorkout(clock: FixedClock(5.99)))
+        let state = WorkoutActivityState(read)
+        #expect(state.boundary == FixedClock(6).now)
+        #expect(state.frame(at: FixedClock(6).now)?.timer?.holdNumber == 2)
+        #expect(state.frame(at: FixedClock(10).now) == nil)
+        let reconciled = try #require(try f.store.openWorkout(clock: FixedClock(10)))
+        #expect(WorkoutActivityState(reconciled).frame(at: FixedClock(10).now)?.timer?.holdNumber == 3)
+    }
+
+    @Test func oldActivityAndSessionDecodeWithoutCancellationOrPendingSummary() throws {
+        func fixture(_ name: String) throws -> Data {
+            let url = try #require(
+                Bundle.module.url(forResource: name, withExtension: "json", subdirectory: "Fixtures"))
+            return try Data(contentsOf: url)
+        }
+        let activity = try JSONDecoder().decode(
+            WorkoutActivityState.self, from: fixture("before-timer-cancellation-activity"))
+        let session = try JSONDecoder().decode(
+            SessionPrescription.self, from: fixture("before-timer-cancellation-session"))
+        #expect(
+            activity.timerStartRevision == nil && session.timerStartRevision == nil && session.summaryPending == nil)
+        #expect(activity.frame(at: FixedClock(6).now)?.timer?.revision == 2)
+        #expect(activity.frame(at: FixedClock(10).now) == nil)
+        #expect(session.timer?.revision == 1 && session.timer?.exerciseEnd == FixedClock(6).now)
+    }
+
     @Test(arguments: [true, false])
     func foregroundCueIsDeliveredOnceWhenExpiryAndPlaybackCoincide(playbackFirst: Bool) throws {
         let f = try Fixture(exercise: .init(name: "Plank", sets: 1, segments: [.seconds(5)]))

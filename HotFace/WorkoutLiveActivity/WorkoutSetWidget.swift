@@ -63,12 +63,12 @@ private struct SessionWidget: Widget {
             } compactTrailing: {
                 let now = presentationDate(context)
                 let frame = context.state.frame(at: now)
-                if let end = frame.restEnd, end > now {
+                if let frame, let end = frame.restEnd, end > now {
                     Text(timerInterval: now...end, showsHours: false).frame(width: 43)
-                } else if let number = frame.set?.number {
+                } else if let number = frame?.set?.number {
                     Text(number, format: .number)
                 } else {
-                    Image(systemName: "checkmark")
+                    Image(systemName: frame == nil ? "arrow.clockwise" : "checkmark")
                 }
             } minimal: {
                 Image(systemName: "dumbbell")
@@ -84,7 +84,7 @@ private struct SessionWidget: Widget {
         let date = presentationDate(context)
         let frame = context.state.frame(at: date)
         return VStack(alignment: .leading, spacing: 4) {
-            if let set = frame.set {
+            if let frame, let set = frame.set {
                 let resting = (frame.restEnd ?? .distantPast) > date
                 if resting, let end = frame.restEnd {
                     LabeledContent("Rest") { Text(timerInterval: date...end, showsHours: false) }
@@ -113,11 +113,13 @@ private struct SessionWidget: Widget {
                             }
                         }
                     } else if set.timed {
-                        button("Start set", .start, set, 0, context.activityID)
+                        button("Start set", .start, set, context.state.timerStartRevision ?? 0, context.activityID)
                     } else {
                         button("Complete set", .complete, set, nil, context.activityID)
                     }
                 }
+            } else if frame == nil {
+                Label("Updating workout", systemImage: "arrow.clockwise")
             } else {
                 Label("All sets completed", systemImage: "checkmark.circle")
             }

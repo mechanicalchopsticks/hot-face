@@ -1,7 +1,7 @@
 import Foundation
 
 public enum WorkoutAction: String, Codable, Sendable {
-    case start, pause, resume, complete
+    case start, pause, resume, cancel, complete
 }
 
 public enum WorkoutPhase: Equatable, Sendable {
@@ -25,7 +25,8 @@ public struct WorkoutTimeline: Codable, Hashable, Sendable {
     public var sideNumber: Int { firstSideHolds == nil ? 1 : 2 }
     public var holdNumber: Int { (completedHolds?.count ?? 0) + 1 }
 
-    public init(setNumber: Int = 1) {
+    public init(setNumber: Int = 1, revision: Int = 0) {
+        self.revision = revision
         self.setNumber = setNumber
     }
 
@@ -48,6 +49,11 @@ public struct WorkoutTimeline: Codable, Hashable, Sendable {
         if let pausedSeconds { return pausedSeconds }
         guard let exerciseStart, let exerciseEnd else { return 0 }
         return max(0, exerciseEnd.timeIntervalSince(max(date, exerciseStart)))
+    }
+
+    public func canCancel(firstHoldDuration: TimeInterval, at date: Date) -> Bool {
+        sideNumber == 1 && holdNumber == 1 && (exerciseStart != nil || pausedSeconds != nil)
+            && remainingExerciseTime(at: date) == firstHoldDuration
     }
 
     public func currentSet(at date: Date) -> Int {
@@ -77,6 +83,8 @@ public struct WorkoutTimeline: Codable, Hashable, Sendable {
             next.exerciseStart = start
             next.exerciseEnd = end
             next.restEnd = end.addingTimeInterval(restDuration)
+        case (.cancel, _) where canCancel(firstHoldDuration: exerciseDuration, at: now):
+            break
         case (.pause, .preparation), (.pause, .exercise),
             (.pause, .holdPause):
             guard exerciseEnd != nil else { return nil }

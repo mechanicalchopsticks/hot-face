@@ -35,6 +35,7 @@ struct WorkoutTimelineTests {
 
         let paused = try #require(started.applying(.pause, at: at(9)))
         #expect(paused.pausedSeconds == 14)
+        #expect(paused.applying(.cancel, at: at(10)) == nil)
         #expect(paused.phase(at: at(49)) == .paused)
         #expect(paused.nextBoundary(after: at(49)) == nil)
         let resumed = try #require(paused.applying(.resume, at: at(50)))
