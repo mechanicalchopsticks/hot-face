@@ -39,6 +39,14 @@ extension GymInventory {
         }
     }
 
+    public func loadOptions(for equipment: EquipmentDescription, displayedLike current: ExerciseLoad) -> [ExerciseLoad]
+    {
+        loadOptions(for: equipment, dumbbellCount: current.implementCount).compactMap { option in
+            let base = equipment.baseWeight.map { equipment.unit.converted($0, to: option.unit) }
+            return try? option.displayed(as: current.representation, equipmentWeightInLoadUnit: base)
+        }
+    }
+
     private func plateLoadOptions(unit: ExerciseLoad.Unit, maximumPerSide: Decimal?) -> [ExerciseLoad] {
         let globalMaximum = ExerciseLoad.Unit.lb.converted(250, to: .kg)
         let equipmentMaximum = maximumPerSide.map { unit.converted($0, to: .kg) } ?? globalMaximum

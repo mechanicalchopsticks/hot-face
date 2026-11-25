@@ -19,6 +19,7 @@ struct WorkoutSessionView: View {
     @State private var choosingExercise = false
 
     @State private var summary: WorkoutSummary?
+    @State private var progression: (id: UUID, exerciseID: UUID, advice: ProgressionAdvice, loads: [ExerciseLoad])?
 
     var body: some View {
         if let summary {
@@ -32,6 +33,8 @@ struct WorkoutSessionView: View {
 
     private func training(at date: Date) -> some View {
         let rest = workout.activeRest(at: date)
+        let next = workout.nextSet
+        let startingID = rest == nil && workout.timer == nil && next?.number == 1 ? next?.exercise.id : nil
         return NavigationStack {
             List {
                 let activity = SessionActivityController.shared
@@ -83,6 +86,34 @@ struct WorkoutSessionView: View {
                     } header: {
                         if rest != nil { Text("Up next") } else if workout.timer == nil { Text("Ready") }
                     }
+                    if let progression, progression.exerciseID == startingID {
+                        Section("Progression suggestion") {
+                            switch progression.advice {
+                            case .adjustManually:
+                                Text("Review this exercise manually at your current effort balance.")
+                                Button("Adjust exercise") { adjusting = set.exercise }
+                            case .suggested(let suggestion):
+                                ProgressionFields(suggestion: suggestion, loads: progression.loads) {
+                                    load, repetitions in
+                                    do {
+                                        let store = try TrainingStorage.openStore()
+                                        try store.acceptProgressionSuggestion(
+                                            suggestion, load: load, repetitions: repetitions,
+                                            routineID: workout.prescription.routineID,
+                                            exerciseID: set.exercise.id, sessionID: workout.id,
+                                            clock: SystemWorkoutClock())
+                                        self.progression = nil
+                                        try reload(from: store)
+                                    } catch {
+                                        refresh()
+                                        loadProgression(for: startingID)
+                                        actionError = "Could not update workout"
+                                    }
+                                }.id(progression.id)
+                            }
+                            Button("Continue with current values") { self.progression = nil }
+                        }
+                    }
                 } else {
                     Label("All sets completed", systemImage: "checkmark.circle")
                 }
@@ -116,7 +147,10 @@ struct WorkoutSessionView: View {
                 WorkoutExerciseList(workout: workout) { action in try apply(action) }
             }
             .sheet(item: $adjusting) { exercise in
-                WorkoutAdjustmentView(exercise: exercise, workout: workout) { action in try apply(action) }
+                WorkoutAdjustmentView(exercise: exercise, workout: workout) { action in
+                    try apply(action)
+                    if progression != nil { loadProgression(for: startingID) }
+                }
             }
             .sheet(item: $correcting) { record in
                 SetCorrectionView(record: record) { performance in
@@ -131,6 +165,7 @@ struct WorkoutSessionView: View {
                     if summary == nil { HealthWorkoutController.shared.begin(workout.id) }
                 }
             }
+            .task(id: startingID) { loadProgression(for: startingID) }
             .task(id: workout.timer?.exerciseEnd) {
                 guard let end = workout.timer?.exerciseEnd else { return }
                 try? await Task.sleep(for: .seconds(max(0, end.timeIntervalSinceNow)))
@@ -148,6 +183,18 @@ struct WorkoutSessionView: View {
                 Button("OK") {}
             }
         }
+    }
+
+    private func loadProgression(for exerciseID: UUID?) {
+        progression = nil
+        guard let exerciseID else { return }
+        do {
+            if let offer = try TrainingStorage.openStore().progressionOffer(
+                routineID: workout.prescription.routineID, exerciseID: exerciseID)
+            {
+                progression = (UUID(), exerciseID, offer.advice, offer.loads)
+            }
+        } catch { actionError = "Could not update workout" }
     }
 
     private func primaryAction(rest: OpenWorkout.Rest?, at date: Date) -> some View {
@@ -260,6 +307,37 @@ struct WorkoutSessionView: View {
         do {
             try apply(.finish)
         } catch { actionError = "Could not finish workout" }
+    }
+}
+
+private struct ProgressionFields: View {
+    @Environment(\.locale) private var locale
+    let suggestion: WeightSuggestion
+    let loads: [ExerciseLoad]
+    let save: (ExerciseLoad, Int) -> Void
+    @State private var selectedIndex: Int
+    @State private var repetitions: Int
+
+    init(suggestion: WeightSuggestion, loads: [ExerciseLoad], save: @escaping (ExerciseLoad, Int) -> Void) {
+        self.suggestion = suggestion
+        self.loads = loads
+        self.save = save
+        _selectedIndex = State(initialValue: loads.firstIndex(of: suggestion.load) ?? 0)
+        _repetitions = State(initialValue: suggestion.repetitions)
+    }
+
+    var body: some View {
+        Text(suggestion.reason.explanation)
+        Picker("Load", selection: $selectedIndex) {
+            ForEach(loads.indices, id: \.self) { index in
+                Text(verbatim: TrainingDisplayFormat.load(loads[index], locale: locale)).tag(index)
+            }
+        }
+        Text(suggestion.load.representation.title).font(.caption)
+        Stepper("\(repetitions) reps", value: $repetitions, in: 1...Int.max)
+        Button("Save as usual") {
+            if loads.indices.contains(selectedIndex) { save(loads[selectedIndex], repetitions) }
+        }
     }
 }
 

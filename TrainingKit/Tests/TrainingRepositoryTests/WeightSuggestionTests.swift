@@ -69,20 +69,22 @@ struct WeightSuggestionTests {
         let inclusive = try #require(try suggestion(row))
         #expect(inclusive.load == dumbbellLoad(55) && inclusive.repetitions == 10)
         _ = try reopen().saveInventory([.init(55.01, .lb)], for: .dumbbells, in: gym.id)
-        #expect(try suggestion(curl) == nil)
+        #expect(try suggestion(curl)?.load == dumbbellLoad(55.01))
+        #expect(try suggestion(curl)?.repetitions == 10)
         #expect(try suggestion(empty)?.load == barLoad(50))
         #expect(try suggestion(empty)?.repetitions == 8)
         #expect(try suggestion(press)?.load == barLoad(150))
         let bridge = try #require(try suggestion(lightPress))
         #expect(bridge.load == barLoad(65) && bridge.repetitions == 12)
-        #expect(try suggestion(maximum) == nil)
+        #expect(try suggestion(maximum)?.repetitions == 12)
+        #expect(try suggestion(maximum)?.returnRepetitionsOnAcceptance == nil)
         _ = try reopen().saveInventory([.init(7.5, .lb)], for: .plates, in: gym.id)
         #expect(try suggestion(empty)?.load == barLoad(60))
         #expect(try suggestion(lightPress) == nil)
     }
 
-    @Test(arguments: [10, 12])
-    func acceptsAndCompletesRepetitionBridge(startingRepetitions: Int) throws {
+    @Test(arguments: [(10, false), (12, false), (10, true)])
+    func acceptsAndCompletesRepetitionBridge(startingRepetitions: Int, customizes: Bool) throws {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: directory) }
@@ -134,7 +136,51 @@ struct WeightSuggestionTests {
         _ = try reopen().saveInventory([.init(35, .lb)], for: .dumbbells, in: gym.id)
         #expect(throws: WeightSuggestionError.suggestionChanged) { try accept(bridge) }
         _ = try reopen().saveInventory(weights, for: .dumbbells, in: gym.id)
-        try accept(bridge)
+        if customizes {
+            func start() throws -> UUID {
+                let id = UUID()
+                _ = try reopen().apply(
+                    .init(
+                        sessionID: id,
+                        action:
+                            .start(routineID: routine.id, gymID: gym.id, dayID: day.id, cycleID: nil)),
+                    clock: SuggestionClock())
+                return id
+            }
+            for _ in 0..<2 {
+                let id = try start()
+                let offer = try #require(try reopen().progressionOffer(routineID: routine.id, exerciseID: exercise.id))
+                #expect(offer.advice == .suggested(bridge))
+                #expect(offer.loads.contains(bridge.load))
+                _ = try reopen().apply(
+                    .init(sessionID: id, action: .logCurrentSet(exerciseID: exercise.id, number: 1)),
+                    clock: SuggestionClock())
+                #expect(throws: WeightSuggestionError.suggestionChanged) {
+                    try reopen().acceptProgressionSuggestion(
+                        bridge, load: load(35), repetitions: 11,
+                        routineID: routine.id, exerciseID: exercise.id, sessionID: id, clock: SuggestionClock())
+                }
+                #expect(try usual() == exercise)
+            }
+            let id = try start()
+            try reopen().acceptProgressionSuggestion(
+                bridge, load: load(35), repetitions: 11, routineID: routine.id, exerciseID: exercise.id,
+                sessionID: id, clock: SuggestionClock())
+            #expect(try reopen().openWorkout()?.nextSet?.exercise.segments == [.repetitions(11)])
+            _ = try reopen().apply(
+                .init(sessionID: id, action: .logCurrentSet(exerciseID: exercise.id, number: 1)),
+                clock: SuggestionClock())
+            #expect(try usual().segments == [.repetitions(11)])
+            #expect(try suggestion() == nil)
+            try rateEasy()
+            #expect(try suggestion() == nil)
+            try rateEasy()
+            let recalculated = try #require(try suggestion())
+            #expect(recalculated.load == load(35) && recalculated.repetitions == 12)
+            try accept(recalculated)
+        } else {
+            try accept(bridge)
+        }
         #expect(try usual().segments == [.repetitions(step)])
         #expect(try suggestion() == nil)
         #expect(throws: WeightSuggestionError.suggestionChanged) { try accept(bridge) }
@@ -151,6 +197,16 @@ struct WeightSuggestionTests {
         try rateEasy()
         let nextBridge = try #require(try suggestion())
         #expect(nextBridge.load == load(45) && nextBridge.repetitions == step)
+        if customizes {
+            try reopen().acceptProgressionSuggestion(
+                nextBridge, load: load(35), repetitions: step,
+                routineID: routine.id, exerciseID: exercise.id, clock: SuggestionClock())
+            #expect(try suggestion() == nil)
+            try rateEasy()
+            try rateEasy()
+            let afterLoadEdit = try #require(try suggestion())
+            #expect(afterLoadEdit.load == load(35) && afterLoadEdit.repetitions == 15)
+        }
     }
 }
 

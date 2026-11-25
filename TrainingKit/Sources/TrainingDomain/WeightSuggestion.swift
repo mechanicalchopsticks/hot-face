@@ -1,39 +1,80 @@
 import Foundation
 
+public enum ProgressionAdvice: Equatable, Sendable {
+    case adjustManually
+    case suggested(WeightSuggestion)
+
+    private static let repetitionSteps = [6, 8, 10, 12, 15]
+
+    public static func evaluate(
+        for usual: ExercisePrescription, balance: Int, equipment: EquipmentDescription?, inventory: GymInventory,
+        returnRepetitions: Int? = nil
+    ) -> Self? {
+        guard balance == 2 || balance == -2 else { return nil }
+        guard let equipment, usual.equipmentID == equipment.id, usual.segments.count == 1,
+            case .repetitions(let repetitions) = usual.segments[0], let current = usual.load.value,
+            let kilograms = try? current.addedKilograms(equipment: equipment)
+        else { return .adjustManually }
+
+        let options = inventory.loadOptions(for: equipment, displayedLike: current)
+        let candidates = options.compactMap { option -> (load: ExerciseLoad, kilograms: Decimal)? in
+            guard let weight = try? option.addedKilograms(equipment: equipment) else { return nil }
+            return (option, weight)
+        }
+        func suggest(_ load: ExerciseLoad, _ reps: Int, _ reason: WeightSuggestion.Reason, bridge: Int? = nil) -> Self {
+            .suggested(.init(load: load, repetitions: reps, returnRepetitionsOnAcceptance: bridge, reason: reason))
+        }
+        let currentAvailable = candidates.contains { $0.kilograms == kilograms }
+        if balance == -2 {
+            if let lower = candidates.filter({ $0.kilograms < kilograms }).max(by: { $0.kilograms < $1.kilograms }) {
+                return suggest(lower.load, repetitions, .lowerLoad)
+            }
+            guard currentAvailable, let step = repetitionSteps.last(where: { $0 < repetitions })
+            else { return .adjustManually }
+            return suggest(current, step, .fewerRepetitions)
+        }
+
+        let higher = candidates.filter { $0.kilograms > kilograms }.min { $0.kilograms < $1.kilograms }
+        if let higher {
+            if let returnRepetitions {
+                // Older bridges recorded the exact starting count, which could fall between steps.
+                let step = repetitionSteps.last(where: { $0 <= returnRepetitions }) ?? returnRepetitions
+                return suggest(higher.load, step, .completeBridge)
+            }
+            if kilograms == 0 || higher.kilograms * 10 <= kilograms * 11 {
+                return suggest(higher.load, repetitions, .higherLoad)
+            }
+            if repetitions == 15 { return suggest(higher.load, 10, .increaseAfterFifteen) }
+        }
+        guard currentAvailable, let step = repetitionSteps.dropFirst().first(where: { $0 > repetitions })
+        else { return .adjustManually }
+        if higher != nil {
+            let returnStep = repetitionSteps.last(where: { $0 < step }) ?? repetitions
+            return suggest(current, step, .prepareIncrease, bridge: returnStep)
+        }
+        return suggest(current, step, .moreRepetitions)
+    }
+}
+
 public struct WeightSuggestion: Equatable, Sendable {
+    public enum Reason: String, Sendable {
+        case lowerLoad, fewerRepetitions, higherLoad, completeBridge, increaseAfterFifteen, prepareIncrease,
+            moreRepetitions
+    }
     public let load: ExerciseLoad
     public let repetitions: Int
-
-    /// Saved only on acceptance. A nil value clears any completed bridge.
     public let returnRepetitionsOnAcceptance: Int?
+    public let reason: Reason
 
     public static func increase(
         for usual: ExercisePrescription, balance: Int, equipment: EquipmentDescription, inventory: GymInventory,
         returnRepetitions: Int? = nil
     ) -> Self? {
-        guard balance == 2, usual.equipmentID == equipment.id, usual.segments.count == 1,
-            case .repetitions(let repetitions) = usual.segments[0], let current = usual.load.value,
-            let kilograms = try? current.addedKilograms(equipment: equipment)
+        guard balance == 2,
+            case .suggested(let suggestion) = ProgressionAdvice.evaluate(
+                for: usual, balance: balance, equipment: equipment, inventory: inventory,
+                returnRepetitions: returnRepetitions)
         else { return nil }
-
-        let options = inventory.loadOptions(for: equipment, dumbbellCount: current.implementCount)
-        let candidates = options.compactMap { option -> (load: ExerciseLoad, kilograms: Decimal)? in
-            guard let weight = try? option.addedKilograms(equipment: equipment), weight > kilograms else { return nil }
-            let base = equipment.baseWeight.map { equipment.unit.converted($0, to: option.unit) }
-            guard let displayed = try? option.displayed(as: current.representation, equipmentWeightInLoadUnit: base)
-            else { return nil }
-            return (displayed, weight)
-        }
-        guard let next = candidates.min(by: { $0.kilograms < $1.kilograms }) else { return nil }
-        if let returnRepetitions {
-            return Self(load: next.load, repetitions: returnRepetitions, returnRepetitionsOnAcceptance: nil)
-        }
-        if kilograms == 0 || next.kilograms * 10 <= kilograms * 11 {
-            return Self(load: next.load, repetitions: repetitions, returnRepetitionsOnAcceptance: nil)
-        }
-        guard let step = [8, 10, 12, 15].first(where: { $0 > repetitions }),
-            options.contains(where: { (try? $0.addedKilograms(equipment: equipment)) == kilograms })
-        else { return nil }
-        return Self(load: current, repetitions: step, returnRepetitionsOnAcceptance: repetitions)
+        return suggestion
     }
 }

@@ -1,6 +1,118 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Use the next available load and keep the same repetitions." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use the next available load and keep the same repetitions."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usa la siguiente carga disponible y mantén las repeticiones."
+          }
+        }
+      }
+    },
+    "The effort balance is low. Use the next lighter load." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The effort balance is low. Use the next lighter load."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El saldo de esfuerzo es bajo. Usa la siguiente carga más ligera."
+          }
+        }
+      }
+    },
+    "At the lightest load, move down one repetition step." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "At the lightest load, move down one repetition step."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ya estás en la carga mínima. Baja un escalón de repeticiones."
+          }
+        }
+      }
+    },
+    "At the heaviest load, move up one repetition step." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "At the heaviest load, move up one repetition step."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ya estás en la carga máxima. Sube un escalón de repeticiones."
+          }
+        }
+      }
+    },
+    "The next load is over 10% heavier. Increase repetitions first." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The next load is over 10% heavier. Increase repetitions first."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La siguiente carga es más de un 10 % mayor. Sube primero las repeticiones."
+          }
+        }
+      }
+    },
+    "You completed the repetition step. Increase the load and return to the preceding step." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You completed the repetition step. Increase the load and return to the preceding step."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Completaste el escalón de repeticiones. Sube la carga y vuelve al escalón anterior."
+          }
+        }
+      }
+    },
+    "At 15 repetitions, move to the next load with 10 repetitions." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "At 15 repetitions, move to the next load with 10 repetitions."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Al llegar a 15 repeticiones, pasa a la siguiente carga con 10 repeticiones."
+          }
+        }
+      }
+    },
     "Hold break" : {
       "localizations" : {
         "en" : {

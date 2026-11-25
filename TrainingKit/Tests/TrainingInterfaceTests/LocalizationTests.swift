@@ -5,6 +5,46 @@ import TrainingDomain
 @testable import TrainingInterface
 
 struct LocalizationTests {
+    @Test(arguments: [
+        (
+            WeightSuggestion.Reason.higherLoad, "Use the next available load and keep the same repetitions.",
+            "Usa la siguiente carga disponible y mantén las repeticiones."
+        ),
+        (
+            WeightSuggestion.Reason.lowerLoad, "The effort balance is low. Use the next lighter load.",
+            "El saldo de esfuerzo es bajo. Usa la siguiente carga más ligera."
+        ),
+        (
+            WeightSuggestion.Reason.fewerRepetitions, "At the lightest load, move down one repetition step.",
+            "Ya estás en la carga mínima. Baja un escalón de repeticiones."
+        ),
+        (
+            WeightSuggestion.Reason.moreRepetitions, "At the heaviest load, move up one repetition step.",
+            "Ya estás en la carga máxima. Sube un escalón de repeticiones."
+        ),
+        (
+            WeightSuggestion.Reason.prepareIncrease, "The next load is over 10% heavier. Increase repetitions first.",
+            "La siguiente carga es más de un 10 % mayor. Sube primero las repeticiones."
+        ),
+        (
+            WeightSuggestion.Reason.completeBridge,
+            "You completed the repetition step. Increase the load and return to the preceding step.",
+            "Completaste el escalón de repeticiones. Sube la carga y vuelve al escalón anterior."
+        ),
+        (
+            WeightSuggestion.Reason.increaseAfterFifteen,
+            "At 15 repetitions, move to the next load with 10 repetitions.",
+            "Al llegar a 15 repeticiones, pasa a la siguiente carga con 10 repeticiones."
+        ),
+    ])
+    func progressionReasons(reason: WeightSuggestion.Reason, english: String, spanish: String) {
+        var message = reason.explanation
+        message.locale = Locale(identifier: "en_US")
+        #expect(String(localized: message) == english)
+        message.locale = Locale(identifier: "es_CR")
+        #expect(String(localized: message) == spanish)
+    }
+
     @Test(arguments: [("en_US", "To failure"), ("es_CR", "Fallo")])
     func formatsSegmentsWithoutANumericTarget(localeID: String, name: String) {
         let locale = Locale(identifier: localeID)

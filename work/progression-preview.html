@@ -1,0 +1,53 @@
+<style>
+#progression-preview {padding: 20px 8px; color-scheme: light dark; font-family: system-ui, sans-serif}
+#progression-preview article {max-width: 360px; margin: auto; border-radius: 20px; padding: 22px; background: light-dark(#f5f5f8,#212126); color: light-dark(#17171c,#fafafa)}
+#progression-preview h2 {margin: 4px 0 12px}
+#progression-preview label {display:flex; justify-content:space-between; align-items:center; gap:8px; margin:8px 0}
+#progression-preview select,#progression-preview input {font:inherit; width:6em; padding:8px}
+#progression-preview button {width:100%; padding:12px; border:0; border-radius:10px; margin-top:8px; font:inherit; cursor:pointer}
+#progression-preview button[type=submit] {background: light-dark(#1855af,#aec8ff); color:light-dark(white,#0c1936)}
+</style>
+<div id="progression-preview" lang="es" class="viz-dotted-background">
+<article aria-label="Sugerencia al empezar un ejercicio">
+<small>Serie 1 de 3</small><h2>Remo con mancuerna</h2>
+<form>
+<p>Habitual · 35 lb × 10</p>
+<h3>Sugerencia</h3>
+<p>El siguiente peso disponible es 45 lb. Como el salto supera el 10 %, prueba primero 12 repeticiones con 35 lb.</p>
+<label>Carga <select name="weight"><option>25 lb</option><option selected>35 lb</option><option>45 lb</option></select></label>
+<label>Repeticiones <input name="reps" type="number" min="1" step="1" required value="12"></label>
+<button type="submit">Guardar como habitual</button>
+<button type="button" data-keep>Continuar con 35 lb × 10</button>
+</form>
+<p aria-live="polite" data-status></p>
+<button type="button" data-retry hidden>Volver a probar</button>
+</article>
+</div>
+<script>
+(() => {
+  const root = document.getElementById('progression-preview');
+  const form = root.querySelector('form');
+  const retry = root.querySelector('[data-retry]');
+  const status = root.querySelector('[data-status]');
+  function render(state) {
+    const message = state?.message || '';
+    form.hidden = Boolean(message);
+    status.textContent = message;
+    retry.hidden = !message;
+  }
+  function finish(message) {
+    render({message});
+    window.openai?.setWidgetState?.({modelContent:{message}})?.catch(() => {});
+  }
+  form.onsubmit = event => {
+    event.preventDefault();
+    finish('Habitual guardado · ' + form.elements.weight.value + ' × ' + form.elements.reps.value + '. Saldo de esfuerzo: 0.');
+  };
+  root.querySelector('[data-keep]').onclick = () => finish('Serie lista · 35 lb × 10. El saldo sigue en +2. La sugerencia volverá al próximo inicio.');
+  retry.onclick = () => { form.reset(); finish(''); };
+  render(window.openai?.widgetState?.modelContent);
+  window.addEventListener('openai:set_globals', event => {
+    if (event.detail?.globals?.widgetState) render(event.detail.globals.widgetState.modelContent);
+  });
+})();
+</script>

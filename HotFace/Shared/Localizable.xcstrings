@@ -1,6 +1,36 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Progression suggestion" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sugerencia de progresión"
+          }
+        }
+      }
+    },
+    "Continue with current values" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continuar con los valores actuales"
+          }
+        }
+      }
+    },
+    "Review this exercise manually at your current effort balance." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Con tu saldo de esfuerzo actual, revisa este ejercicio manualmente."
+          }
+        }
+      }
+    },
     "Health session active" : {
       "localizations" : {
         "es" : {

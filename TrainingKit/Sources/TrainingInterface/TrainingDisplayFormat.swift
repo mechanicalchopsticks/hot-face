@@ -42,3 +42,34 @@ public enum TrainingDisplayFormat {
         return try? Decimal(text, format: style, lenient: false)
     }
 }
+
+extension WeightSuggestion.Reason {
+    public var explanation: LocalizedStringResource {
+        switch self {
+        case .higherLoad:
+            LocalizedStringResource(
+                "Use the next available load and keep the same repetitions.", bundle: .atURL(Bundle.module.bundleURL))
+        case .lowerLoad:
+            LocalizedStringResource(
+                "The effort balance is low. Use the next lighter load.", bundle: .atURL(Bundle.module.bundleURL))
+        case .fewerRepetitions:
+            LocalizedStringResource(
+                "At the lightest load, move down one repetition step.", bundle: .atURL(Bundle.module.bundleURL))
+        case .moreRepetitions:
+            LocalizedStringResource(
+                "At the heaviest load, move up one repetition step.", bundle: .atURL(Bundle.module.bundleURL))
+        case .prepareIncrease:
+            LocalizedStringResource(
+                "The next load is over 10% heavier. Increase repetitions first.",
+                bundle: .atURL(Bundle.module.bundleURL))
+        case .completeBridge:
+            LocalizedStringResource(
+                "You completed the repetition step. Increase the load and return to the preceding step.",
+                bundle: .atURL(Bundle.module.bundleURL))
+        case .increaseAfterFifteen:
+            LocalizedStringResource(
+                "At 15 repetitions, move to the next load with 10 repetitions.", bundle: .atURL(Bundle.module.bundleURL)
+            )
+        }
+    }
+}
