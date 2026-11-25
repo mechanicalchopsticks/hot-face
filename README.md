@@ -12,6 +12,10 @@ Puedes ingresar la rutina directamente en la app, sin preparar ni importar un ar
 5. Vuelve al día y añade un press. Elige la máquina y selecciona **11,25 lb** por lado (10 + 1,25). Vuelve a la rutina y toca **Guardar y activar**.
 6. Reabre la rutina desde **Rutinas**. Comprueba que el curl conserva **6,25 lb** por lado y el press **11,25 lb** por lado. Cada ejercicio guarda su propia carga habitual.
 
+## Temporizadores y pantalla bloqueada
+
+Consulta la [guía de permisos, sonidos y capacidades verificadas](HotFace/WorkoutLockScreen.md).
+
 ## Pruebas
 
 Desde la raíz del repositorio, ejecuta las pruebas de TrainingKit en macOS y el mismo lint que usa CI.
