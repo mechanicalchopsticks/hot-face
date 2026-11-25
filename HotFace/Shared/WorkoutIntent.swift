@@ -23,12 +23,11 @@ struct WorkoutIntent: LiveActivityIntent {
     }
 
     func perform() async throws -> some IntentResult {
-        if let action = WorkoutAction(rawValue: command) {
-            let preparation = try await WorkoutController.shared.apply(
-                action, id: activityID, revision: revision, setNumber: setNumber)
-            // Deliver the exercise snapshot before this Lock Screen interaction finishes.
-            await preparation?.value
-        }
+        guard let action = WorkoutAction(rawValue: command) else { throw SessionActivityError.stale }
+        let preparation = try await WorkoutController.shared.apply(
+            action, id: activityID, revision: revision, setNumber: setNumber)
+        // Deliver the exercise snapshot before this Lock Screen interaction finishes.
+        await preparation?.value
         return .result()
     }
 }
@@ -89,14 +88,16 @@ final class WorkoutController {
     @discardableResult
     func apply(_ action: WorkoutAction, id: String, revision: Int, setNumber: Int) async throws -> Task<Void, Never>? {
         guard !busy else { throw ProbeError.actionInProgress }
-        guard let activity = Activity<SampleSet>.activities.first(where: { $0.id == id }) else { return nil }
+        guard let activity = Activity<SampleSet>.activities.first(where: { $0.id == id }) else {
+            throw SessionActivityError.stale
+        }
         let previous = activity.content.state
         guard
             let next = previous.workout.applying(
                 action, expectedRevision: revision, expectedSet: setNumber,
                 exerciseDuration: 20, restDuration: 15, clock: clock
             )
-        else { return nil }
+        else { throw SessionActivityError.stale }
         guard manager.authorizationState == .authorized else { throw ProbeError.alarmPermission }
         busy = true
         defer { busy = false }

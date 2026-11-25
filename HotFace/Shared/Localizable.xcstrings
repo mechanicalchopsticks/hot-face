@@ -1,212 +1,32 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "Supersets" : {
+    "Health session active" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Superseries"
+            "value" : "Sesión de Salud activa"
           }
         }
       }
     },
-    "Create superset" : {
+    "Allow workouts in Health for reliable Lock Screen updates." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Crear superserie"
+            "value" : "Permite los entrenamientos en Salud para actualizar la pantalla bloqueada a tiempo."
           }
         }
       }
     },
-    "Dissolve superset" : {
+    "Health is unavailable. Lock Screen updates may be delayed." : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Desarmar superserie"
-          }
-        }
-      }
-    },
-    "Rounds: %lld" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Rondas: %lld"
-          }
-        }
-      }
-    },
-    "Each selected exercise will use the chosen number of rounds." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cada ejercicio seleccionado tendrá el número de rondas elegido."
-          }
-        }
-      }
-    },
-    "Choose enough rounds to include all completed sets." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Elige suficientes rondas para incluir todas las series realizadas."
-          }
-        }
-      }
-    },
-    "Could not update superset" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No se pudo actualizar la superserie"
-          }
-        }
-      }
-    },
-    "Apply superset change" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aplicar el cambio de superserie"
-          }
-        }
-      }
-    },
-    "This workout only" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Solo este entrenamiento"
-          }
-        }
-      }
-    },
-    "Use the same set count for all members of a superset." : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Usa el mismo número de series para todos los ejercicios de la superserie."
-          }
-        }
-      }
-    },
-    "Superset · Round %lld of %lld" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Superserie · Ronda %lld de %lld"
-          }
-        }
-      }
-    },
-    "%lld s per side" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld s por lado"
-          }
-        }
-      }
-    },
-    "Finish side early" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Terminar lado antes"
-          }
-        }
-      }
-    },
-    "First side" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Primer lado"
-          }
-        }
-      }
-    },
-    "Second side" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Segundo lado"
-          }
-        }
-      }
-    },
-    "Start second side" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Iniciar segundo lado"
-          }
-        }
-      }
-    },
-    "Start next hold" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Iniciar siguiente sostenimiento"
-          }
-        }
-      }
-    },
-    "Hold %lld of %lld" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sostenimiento %1$lld de %2$lld"
-          }
-        }
-      }
-    },
-    "Side %lld of 2" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lado %lld de 2"
-          }
-        }
-      }
-    },
-    "Hold timing" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tiempos de sostenimiento"
-          }
-        }
-      }
-    },
-    "Start next hold automatically" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Iniciar el siguiente sostenimiento automáticamente"
+            "value" : "Salud no está disponible. La pantalla bloqueada podría tardar en actualizarse."
           }
         }
       }
@@ -249,6 +69,9 @@
         }
       }
     },
+    "%@ s per side" : {
+
+    },
     "%lld reps" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -278,6 +101,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld s"
+          }
+        }
+      }
+    },
+    "%lld s per side" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld s por lado"
           }
         }
       }
@@ -624,6 +458,17 @@
         }
       }
     },
+    "Apply superset change" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplicar el cambio de superserie"
+          }
+        }
+      }
+    },
     "Archive routine" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -865,6 +710,17 @@
         }
       }
     },
+    "Choose enough rounds to include all completed sets." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige suficientes rondas para incluir todas las series realizadas."
+          }
+        }
+      }
+    },
     "Clear load" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -939,6 +795,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Controlar la serie de prueba"
+          }
+        }
+      }
+    },
+    "Control workout" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Controlar entrenamiento"
           }
         }
       }
@@ -1130,6 +997,17 @@
         }
       }
     },
+    "Could not update superset" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo actualizar la superserie"
+          }
+        }
+      }
+    },
     "Could not update workout" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1159,6 +1037,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Crear grupo…"
+          }
+        }
+      }
+    },
+    "Create superset" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crear superserie"
           }
         }
       }
@@ -1349,6 +1237,17 @@
         }
       }
     },
+    "Dissolve superset" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desarmar superserie"
+          }
+        }
+      }
+    },
     "Done" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1378,6 +1277,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mancuernas utilizadas"
+          }
+        }
+      }
+    },
+    "Each selected exercise will use the chosen number of rounds." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cada ejercicio seleccionado tendrá el número de rondas elegido."
           }
         }
       }
@@ -1444,6 +1353,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Activa las actividades en vivo en Ajustes para iniciar la prueba."
+          }
+        }
+      }
+    },
+    "Enable workout sounds on Lock Screen" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activar sonidos de entrenamiento en la pantalla bloqueada"
           }
         }
       }
@@ -1638,12 +1558,21 @@
       }
     },
     "Finish set early" : {
-      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Terminar serie antes de tiempo"
+          }
+        }
+      }
+    },
+    "Finish side early" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminar lado antes"
           }
         }
       }
@@ -1676,6 +1605,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Primer sostenimiento"
+          }
+        }
+      }
+    },
+    "First side" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Primer lado"
           }
         }
       }
@@ -1806,6 +1745,27 @@
         }
       }
     },
+    "Hold %@ of %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Hold %1$@ of %2$@"
+          }
+        }
+      }
+    },
+    "Hold %lld of %lld" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sostenimiento %1$lld de %2$lld"
+          }
+        }
+      }
+    },
     "Hold audio test" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1813,6 +1773,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Prueba de audio con sostenimientos"
+          }
+        }
+      }
+    },
+    "Hold timing" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tiempos de sostenimiento"
           }
         }
       }
@@ -1998,12 +1969,21 @@
       }
     },
     "Lock Screen controls are unavailable." : {
-      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Los controles de la pantalla bloqueada no están disponibles."
+          }
+        }
+      }
+    },
+    "Lock Screen sounds are unavailable. Check notification settings." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los sonidos de la pantalla bloqueada no están disponibles. Revisa los ajustes de notificaciones."
           }
         }
       }
@@ -2618,6 +2598,17 @@
         }
       }
     },
+    "Rounds: %lld" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rondas: %lld"
+          }
+        }
+      }
+    },
     "Routine actions" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2735,6 +2726,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Guardar como habitual"
+          }
+        }
+      }
+    },
+    "Second side" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Segundo lado"
           }
         }
       }
@@ -2867,6 +2868,17 @@
         }
       }
     },
+    "Set complete" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serie completada"
+          }
+        }
+      }
+    },
     "Set complete · Rest started" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2904,6 +2916,9 @@
           }
         }
       }
+    },
+    "Sets: %@" : {
+
     },
     "Sets: %lld" : {
       "extractionState" : "stale",
@@ -2956,6 +2971,31 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mostrar en la pantalla bloqueada"
+          }
+        }
+      }
+    },
+    "Side %@ of 2" : {
+
+    },
+    "Side %lld of 2" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lado %lld de 2"
+          }
+        }
+      }
+    },
+    "Side complete" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lado completado"
           }
         }
       }
@@ -3042,12 +3082,45 @@
         }
       }
     },
+    "Start next hold" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Iniciar siguiente sostenimiento"
+          }
+        }
+      }
+    },
+    "Start next hold automatically" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Iniciar el siguiente sostenimiento automáticamente"
+          }
+        }
+      }
+    },
     "Start second set" : {
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Iniciar segunda serie"
+          }
+        }
+      }
+    },
+    "Start second side" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Iniciar segundo lado"
           }
         }
       }
@@ -3112,6 +3185,27 @@
         }
       }
     },
+    "Superset · Round %@ of %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Superset · Round %1$@ of %2$@"
+          }
+        }
+      }
+    },
+    "Superset · Round %lld of %lld" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Superserie · Ronda %lld de %lld"
+          }
+        }
+      }
+    },
     "Superset rests" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -3119,6 +3213,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Descansos de superserie"
+          }
+        }
+      }
+    },
+    "Supersets" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Superseries"
           }
         }
       }
@@ -3151,6 +3256,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "La rutina ha cambiado. Vuelve a abrirla para editar la versión más reciente."
+          }
+        }
+      }
+    },
+    "This workout only" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solo este entrenamiento"
           }
         }
       }
@@ -3322,6 +3438,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Usar sostenimientos de 90 s para probar el reinicio"
+          }
+        }
+      }
+    },
+    "Use the same set count for all members of a superset." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usa el mismo número de series para todos los ejercicios de la superserie."
           }
         }
       }

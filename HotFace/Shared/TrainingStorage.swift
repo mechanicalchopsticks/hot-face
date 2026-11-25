@@ -15,8 +15,10 @@ enum TrainingStorage {
             if let value = ProcessInfo.processInfo.environment["HOTFACE_UI_TEST_STORE_ID"],
                 let id = UUID(uuidString: value)
             {
-                let directory = FileManager.default.temporaryDirectory.appendingPathComponent(
-                    id.uuidString, isDirectory: true)
+                // Keep the test store across system relaunches during HealthKit recovery.
+                let directory = try applicationSupportDirectory()
+                    .appendingPathComponent("UITestStores", isDirectory: true)
+                    .appendingPathComponent(id.uuidString, isDirectory: true)
                 try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
                 return CoordinatedModelStore(trainingDirectory: directory)
             }

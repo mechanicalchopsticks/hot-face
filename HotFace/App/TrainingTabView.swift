@@ -96,8 +96,9 @@ private struct ActiveRoutineView: View {
                 FinishedWorkoutView(summary: value) { summary = nil }
             }
             .alert("Could not finish workout", isPresented: $finishFailed) { Button("OK") {} }
-            .sheet(item: $presentedWorkout, onDismiss: reload) { workout in
+            .sheet(item: $presentedWorkout, onDismiss: closeWorkoutScreen) { workout in
                 WorkoutSessionView(workout: workout)
+                    .onAppear { SessionActivityController.shared.refresh(startFor: workout.id) }
             }
             .alert(
                 "Could not start workout",
@@ -110,6 +111,13 @@ private struct ActiveRoutineView: View {
             }
         }
         .onAppear(perform: reload)
+        .onReceive(NotificationCenter.default.publisher(for: .workoutControlPerformed)) { _ in reload() }
+    }
+
+    private func closeWorkoutScreen() {
+        HealthWorkoutController.shared.end()
+        if let id = openWorkout?.id { SessionActivityController.shared.refresh(hideFor: id) }
+        reload()
     }
 
     private func finishOpenWorkout() {
@@ -118,6 +126,7 @@ private struct ActiveRoutineView: View {
             let store = try TrainingStorage.openStore()
             _ = try store.apply(SessionCommand(sessionID: openWorkout.id, action: .finish), clock: SystemWorkoutClock())
             audio.schedule([])
+            SessionActivityController.shared.refresh()
             summary = try store.workoutSummary(id: openWorkout.id)
             reload()
         } catch { finishFailed = true }

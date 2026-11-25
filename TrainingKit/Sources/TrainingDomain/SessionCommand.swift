@@ -22,6 +22,7 @@ public struct SessionCommand: Codable, Equatable, Sendable {
         case editSuperset(SupersetEdit, saveAsUsual: Bool)
         case insertExercise(sourceID: UUID, replacing: UUID?, saveAsUsual: Bool)
         case logSet(exerciseID: UUID, number: Int, performance: SetPerformance)
+        case logCurrentSet(exerciseID: UUID, number: Int)
         case controlTimer(exerciseID: UUID, number: Int, expectedRevision: Int, action: WorkoutAction)
         case skipAndAdvance(exerciseID: UUID)
         case rateFinished(exerciseID: UUID, effort: Effort)

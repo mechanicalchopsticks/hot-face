@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+    <key>NSHealthUpdateUsageDescription</key>
+    <string>HotFace uses workout permission to keep Lock Screen timers up to date while you train.</string>
     <key>NSAlarmKitUsageDescription</key>
     <string>HotFace uses alarms to signal the end of your sample set and rest while the iPhone is locked.</string>
 </dict>

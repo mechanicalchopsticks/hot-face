@@ -74,6 +74,27 @@ private struct Fixture {
 }
 
 struct SessionCommandTests {
+    @Test func lockedControlsRejectStaleSetsRestAndClosedSessions() throws {
+        let f = try Fixture()
+        defer { try? FileManager.default.removeItem(at: f.directory) }
+        _ = try f.store.apply(f.start, clock: FixedClock(0))
+        func tap(_ number: Int, at seconds: Double) throws -> SessionCommandResult {
+            try f.store.apply(
+                f.command(.logCurrentSet(exerciseID: f.exercise.id, number: number)), clock: FixedClock(seconds))
+        }
+        #expect(throws: SessionCommandError.invalidSetNumber) { try tap(2, at: 1) }
+        #expect(try tap(1, at: 2) == .applied)
+        #expect(throws: SessionCommandError.invalidSetNumber) { try tap(1, at: 3) }
+        #expect(throws: SessionCommandError.invalidSetNumber) { try tap(2, at: 4) }
+        let resting = try #require(try f.store.openWorkout(clock: FixedClock(5)))
+        #expect(resting.nextSet?.number == 2 && resting.followingSet == nil)
+        #expect(resting.timingCues.map(\.kind) == [.restCompleted])
+        #expect(resting.timingCues.map(\.date) == [FixedClock(107).now])
+        #expect(try tap(2, at: 107) == .applied)
+        #expect(throws: SessionCommandError.sessionClosed) { try tap(2, at: 108) }
+        #expect(try f.store.workoutSummary(id: f.sessionID).exercises.first?.sets.count == 2)
+    }
+
     @Test func mixedPrescriptionWaitsForManualCompletion() throws {
         let exercise = ExercisePrescription(
             name: "Mixed", sets: 1, segments: [.seconds(5), .repetitions(10), .toFailure])
@@ -180,7 +201,10 @@ struct SessionCommandTests {
         #expect(later.rest == nil && next.sideNumber == 2)
         try start(revision: next.revision, at: 100)
         let running = try #require(try f.store.openWorkout(clock: FixedClock(101)))
-        #expect(running.timingCues.map(\.kind) == [.holdStarted, .holdEnded, .lastHoldStarted, .setCompleted])
+        #expect(
+            running.timingCues.map(\.kind) == [
+                .holdStarted, .holdEnded, .lastHoldStarted, .setCompleted, .restCompleted,
+            ])
         let done = try #require(try f.store.openWorkout(clock: FixedClock(300)))
         #expect(done.nextSet?.number == 2 && done.timer == nil)
         #expect(

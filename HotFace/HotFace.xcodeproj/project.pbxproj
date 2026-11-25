@@ -36,12 +36,15 @@
 		000000000000000000000041 /* HoldAudioProbe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000040 /* HoldAudioProbe.swift */; };
 		000000000000000000000038 /* WorkoutControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000036 /* WorkoutControls.swift */; };
 		000000000000000000000037 /* WorkoutControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000036 /* WorkoutControls.swift */; };
+		A56000000000000000000003 /* SessionActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56000000000000000000001 /* SessionActivity.swift */; };
 		000000000000000000000035 /* WorkoutIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000033 /* WorkoutIntent.swift */; };
+		A56000000000000000000002 /* SessionActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56000000000000000000001 /* SessionActivity.swift */; };
 		000000000000000000000034 /* WorkoutIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000033 /* WorkoutIntent.swift */; };
 		000000000000000000000024 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000022 /* Localizable.xcstrings */; };
 		000000000000000000000025 /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000023 /* InfoPlist.xcstrings */; };
 		000000000000000000000026 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000022 /* Localizable.xcstrings */; };
 		000000000000000000000027 /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000023 /* InfoPlist.xcstrings */; };
+		B56000000000000000000002 /* HealthWorkoutController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B56000000000000000000001 /* HealthWorkoutController.swift */; };
 		00000000000000000000000F /* HotFace.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000004 /* HotFace.swift */; };
 		000000000000000000000010 /* SampleSet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000006 /* SampleSet.swift */; };
 		000000000000000000000012 /* WorkoutSetWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000005 /* WorkoutSetWidget.swift */; };
@@ -105,9 +108,11 @@
 		000000000000000000000042 /* HoldTrial.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HoldTrial.swift"; sourceTree = "<group>"; };
 		000000000000000000000040 /* HoldAudioProbe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HoldAudioProbe.swift"; sourceTree = "<group>"; };
 		000000000000000000000036 /* WorkoutControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutControls.swift; sourceTree = "<group>"; };
+		A56000000000000000000001 /* SessionActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionActivity.swift; sourceTree = "<group>"; };
 		000000000000000000000033 /* WorkoutIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutIntent.swift; sourceTree = "<group>"; };
 		000000000000000000000022 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		000000000000000000000023 /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
+		B56000000000000000000001 /* HealthWorkoutController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthWorkoutController.swift; sourceTree = "<group>"; };
 		000000000000000000000004 /* HotFace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotFace.swift; sourceTree = "<group>"; };
 		000000000000000000000005 /* WorkoutSetWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutSetWidget.swift; sourceTree = "<group>"; };
 		000000000000000000000006 /* SampleSet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleSet.swift; sourceTree = "<group>"; };
@@ -140,6 +145,7 @@
 			isa = PBXGroup;
 			children = (
 				00000000000000000000009E /* Assets.xcassets */,
+				B56000000000000000000001 /* HealthWorkoutController.swift */,
 				000000000000000000000004 /* HotFace.swift */,
 				000000000000000000000067 /* TrainingTabView.swift */,
 				00000000000000000000009C /* WorkoutSessionView.swift */,
@@ -172,6 +178,7 @@
 				00000000000000000000006D /* TrainingStorage.swift */,
 				000000000000000000000050 /* ProbeSetStore.swift */,
 				000000000000000000000036 /* WorkoutControls.swift */,
+				A56000000000000000000001 /* SessionActivity.swift */,
 				000000000000000000000033 /* WorkoutIntent.swift */,
 				000000000000000000000022 /* Localizable.xcstrings */,
 				000000000000000000000023 /* InfoPlist.xcstrings */,
@@ -293,6 +300,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B56000000000000000000002 /* HealthWorkoutController.swift in Sources */,
 				00000000000000000000000F /* HotFace.swift in Sources */,
 				000000000000000000000068 /* TrainingTabView.swift in Sources */,
 				00000000000000000000009D /* WorkoutSessionView.swift in Sources */,
@@ -311,6 +319,7 @@
 				000000000000000000000054 /* StorageTrial.swift in Sources */,
 				000000000000000000000051 /* ProbeSetStore.swift in Sources */,
 				000000000000000000000037 /* WorkoutControls.swift in Sources */,
+				A56000000000000000000002 /* SessionActivity.swift in Sources */,
 				000000000000000000000034 /* WorkoutIntent.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -326,6 +335,7 @@
 				00000000000000000000006F /* TrainingStorage.swift in Sources */,
 				000000000000000000000052 /* ProbeSetStore.swift in Sources */,
 				000000000000000000000038 /* WorkoutControls.swift in Sources */,
+				A56000000000000000000003 /* SessionActivity.swift in Sources */,
 				000000000000000000000035 /* WorkoutIntent.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -356,7 +366,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = Shared/HotFace.entitlements;
+				CODE_SIGN_ENTITLEMENTS = App/HotFace.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = WUN3QZCHG9;
@@ -380,7 +390,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = Shared/HotFace.entitlements;
+				CODE_SIGN_ENTITLEMENTS = App/HotFace.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = WUN3QZCHG9;

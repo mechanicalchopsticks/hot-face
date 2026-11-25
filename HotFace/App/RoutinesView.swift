@@ -342,6 +342,7 @@ private struct OpenSessionAlert: ViewModifier {
                 do {
                     _ = try TrainingStorage.openStore().apply(
                         SessionCommand(sessionID: id, action: .finish), clock: SystemWorkoutClock())
+                    SessionActivityController.shared.refresh()
                 } catch { finishFailed = true }
             }
         } message: {
