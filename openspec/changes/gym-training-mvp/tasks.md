@@ -102,7 +102,7 @@ Once both flows are defined, connect the agreed screens to the domain, persisten
 - [x] 6.1 Implement a capped balance and optional ratings for complete and partial exercises. Test cancellation, limits, missing ratings and temporary adjustments.
 - [x] 6.2 Implement resets for changes to usual settings and exercise replacements. Verify that notes, order and load representation preserve the balance.
 - [x] 6.3 Implement weight suggestions using the same loads the editor offers for the gym and equipment. Test the inclusive 10% threshold, zero load, limited inventory and increases from 50 to 52.5 and 50 to 55 with repetitions preserved. Verify that the engine excludes unreachable plate loads and loads above the equipment limit.
-- [ ] 6.4 Implement the repetition bridge separately from the balance. Test 35×10 → 35×12 → 45×10 and a return to 12 after bridging to 15.
+- [x] 6.4 Implement the repetition bridge separately from the balance. Test 35×10 → 35×12 → 45×10 and a return to 12 after bridging to 15.
 - [ ] 6.5 Implement upward and downward steps, the case of 15 repetitions without a bridge, and limits where no higher or lower load exists. Test 9 → 10 or 8, a minimum of 6, and manual adjustment for timed and combined exercises.
 - [ ] 6.6 Review the proposed bridge invalidation policy with the user for edits to a suggestion. Document the decision and cover it with tests before implementing that case.
 - [ ] 6.7 Integrate an editable suggestion at exercise start with confirmation to save it as usual. Test repeated rejection, customized acceptance, balance reset and the reason in both languages.

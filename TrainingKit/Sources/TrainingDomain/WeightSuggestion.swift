@@ -4,9 +4,12 @@ public struct WeightSuggestion: Equatable, Sendable {
     public let load: ExerciseLoad
     public let repetitions: Int
 
-    /// A direct increase uses the lightest reachable heavier load and keeps the usual repetitions.
+    /// Saved only on acceptance. A nil value clears any completed bridge.
+    public let returnRepetitionsOnAcceptance: Int?
+
     public static func increase(
-        for usual: ExercisePrescription, balance: Int, equipment: EquipmentDescription, inventory: GymInventory
+        for usual: ExercisePrescription, balance: Int, equipment: EquipmentDescription, inventory: GymInventory,
+        returnRepetitions: Int? = nil
     ) -> Self? {
         guard balance == 2, usual.equipmentID == equipment.id, usual.segments.count == 1,
             case .repetitions(let repetitions) = usual.segments[0], let current = usual.load.value,
@@ -21,9 +24,16 @@ public struct WeightSuggestion: Equatable, Sendable {
             else { return nil }
             return (displayed, weight)
         }
-        guard let next = candidates.min(by: { $0.kilograms < $1.kilograms }),
-            kilograms == 0 || next.kilograms * 10 <= kilograms * 11
+        guard let next = candidates.min(by: { $0.kilograms < $1.kilograms }) else { return nil }
+        if let returnRepetitions {
+            return Self(load: next.load, repetitions: returnRepetitions, returnRepetitionsOnAcceptance: nil)
+        }
+        if kilograms == 0 || next.kilograms * 10 <= kilograms * 11 {
+            return Self(load: next.load, repetitions: repetitions, returnRepetitionsOnAcceptance: nil)
+        }
+        guard let step = [8, 10, 12, 15].first(where: { $0 > repetitions }),
+            options.contains(where: { (try? $0.addedKilograms(equipment: equipment)) == kilograms })
         else { return nil }
-        return Self(load: next.load, repetitions: repetitions)
+        return Self(load: current, repetitions: step, returnRepetitionsOnAcceptance: repetitions)
     }
 }

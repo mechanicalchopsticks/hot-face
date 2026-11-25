@@ -86,23 +86,6 @@ public enum GymProfileError: Error, Equatable {
 }
 
 extension CoordinatedModelStore {
-    public func suggestedWeightIncrease(routineID: UUID, exerciseID: UUID) throws -> WeightSuggestion? {
-        try withContext { context in
-            guard let routine = try routineRecord(id: routineID, context: context), !routine.isArchived,
-                let usual = try routine.plan.days.flatMap(\.exercises).first(where: { $0.id == exerciseID })
-            else { return nil }
-            let query = FetchDescriptor<TrainingSchemaV1.Progression>(
-                predicate: #Predicate { $0.exerciseID == exerciseID })
-            guard let balance = try context.fetch(query).first?.balance, balance == 2 else { return nil }
-            let profile = try gymProfile(for: gym(with: routine.gymID, in: context), in: context)
-            // Reading a pre-inventory gym can materialize its shared inventory.
-            if context.hasChanges { try context.save() }
-            guard let equipment = profile.equipment(withID: usual.equipmentID) else { return nil }
-            return WeightSuggestion.increase(
-                for: usual, balance: balance, equipment: equipment, inventory: profile.inventory)
-        }
-    }
-
     public func gymCatalog() throws -> GymCatalog {
         try updateGymCatalog { _ in }
     }
@@ -246,6 +229,10 @@ private func availableGyms(in context: ModelContext) throws -> [Gym] {
 private func readGymCatalog(in context: ModelContext) throws -> GymCatalog {
     let gyms = try availableGyms(in: context).map { try gymProfile(for: $0, in: context) }
     return GymCatalog(gyms: gyms, activeGymID: try activeGym(in: context)?.gymID)
+}
+
+func gymProfile(withID id: UUID, in context: ModelContext) throws -> GymProfile {
+    try gymProfile(for: gym(with: id, in: context), in: context)
 }
 
 private func gymProfile(for gym: Gym, in context: ModelContext) throws -> GymProfile {
