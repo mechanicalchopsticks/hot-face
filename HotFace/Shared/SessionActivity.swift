@@ -9,64 +9,8 @@ import UserNotifications
 struct SessionActivity: ActivityAttributes {
     let sessionID: UUID
 
-    struct SetInfo: Codable, Hashable {
-        let id: UUID
-        let name: String
-        let number: Int
-        let count: Int
-        let timed: Bool
-        let perSide: Bool
-
-        init(_ set: OpenWorkout.PendingSet) {
-            id = set.exercise.id
-            // Keep the ActivityKit payload bounded even for long user-entered names.
-            name = String(decoding: set.exercise.name.utf8.prefix(180), as: UTF8.self)
-            number = set.number
-            count = set.count
-            timed = set.timedDuration != nil
-            perSide = set.exercise.perSide
-        }
-    }
-
-    struct Frame: Codable, Hashable {
-        let set: SetInfo?
-        let timer: WorkoutTimeline?
-        let restEnd: Date?
-
-        func boundary(after date: Date) -> Date? {
-            if let restEnd, restEnd > date { return restEnd }
-            return timer?.nextBoundary(after: date)
-        }
-    }
-
-    struct ContentState: Codable, Hashable {
-        let current: Frame
-        let afterExpiry: Frame?
-        let boundary: Date?
-
-        init(_ workout: OpenWorkout, at date: Date) {
-            let set = workout.nextSet
-            current = Frame(
-                set: set.map(SetInfo.init), timer: workout.timer, restEnd: workout.activeRest(at: date)?.endsAt)
-            boundary = current.boundary(after: date)
-            if let set, let timer = workout.timer, let end = timer.exerciseEnd {
-                if let next = timer.followingHold(in: set.exercise) {
-                    afterExpiry = Frame(set: SetInfo(set), timer: next, restEnd: nil)
-                } else {
-                    afterExpiry = Frame(
-                        set: workout.followingSet.map(SetInfo.init), timer: nil,
-                        restEnd: workout.restAfterCurrentSet.flatMap { $0 > 0 ? end.addingTimeInterval($0) : nil })
-                }
-            } else {
-                afterExpiry = nil
-            }
-        }
-
-        func frame(at date: Date) -> Frame {
-            if let end = current.timer?.exerciseEnd, end <= date, let afterExpiry { return afterExpiry }
-            return current
-        }
-    }
+    typealias SetInfo = WorkoutActivityState.SetInfo
+    typealias ContentState = WorkoutActivityState
 }
 
 enum SessionActivityError: LocalizedError {
@@ -125,7 +69,7 @@ struct SessionControlIntent: LiveActivityIntent {
             await controller.refresh().value
             throw SessionActivityError.stale
         }
-        if action == .complete, let set = displayedFrame.set {
+        if action == .complete, let displayedFrame, let set = displayedFrame.set {
             let kind: WorkoutTimingCue.Kind =
                 set.perSide && displayedFrame.timer?.sideNumber == 1
                 ? .sideCompleted : (set.number == set.count ? .lastSetCompleted : .setCompleted)
@@ -216,8 +160,7 @@ final class SessionActivityController {
             await previous?.value
             do {
                 let workout = try TrainingStorage.openStore().openWorkout()
-                let now = Date.now
-                let state = workout.map { SessionActivity.ContentState($0, at: now) }
+                let state = workout.map(SessionActivity.ContentState.init)
                 boundaryTask?.cancel()
                 var current: Activity<SessionActivity>?
                 for activity in Activity<SessionActivity>.activities {

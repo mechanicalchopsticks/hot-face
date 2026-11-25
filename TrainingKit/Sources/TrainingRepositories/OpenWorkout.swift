@@ -54,6 +54,7 @@ public struct OpenWorkout: Identifiable, Sendable {
     }
 
     public let id: UUID
+    public let reconciledAt: Date
     public let prescription: SessionPrescription
     public let pendingExercises: [ExercisePrescription]
     public let nextSet: PendingSet?
@@ -69,6 +70,10 @@ public struct OpenWorkout: Identifiable, Sendable {
     public func activeRest(at date: Date) -> Rest? {
         guard timer == nil, let rest, date < rest.endsAt else { return nil }
         return rest
+    }
+
+    public var nextBoundary: Date? {
+        activeRest(at: reconciledAt)?.endsAt ?? timer?.nextBoundary(after: reconciledAt)
     }
 
     /// Pending cues stop at the next transition that requires user input.
@@ -108,7 +113,8 @@ public struct OpenWorkout: Identifiable, Sendable {
             after: set.exercise, completedSet: set.number, before: followingSet.exercise, nextSet: followingSet.number)
     }
 
-    init(session: TrainingSchemaV1.Session, performed: [TrainingSchemaV1.PerformedSet]) throws {
+    init(session: TrainingSchemaV1.Session, performed: [TrainingSchemaV1.PerformedSet], at date: Date) throws {
+        reconciledAt = date
         id = session.id
         let prescription = try session.prescription
         self.prescription = prescription
@@ -196,9 +202,10 @@ extension CoordinatedModelStore {
             sessions.fetchLimit = 1
             guard let session = try context.fetch(sessions).first else { return nil }
             let writer = SessionWriter(context: context, sessionID: session.id)
-            try writer.reconcileTimer(in: session, at: clock?.now ?? .now)
+            let date = clock?.now ?? .now
+            try writer.reconcileTimer(in: session, at: date)
             guard session.finishedAt == nil else { return nil }
-            return try writer.workout(session)
+            return try writer.workout(session, at: date)
         }
     }
 }

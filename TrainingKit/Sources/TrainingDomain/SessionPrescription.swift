@@ -62,6 +62,8 @@ public struct SessionPrescription: Codable, Equatable, Sendable {
 
     public var restPrescription: RestPrescription?
     public var timer: WorkoutTimeline?
+    /// Seed for new timers after a cancelled start, including when the exercise is postponed.
+    public var timerStartRevision: Int?
     public var summaryPending: Bool?
     public var restOverride: RestOverride?
     public var temporaryExerciseIDs: Set<UUID>?

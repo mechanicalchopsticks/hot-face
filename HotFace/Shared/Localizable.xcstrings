@@ -667,6 +667,17 @@
         }
       }
     },
+    "Cancel set" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancelar serie"
+          }
+        }
+      }
+    },
     "Cardio" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -3438,6 +3449,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "A continuación"
+          }
+        }
+      }
+    },
+    "Updating workout" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actualizando entrenamiento"
           }
         }
       }

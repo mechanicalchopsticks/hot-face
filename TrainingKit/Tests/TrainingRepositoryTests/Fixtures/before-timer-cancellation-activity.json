@@ -1,0 +1,40 @@
+{
+  "afterExpiry" : {
+    "set" : {
+      "count" : 1,
+      "id" : "CBADCEF1-FCE6-4B3D-A7A0-D0D3AA7C4799",
+      "name" : "Plank",
+      "number" : 1,
+      "perSide" : false,
+      "timed" : true
+    },
+    "timer" : {
+      "completedHolds" : [
+        3
+      ],
+      "exerciseEnd" : 10,
+      "exerciseStart" : 6,
+      "holdAvailableAt" : 6,
+      "revision" : 2,
+      "setNumber" : 1
+    }
+  },
+  "boundary" : 3,
+  "current" : {
+    "set" : {
+      "count" : 1,
+      "id" : "CBADCEF1-FCE6-4B3D-A7A0-D0D3AA7C4799",
+      "name" : "Plank",
+      "number" : 1,
+      "perSide" : false,
+      "timed" : true
+    },
+    "timer" : {
+      "exerciseEnd" : 6,
+      "exerciseStart" : 3,
+      "restEnd" : 6,
+      "revision" : 1,
+      "setNumber" : 1
+    }
+  }
+}
