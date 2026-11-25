@@ -62,6 +62,7 @@ public struct SessionPrescription: Codable, Equatable, Sendable {
 
     public var restPrescription: RestPrescription?
     public var timer: WorkoutTimeline?
+    public var summaryPending: Bool?
     public var restOverride: RestOverride?
     public var temporaryExerciseIDs: Set<UUID>?
     /// Set numbers already recorded for each exercise when its current superset was formed.

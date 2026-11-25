@@ -311,7 +311,15 @@ struct SessionCommandTests {
         try control(.start, set: 2, revision: 0, at: 190)
         #expect(try f.store.openWorkout(clock: FixedClock(1000)) == nil)
         #expect(try f.store.openWorkout(clock: FixedClock(1001)) == nil)
-        let summary = try f.store.workoutSummary(id: f.sessionID)
+        // The background reader already reconciled the final set. Foreground recovery only has the reopened store.
+        let summary = try #require(try f.store.pendingWorkoutSummary())
+        #expect(summary.id == f.sessionID)
+        #expect(try f.store.pendingWorkoutSummary()?.id == f.sessionID)
+        _ = try f.store.apply(
+            f.command(.rateFinished(exerciseID: f.exercise.id, effort: .hard)), clock: FixedClock(1002))
+        try f.store.acknowledgeWorkoutSummary(id: summary.id)
+        #expect(try f.store.pendingWorkoutSummary() == nil)
+        #expect(try f.store.workoutSummary(id: summary.id).exercises[0].effort == .hard)
         #expect(summary.finishedAt == FixedClock(213).now)
         #expect(summary.exercises[0].sets.map(\.performance.segments) == [[.seconds(7)], [.seconds(20)]])
     }

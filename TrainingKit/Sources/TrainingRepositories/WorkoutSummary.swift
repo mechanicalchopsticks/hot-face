@@ -49,6 +49,30 @@ public struct WorkoutSummary: Identifiable, Sendable {
 }
 
 extension CoordinatedModelStore {
+    public func pendingWorkoutSummary() throws -> WorkoutSummary? {
+        try withContext { context in
+            var query = FetchDescriptor<TrainingSchemaV1.Session>(
+                predicate: #Predicate { $0.finishedAt != nil }, sortBy: [SortDescriptor(\.finishedAt, order: .reverse)])
+            query.fetchLimit = 1
+            guard let session = try context.fetch(query).first, try session.prescription.summaryPending == true else {
+                return nil
+            }
+            return try WorkoutSummary(session: session, context: context)
+        }
+    }
+
+    public func acknowledgeWorkoutSummary(id: UUID) throws {
+        try withContext { context in
+            let writer = SessionWriter(context: context, sessionID: id)
+            guard let session = try writer.session() else { throw SessionCommandError.sessionNotFound }
+            var plan = try session.prescription
+            guard plan.summaryPending == true else { return }
+            plan.summaryPending = nil
+            try session.updatePrescription(plan)
+            try context.save()
+        }
+    }
+
     public func workoutSummary(id: UUID) throws -> WorkoutSummary {
         try withContext { context in
             let query = FetchDescriptor<TrainingSchemaV1.Session>(predicate: #Predicate { $0.id == id })

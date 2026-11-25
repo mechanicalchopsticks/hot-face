@@ -288,7 +288,11 @@ struct SessionWriter {
     }
 
     private func finishIfResolved(_ session: V1.Session, at date: Date) throws {
-        if try workout(session).nextSet == nil { _ = try perform(.finish, at: date) }
+        guard try workout(session).nextSet == nil else { return }
+        var plan = try session.prescription
+        plan.summaryPending = true
+        try session.updatePrescription(plan)
+        _ = try perform(.finish, at: date)
     }
 
     private func editSuperset(_ edit: SupersetEdit, saveAsUsual: Bool, in session: V1.Session, at date: Date) throws {
