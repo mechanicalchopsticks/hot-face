@@ -100,13 +100,14 @@ public struct OpenWorkout: Identifiable, Sendable {
         var candidates: [(set: PendingSet, block: Int, round: Int, index: Int)] = []
         var remaining: [ExercisePrescription] = []
         var firstMemberIndex: [UUID: Int] = [:]
-        for (index, exercise) in prescription.day.exercises.enumerated() where !skipped.contains(exercise.id) {
+        for (index, exercise) in prescription.day.exercises.enumerated() {
             let block =
                 exercise.supersetID.map { id in
                     if let first = firstMemberIndex[id] { return first }
                     firstMemberIndex[id] = index
                     return index
                 } ?? index
+            guard !skipped.contains(exercise.id) else { continue }
             guard let count = exercise.sets, count > 0 else { throw CocoaError(.coderReadCorrupt) }
             let completed = Set(byExercise[exercise.id, default: []].map(\.number))
             let numbers = (1...count).lazy.filter { !completed.contains($0) }.prefix(2)
