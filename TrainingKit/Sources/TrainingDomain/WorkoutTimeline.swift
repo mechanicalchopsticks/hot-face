@@ -124,7 +124,7 @@ public struct WorkoutTimeline: Codable, Hashable, Sendable {
     }
 
     public func performance(in exercise: ExercisePrescription, at date: Date) -> SetPerformance? {
-        guard let actual = performedHolds(in: exercise, at: date), let prescribed = exercise.timedHolds else {
+        guard let actual = performedHolds(in: exercise, at: date) else {
             return nil
         }
         var result = SetPerformance(asPrescribed: exercise)
@@ -132,7 +132,7 @@ public struct WorkoutTimeline: Codable, Hashable, Sendable {
         if let firstSideHolds, firstSideHolds != actual {
             result.secondSideSegments = actual.map(ExerciseSegment.seconds)
         }
-        result.isPartial = actual != prescribed || (firstSideHolds != nil && firstSideHolds != prescribed)
+        result.updateTimedCompletion(prescribed: exercise.segments)
         return result
     }
 

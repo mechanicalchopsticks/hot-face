@@ -520,6 +520,7 @@ private struct SetCorrectionView: View {
             let segments = seconds.map(ExerciseSegment.seconds)
             result.secondSideSegments = segments == result.segments ? nil : segments
         }
+        result.updateTimedCompletion(prescribed: record.prescribedSegments)
         if result.load != nil {
             guard let amount = TrainingDisplayFormat.parseWeight(weight, locale: locale) else { return nil }
             result.load?.amount = amount

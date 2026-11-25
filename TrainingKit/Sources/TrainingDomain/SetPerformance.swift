@@ -22,6 +22,13 @@ public struct SetPerformance: Codable, Equatable, Sendable {
         self.isPartial = isPartial
     }
 
+    public mutating func updateTimedCompletion(prescribed: [ExerciseSegment]) {
+        guard !prescribed.isEmpty, prescribed.allSatisfy({ if case .seconds = $0 { true } else { false } }) else {
+            return
+        }
+        isPartial = segments != prescribed || (secondSideSegments ?? segments) != prescribed
+    }
+
     /// Records a set as prescribed, including the numeric value of an estimate.
     public init(asPrescribed exercise: ExercisePrescription) {
         self.init(segments: exercise.segments, load: exercise.load.value, perSide: exercise.perSide)
