@@ -2,60 +2,60 @@
 
 ## Purpose
 
-Guiar tiempos de ejercicio y descanso con señales diferenciadas y continuidad cuando el usuario bloquea el iPhone o cambia de aplicación.
+Guide exercise and rest periods with distinct cues and keep timing when the user locks the iPhone or switches apps.
 
 ## Requirements
 
-### Requirement: Temporizador de ejercicio
-La app SHALL distinguir visualmente ejercicio y descanso, permitir iniciar, pausar, reanudar y terminar anticipadamente una serie temporizada. Iniciar o reanudar SHALL incluir tres segundos preparatorios. SHALL admitir pausas entre sostenimientos y reinicio automático configurables.
+### Requirement: Exercise timer
+The app SHALL visually distinguish exercise from rest and allow the user to start, pause, resume and end a timed set early. Starting or resuming SHALL include three seconds of preparation. The app SHALL support configurable pauses between holds and configurable automatic restart.
 
-#### Scenario: Reanudar una serie
-- **WHEN** el usuario reanuda un ejercicio pausado
-- **THEN** emite la preparación de tres segundos y continúa desde el tiempo restante
+#### Scenario: Resume a set
+- **WHEN** the user resumes a paused exercise
+- **THEN** the app gives the three-second preparation cue and continues the timer from the remaining time
 
-#### Scenario: Terminar anticipadamente
-- **WHEN** el usuario termina antes una serie temporizada
-- **THEN** conserva la duración realizada y pasa al descanso o transición correspondiente
+#### Scenario: End a set early
+- **WHEN** the user ends a timed set early
+- **THEN** the app records the duration performed and proceeds to the corresponding rest or transition
 
-### Requirement: Descansos configurables
-Los descansos SHALL ser temporizados, con valores iniciales de 1:45 entre series y 2:15 entre ejercicios, configurables en rutina y por ejercicio o superserie. SHALL permitir −15 s, +15 s y terminar el descanso, solo para el descanso actual.
+### Requirement: Configurable rests
+The app SHALL time rests, initially using 1:45 between sets and 2:15 between exercises. The user SHALL be able to configure rests for a routine, an exercise or a superset. The app SHALL allow the user to apply −15 s, apply +15 s or end the current rest. These actions SHALL affect only that rest.
 
-#### Scenario: Ejercicio pesado
-- **WHEN** se configura 2:15 entre series y 3:00 entre ejercicios para un ejercicio
-- **THEN** sus descansos usan esas duraciones sin modificar los valores generales
+#### Scenario: Heavy exercise
+- **WHEN** the user sets rests of 2:15 between sets and 3:00 between exercises for one exercise
+- **THEN** its rests use those durations and the general settings stay the same
 
-#### Scenario: Ajuste inmediato
-- **WHEN** se pulsa +15 s durante un descanso
-- **THEN** añade 15 segundos al restante sin cambiar descansos futuros
+#### Scenario: Immediate adjustment
+- **WHEN** the user taps +15 s during a rest
+- **THEN** the app adds 15 seconds to the remaining time and preserves the duration of future rests
 
-### Requirement: Finalización del descanso
-Al vencer o terminar un descanso, la app SHALL detenerlo y dejar preparada la siguiente serie o ejercicio esperando la acción del usuario; el vencimiento SHALL emitir señal audible.
+### Requirement: End of rest
+When a rest expires or the user ends it, the app SHALL stop the rest timer and leave the next set or exercise ready for the user to start. When a rest expires, the app SHALL play an audible cue.
 
-#### Scenario: Volver después del descanso
-- **WHEN** el descanso vence mientras el usuario está fuera de la app y luego regresa
-- **THEN** ve la siguiente serie o ejercicio en espera, sin reiniciar el descanso ni iniciar automáticamente el ejercicio
+#### Scenario: Return after a rest
+- **WHEN** the rest expires while the user is outside the app and the user returns
+- **THEN** the next set or exercise is waiting to start, without restarting the rest or automatically starting the exercise
 
-### Requirement: Continuidad y acciones bloqueadas
-Los temporizadores SHALL continuar con el iPhone bloqueado o al cambiar de app. Desde la pantalla bloqueada el usuario SHALL poder completar una serie e iniciar su descanso, e iniciar, pausar y reanudar ejercicios temporizados.
+### Requirement: Timer continuity and Lock Screen actions
+Timers SHALL continue when the iPhone is locked or the user switches apps. From the Lock Screen, the user SHALL be able to complete a set and start its rest, and to start, pause and resume timed exercises.
 
-#### Scenario: Serie temporizada bloqueada
-- **WHEN** finaliza una serie temporizada normal con el iPhone bloqueado
-- **THEN** suena la señal y comienza el descanso correspondiente sin exigir abrir la app
+#### Scenario: Timed set with the iPhone locked
+- **WHEN** a regular timed set ends with the iPhone locked
+- **THEN** the cue sounds and the corresponding rest begins without requiring the user to open the app
 
-### Requirement: Audio diferenciado
-La app SHALL emitir señales visuales y audibles diferenciadas para los eventos de temporización, incluyendo último sostenimiento y última serie. Las señales SHALL oírse por audífonos con reducción breve de la música cuando esté reproduciéndose.
+### Requirement: Distinct audio cues
+The app SHALL provide distinct visual and audible cues for timer events, including the last hold and the last set. Cues SHALL be audible through headphones and briefly lower the volume of any music playing.
 
-#### Scenario: Última serie con audífonos
-- **WHEN** termina la última serie temporizada con música en audífonos
-- **THEN** emite la señal distintiva por la salida de audio activa, reduce brevemente la música y restaura su nivel
+#### Scenario: Last set with headphones
+- **WHEN** the last timed set ends while music is playing through headphones
+- **THEN** the app plays the distinct cue through the active audio output, briefly lowers the music volume and restores it
 
-### Requirement: Transiciones por lado y superserie
-En ejercicios temporizados por lado, la app SHALL cronometrar cada lado por separado y esperar el inicio del segundo tras la señal del primero. En superseries SHALL esperar el inicio del siguiente ejercicio de la ronda y descansar solo al finalizar la ronda.
+### Requirement: Transitions between sides and superset exercises
+For timed exercises performed per side, the app SHALL time each side separately and wait for the user to start the second side after the cue for the first. In supersets, the app SHALL wait for the user to start the next exercise in the round and rest only at the end of the round.
 
-#### Scenario: Primer lado
-- **WHEN** termina el temporizador del primer lado
-- **THEN** emite señal y deja el segundo lado en espera, sin iniciar descanso entre series
+#### Scenario: First side
+- **WHEN** the timer for the first side ends
+- **THEN** the app plays a cue and waits for the second side to start without starting a rest between sets
 
-#### Scenario: Miembro intermedio de superserie
-- **WHEN** termina un ejercicio temporizado y queda otro en la ronda
-- **THEN** emite señal y prepara el siguiente esperando inicio, sin iniciar descanso de ronda
+#### Scenario: Intermediate exercise in a superset
+- **WHEN** a timed exercise ends and another exercise remains in the round
+- **THEN** the app plays a cue and leaves the next exercise ready for the user to start without starting a round rest

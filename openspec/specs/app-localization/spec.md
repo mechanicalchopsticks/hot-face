@@ -2,24 +2,24 @@
 
 ## Purpose
 
-Permitir que cada persona use la interfaz en el idioma de su iPhone, manteniendo intactos sus datos y las unidades elegidas para entrenar.
+Let people use the interface in their iPhone's language while preserving their training data and chosen units.
 
 ## Requirements
 
-### Requirement: Español e inglés
-La app SHALL ofrecer su interfaz en español e inglés y seleccionar el idioma según la configuración de idioma aplicable del iPhone. SHALL localizar navegación, acciones, errores, sugerencias, accesibilidad, notificaciones y controles de pantalla bloqueada.
+### Requirement: Spanish and English
+The app SHALL offer its interface in Spanish and English and select the language according to the applicable iPhone language setting. It SHALL localize navigation, actions, errors, suggestions, accessibility text, notifications and Lock Screen controls.
 
-#### Scenario: Dispositivos con idiomas distintos
-- **WHEN** un usuario abre la app en español y su esposa la abre en un iPhone configurado en inglés
-- **THEN** cada uno recibe la interfaz en su idioma, incluyendo Fácil/Easy y Difícil/Hard
+#### Scenario: Devices using different languages
+- **WHEN** a user opens the app in Spanish and his wife opens it on an iPhone set to English
+- **THEN** each sees the interface in their own language, including Fácil/Easy and Difícil/Hard
 
-### Requirement: Datos y formatos independientes del idioma
-La app SHALL preservar los nombres y notas introducidos o importados sin traducirlos automáticamente. Los números y fechas SHALL presentarse según la configuración regional, sin cambiar la unidad de carga elegida ni el valor almacenado.
+### Requirement: Language-independent data and formatting
+The app SHALL preserve entered or imported names and notes without translating them automatically. It SHALL format numbers and dates according to the locale while preserving the chosen load unit and stored value.
 
-#### Scenario: Carga decimal
-- **WHEN** se muestra una carga de 12,5 kg en la interfaz inglesa con formato decimal de punto
-- **THEN** muestra 12.5 kg sin convertirla a lb ni modificar el saldo
+#### Scenario: Decimal load
+- **WHEN** the English interface displays a load of 12,5 kg in a locale that uses a decimal point
+- **THEN** it shows 12.5 kg without converting the load to lb or changing the effort balance
 
-#### Scenario: Rutina con texto personalizado
-- **WHEN** cambia el idioma de la interfaz
-- **THEN** conserva literalmente los nombres de ejercicios, variantes y notas del usuario
+#### Scenario: Routine with custom text
+- **WHEN** the interface language changes
+- **THEN** the app preserves the user's exercise names, variants and notes verbatim
