@@ -15,7 +15,7 @@ extension TrainingSchemaV1.Routine {
         for exercise in updated.days.flatMap(\.exercises) {
             guard let old = exercises[exercise.id] else { continue }
             if previous.setCount(for: old) != updated.setCount(for: exercise) || old.segments != exercise.segments
-                || !sameLoad(old, exercise, equipment: equipment)
+                || old.perSide != exercise.perSide || !sameLoad(old, exercise, equipment: equipment)
             {
                 changed.append(exercise.id)
             }

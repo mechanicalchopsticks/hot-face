@@ -20,6 +20,7 @@ struct WorkoutSessionView: View {
 
     @State private var summary: WorkoutSummary?
     @State private var progression: (id: UUID, exerciseID: UUID, advice: ProgressionAdvice, loads: [ExerciseLoad])?
+    @State private var declinedProgressionFor: UUID?
 
     var body: some View {
         if let summary {
@@ -111,7 +112,10 @@ struct WorkoutSessionView: View {
                                     }
                                 }.id(progression.id)
                             }
-                            Button("Continue with current values") { self.progression = nil }
+                            Button("Continue with current values") {
+                                declinedProgressionFor = set.exercise.id
+                                self.progression = nil
+                            }
                         }
                     }
                 } else {
@@ -143,7 +147,7 @@ struct WorkoutSessionView: View {
                     }
                 }
             }
-            .sheet(isPresented: $choosingExercise) {
+            .sheet(isPresented: $choosingExercise, onDismiss: { loadProgression(for: workout.nextSet?.exercise.id) }) {
                 WorkoutExerciseList(workout: workout) { action in try apply(action) }
             }
             .sheet(item: $adjusting) { exercise in
@@ -165,7 +169,10 @@ struct WorkoutSessionView: View {
                     if summary == nil { HealthWorkoutController.shared.begin(workout.id) }
                 }
             }
-            .task(id: startingID) { loadProgression(for: startingID) }
+            .task(id: startingID) {
+                declinedProgressionFor = nil
+                loadProgression(for: startingID)
+            }
             .task(id: workout.timer?.exerciseEnd) {
                 guard let end = workout.timer?.exerciseEnd else { return }
                 try? await Task.sleep(for: .seconds(max(0, end.timeIntervalSinceNow)))
@@ -186,15 +193,25 @@ struct WorkoutSessionView: View {
     }
 
     private func loadProgression(for exerciseID: UUID?) {
-        progression = nil
-        guard let exerciseID else { return }
         do {
-            if let offer = try TrainingStorage.openStore().progressionOffer(
-                routineID: workout.prescription.routineID, exerciseID: exerciseID)
-            {
-                progression = (UUID(), exerciseID, offer.advice, offer.loads)
+            guard let exerciseID, exerciseID != declinedProgressionFor,
+                let offer = try TrainingStorage.openStore().progressionOffer(
+                    routineID: workout.prescription.routineID, exerciseID: exerciseID, sessionID: workout.id,
+                    clock: SystemWorkoutClock())
+            else {
+                progression = nil
+                return
             }
-        } catch { actionError = "Could not update workout" }
+            if let progression, progression.exerciseID == exerciseID, progression.advice == offer.advice,
+                progression.loads == offer.loads
+            {
+                return
+            }
+            progression = (UUID(), exerciseID, offer.advice, offer.loads)
+        } catch {
+            progression = nil
+            actionError = "Could not update workout"
+        }
     }
 
     private func primaryAction(rest: OpenWorkout.Rest?, at date: Date) -> some View {

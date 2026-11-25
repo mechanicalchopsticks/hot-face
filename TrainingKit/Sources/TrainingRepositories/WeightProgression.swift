@@ -21,10 +21,31 @@ extension CoordinatedModelStore {
     public func progressionOffer(routineID: UUID, exerciseID: UUID) throws
         -> (advice: ProgressionAdvice, loads: [ExerciseLoad])?
     {
+        try progressionOffer(routineID: routineID, exerciseID: exerciseID, session: nil)
+    }
+
+    public func progressionOffer(routineID: UUID, exerciseID: UUID, sessionID: UUID, clock: any WorkoutClock) throws
+        -> (advice: ProgressionAdvice, loads: [ExerciseLoad])?
+    {
+        try progressionOffer(routineID: routineID, exerciseID: exerciseID, session: (sessionID, clock))
+    }
+
+    private func progressionOffer(routineID: UUID, exerciseID: UUID, session: (id: UUID, clock: any WorkoutClock)?)
+        throws
+        -> (advice: ProgressionAdvice, loads: [ExerciseLoad])?
+    {
         try withContext { context in
             guard let routine = try routineRecord(id: routineID, context: context), !routine.isArchived,
-                let usual = try routine.plan.days.flatMap(\.exercises).first(where: { $0.id == exerciseID })
+                let day = try routine.plan.days.first(where: { $0.exercises.contains { $0.id == exerciseID } }),
+                let usual = day.exercises.first(where: { $0.id == exerciseID })
             else { return nil }
+            if let session,
+                try eligibleSession(
+                    session.id, for: usual, routineID: routineID, dayID: day.id, at: session.clock.now,
+                    in: context) == nil
+            {
+                return nil
+            }
             let pending = try pendingAdvice(for: usual, gymID: routine.gymID, in: context)
             // Reading a pre-inventory gym can materialize its shared inventory.
             if context.hasChanges { try context.save() }
@@ -76,21 +97,19 @@ extension CoordinatedModelStore {
             var updated = previous
             updated.load = .confirmed(load)
             updated.segments = [.repetitions(repetitions)]
+            let date = clock.now
             if let sessionID {
-                let writer = SessionWriter(context: context, sessionID: sessionID)
-                guard let session = try writer.session(), session.finishedAt == nil else {
-                    throw WeightSuggestionError.suggestionChanged
-                }
-                let workout = try writer.workout(session, at: clock.now)
-                var snapshot = workout.prescription
-                guard snapshot.routineID == routineID, snapshot.day.id == plan.days[day].id,
-                    workout.activeRest(at: clock.now) == nil, workout.timer == nil,
-                    let next = workout.nextSet, next.exercise.id == exerciseID, next.number == 1,
-                    next.exercise.equipmentID == previous.equipmentID,
-                    let position = snapshot.day.exercises.firstIndex(where: { $0.id == exerciseID })
+                guard
+                    let (session, prescription, position) = try eligibleSession(
+                        sessionID, for: previous, routineID: routineID, dayID: plan.days[day].id, at: date, in: context)
                 else { throw WeightSuggestionError.suggestionChanged }
+                var snapshot = prescription
                 snapshot.day.exercises[position].load = updated.load
                 snapshot.day.exercises[position].segments = updated.segments
+                // Acceptance replaces the temporary load and reps. Only a different set count can still be reused.
+                if snapshot.day.exercises[position].sets == plan.setCount(for: updated) {
+                    snapshot.temporaryExerciseIDs?.remove(exerciseID)
+                }
                 try session.updatePrescription(snapshot)
             }
             plan.days[day].exercises[index] = updated
@@ -102,11 +121,28 @@ extension CoordinatedModelStore {
                 ? suggestion.returnRepetitionsOnAcceptance : nil
             context.insert(
                 try TrainingSchemaV1.PrescriptionChange(
-                    routineID: routineID, date: clock.now, origin: "suggestion.\(suggestion.reason.rawValue)",
+                    routineID: routineID, date: date, origin: "suggestion.\(suggestion.reason.rawValue)",
                     previous: previous, updated: updated))
             try context.save()
         }
     }
+}
+
+private func eligibleSession(
+    _ sessionID: UUID, for usual: ExercisePrescription, routineID: UUID, dayID: UUID, at date: Date,
+    in context: ModelContext
+) throws -> (TrainingSchemaV1.Session, SessionPrescription, Int)? {
+    let writer = SessionWriter(context: context, sessionID: sessionID)
+    guard let session = try writer.session(), session.finishedAt == nil else { return nil }
+    let workout = try writer.workout(session, at: date)
+    let snapshot = workout.prescription
+    guard snapshot.routineID == routineID, snapshot.day.id == dayID,
+        workout.activeRest(at: date) == nil, workout.timer == nil,
+        let next = workout.nextSet, next.exercise.id == usual.id, next.number == 1,
+        next.exercise.equipmentID == usual.equipmentID,
+        let position = snapshot.day.exercises.firstIndex(where: { $0.id == usual.id })
+    else { return nil }
+    return (session, snapshot, position)
 }
 
 private func pendingAdvice(for usual: ExercisePrescription, gymID: UUID, in context: ModelContext) throws

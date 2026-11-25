@@ -10,34 +10,13 @@ final class RoutineEditorUITests: XCTestCase {
     func testCreateUsualSupersetAndDissolveForThisWorkout() {
         continueAfterFailure = false
         let app = XCUIApplication()
-        app.launchEnvironment["HOTFACE_UI_TEST_STORE_ID"] = UUID().uuidString
         func press(_ title: String) { tap(button(title, in: app)) }
 
-        launch(app, spanish: false)
-        press("Settings")
-        press("Add gym")
-        enter("Gym", in: app.textFields["Gym name"])
-        press("Save")
-        press("Routines")
-        press("Add routine")
-        press("Add day")
-        for name in ["Row", "Press"] {
-            press("Add exercise")
-            enter(name, in: app.textFields["Exercise name"])
-            tap(app.navigationBars["Edit exercise"].buttons["BackButton"])
-        }
+        createDayWithTwoExercises(in: app)
         press("Supersets")
-        for name in ["Row", "Press"] {
-            let toggle = app.switches.matching(NSPredicate(format: "label BEGINSWITH %@", name)).firstMatch
-            XCTAssertTrue(toggle.waitForExistence(timeout: 5), app.debugDescription)
-            toggle.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.5)).tap()
-        }
+        selectSupersetMembers(in: app)
         press("Create superset")
-        tap(app.navigationBars["Edit day"].buttons["BackButton"])
-        let activate = button("Save and activate", in: app)
-        if !activate.exists { tap(app.navigationBars.buttons["More"]) }
-        tap(activate)
-        press("Train")
+        activateDayAndOpenTrain(in: app)
         press("Day 1")
         allowWorkoutAccessIfRequested(app)
         XCTAssertTrue(app.staticTexts["Superset · Round 1 of 4"].waitForExistence(timeout: 5))
@@ -52,6 +31,99 @@ final class RoutineEditorUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Row"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.staticTexts["Set 2 of 4"].exists)
         XCTAssertFalse(app.staticTexts["Superset · Round 2 of 4"].exists)
+    }
+
+    func testSavingMoreSupersetRoundsRemovesTheReadyExercisesSuggestion() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        func press(_ title: String) { tap(button(title, in: app)) }
+        createDayWithTwoExercises(in: app)
+        activateDayAndOpenTrain(in: app)
+        for session in 1...2 {
+            press("Day 1")
+            if session == 1 { allowWorkoutAccessIfRequested(app) }
+            press("Complete set")
+            press("Close")
+            press("Finish workout")
+            press("Finish workout")
+            let ratingMenu = button("Rate exercise", in: app)
+            XCTAssertTrue(ratingMenu.waitForExistence(timeout: 5))
+            ratingMenu.coordinate(withNormalizedOffset: CGVector(dx: 0.16, dy: 0.5)).tap()
+            let easy = app.descendants(matching: .any).matching(NSPredicate(format: "label == 'Easy'")).firstMatch
+            XCTAssertTrue(easy.waitForExistence(timeout: 5), app.debugDescription)
+            tap(easy)
+            press("Done")
+        }
+        press("Day 1")
+        let suggestion = button("Continue with current values", in: app)
+        app.swipeUp()
+        XCTAssertTrue(suggestion.waitForExistence(timeout: 5), app.debugDescription)
+        tap(suggestion)
+        press("More")
+        press("Exercises")
+        let exerciseList = app.navigationBars["Exercises"]
+        tap(exerciseList.buttons["Close"])
+        XCTAssertTrue(exerciseList.waitForNonExistence(timeout: 5))
+        app.swipeUp()
+        XCTAssertFalse(suggestion.exists)
+        tap(app.navigationBars["Day 1"].buttons["Close"])
+        press("Finish workout")
+        press("Finish workout")
+        press("Done")
+        press("Day 1")
+        app.swipeUp()
+        XCTAssertTrue(suggestion.waitForExistence(timeout: 5), app.debugDescription)
+        press("More")
+        press("Exercises")
+        press("Supersets")
+        selectSupersetMembers(in: app)
+        tap(app.steppers["Rounds: 4"].buttons.element(boundBy: 1))
+        press("Create superset")
+        press("Save as usual")
+        XCTAssertTrue(app.staticTexts["Superset · Round 1 of 5"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Row"].exists)
+        app.swipeUp()
+        XCTAssertTrue(suggestion.waitForNonExistence(timeout: 5), app.debugDescription)
+    }
+
+    private func createDayWithTwoExercises(in app: XCUIApplication) {
+        app.launchEnvironment["HOTFACE_UI_TEST_STORE_ID"] = UUID().uuidString
+        func press(_ title: String) { tap(button(title, in: app)) }
+        launch(app, spanish: false)
+        press("Settings")
+        XCTAssertTrue(app.staticTexts["No gym configured"].waitForExistence(timeout: 5), app.debugDescription)
+        press("Add gym")
+        enter("Gym", in: app.textFields["Gym name"])
+        press("Save")
+        press("Routines")
+        press("Add routine")
+        press("Add day")
+        for name in ["Row", "Press"] {
+            press("Add exercise")
+            let field = app.textFields["Exercise name"]
+            tap(field)
+            if !app.keyboards.firstMatch.waitForExistence(timeout: 2) { tap(field) }
+            field.typeText(name + "\n")
+            tap(app.navigationBars["Edit exercise"].buttons["BackButton"])
+        }
+    }
+
+    private func selectSupersetMembers(in app: XCUIApplication) {
+        for name in ["Row", "Press"] {
+            let toggle = app.switches.matching(NSPredicate(format: "label BEGINSWITH %@", name)).firstMatch
+            XCTAssertTrue(toggle.waitForExistence(timeout: 5), app.debugDescription)
+            toggle.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.5)).tap()
+        }
+    }
+
+    private func activateDayAndOpenTrain(in app: XCUIApplication) {
+        tap(app.navigationBars["Edit day"].buttons["BackButton"])
+        let activate = button("Save and activate", in: app)
+        if !activate.exists { tap(app.navigationBars.buttons["More"]) }
+        tap(activate)
+        XCTAssertTrue(app.navigationBars["Edit routine"].waitForNonExistence(timeout: 8), app.debugDescription)
+        tap(app.tabBars.buttons["Train"])
+        XCTAssertTrue(app.navigationBars["Train"].waitForExistence(timeout: 5), app.debugDescription)
     }
 
     private func verifyCustomSetCount(spanish: Bool) {
