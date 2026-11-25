@@ -35,6 +35,7 @@ struct TrainingTabView: View {
 
 private struct ActiveRoutineView: View {
     @EnvironmentObject private var audio: HoldAudioDelegate
+    @Environment(\.scenePhase) private var scenePhase
     @State private var active: ManualRoutine?
     @State private var cycle: RoutineCycle?
     @State private var openWorkout: OpenWorkout?
@@ -111,6 +112,7 @@ private struct ActiveRoutineView: View {
             }
         }
         .onAppear(perform: reload)
+        .onChange(of: scenePhase) { if scenePhase == .active { reload() } }
         .onReceive(NotificationCenter.default.publisher(for: .workoutControlPerformed)) { _ in reload() }
     }
 
@@ -136,10 +138,14 @@ private struct ActiveRoutineView: View {
         do {
             let store = try TrainingStorage.openStore()
             let workout = try store.openWorkout()
-            let routine = try workout == nil ? store.activeRoutine() : nil
+            openWorkout = workout
+            let needsRoutine = workout == nil && presentedWorkout == nil
+            if needsRoutine && summary == nil {
+                summary = try store.pendingWorkoutSummary()
+            }
+            let routine = try needsRoutine && summary == nil ? store.activeRoutine() : nil
             cycle = try routine.map { try store.currentCycle(for: $0.id) }
             active = routine
-            openWorkout = workout
             loadFailed = false
         } catch { loadFailed = true }
     }

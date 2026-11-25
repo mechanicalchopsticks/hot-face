@@ -258,6 +258,7 @@ struct WorkoutSessionView: View {
 struct FinishedWorkoutView: View {
     @State var summary: WorkoutSummary
     let close: () -> Void
+    @Environment(\.scenePhase) private var scenePhase
     @Environment(\.locale) private var locale
     @State private var failed = false
 
@@ -323,6 +324,10 @@ struct FinishedWorkoutView: View {
                         Text(verbatim: exercise.prescription.name)
                     }
                 }
+            }
+            .onChange(of: scenePhase, initial: true) {
+                guard scenePhase == .active else { return }
+                do { try TrainingStorage.openStore().acknowledgeWorkoutSummary(id: summary.id) } catch { failed = true }
             }
             .navigationTitle("Workout summary")
             .toolbar { Button("Done", action: close) }
