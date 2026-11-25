@@ -2,38 +2,35 @@
 
 ## Why
 
-Reemplazar el registro manual de rutinas y cargas en Markdown por una app privada para iPhone que guíe el entrenamiento, conserve lo realmente realizado y sugiera progresión bajo control del usuario. Dos personas usarán sus propios dispositivos y cuentas de Apple, con datos independientes y entrenamiento íntegro sin conexión.
+Replace manual Markdown logging of routines and loads with a private iPhone app that guides offline training, preserves what was actually performed, and suggests progression under the user's control. Two people use separate devices and Apple accounts with independent local data.
 
 ## What Changes
 
-- Crear y editar rutinas manualmente, copiarlas o importarlas desde dos fotos con revisión humana.
-- Al crear una rutina, sugerir por nombre la última carga utilizada en ese gimnasio, incluso en rutinas archivadas. Mostrar cómo se hizo el ejercicio para que el usuario decida qué carga inicial guardar.
-- Gestionar gimnasios, equipos, cargas disponibles, días y ciclos; cada cambio de gimnasio archiva la rutina e inicia una nueva.
-- Guiar sesiones recuperables con series, ajustes temporales, omisiones, ejercicios adicionales y superseries; finalizar parcialmente conserva el trabajo realizado.
-- Ofrecer temporizadores, señales audibles y acciones con pantalla bloqueada, sujetos a validación técnica temprana en dispositivo real.
-- Calcular sugerencias editables mediante saldo de esfuerzo de −2 a +2 y reglas explícitas de carga/repeticiones.
-- Conservar historial, notas, cambios y cargas estimadas; incorporar respaldo/restauración en iCloud y exportación CSV.
-- Distribuir privadamente mediante Ad Hoc, sin publicación en App Store.
-- Ofrecer interfaz en español e inglés según el idioma del iPhone, incluyendo controles bloqueados y mensajes.
-- Excluir importación Markdown, respaldo completo por archivo, funciones sociales, Android, registro de distancia/velocidad/resistencia de cardio y prescripción automática mediante IA.
+- Create, edit, copy, archive, and cycle manual routines; suggest an initial exercise load from that gym's recorded history.
+- Manage gyms, equipment, available loads, and exercise-specific load representations.
+- Guide recoverable workouts with set corrections, temporary adjustments, skips, additional exercises, and supersets. Preserve performed work when a session ends early.
+- Provide timers, audible cues, and Lock Screen actions with documented physical-device limits.
+- Add optional effort ratings and editable progression suggestions based on a capped balance and explicit load and repetition rules.
+- Localize the app and extension in English and Spanish according to device settings.
+- Exclude Markdown import, social features, Android, cardio distance/speed/resistance logging, and automatic AI prescription.
+
+History exploration and CSV, private backup and restore, photo import, and private distribution are planned in separate OpenSpec changes. This change retains the completed foundation work and unfinished progression tasks.
 
 ## Capabilities
 
 ### New Capabilities
 
-- `routine-cycles`: Rutinas, días, ciclos, archivo y copia.
-- `gym-equipment`: Gimnasios, equipamiento, cargas y representación por ejercicio.
-- `workout-sessions`: Ejecución, recuperación, ajustes, series y superseries.
-- `workout-timers`: Temporizadores, descansos, audio y controles bloqueados.
-- `exercise-progression`: Saldos de esfuerzo y sugerencias confirmables.
-- `routine-photo-import`: Extracción conjunta de fotografías y revisión editable.
-- `training-records`: Historial, notas, respaldo/restauración y CSV.
-- `app-localization`: Interfaz y formatos en español e inglés según el dispositivo.
+- `routine-cycles`: Manual routines, days, cycles, archiving, and copying.
+- `gym-equipment`: Gyms, equipment, inventories, loads, and exercise load representation.
+- `workout-sessions`: Offline execution, recovery, adjustments, actual sets, and supersets.
+- `workout-timers`: Exercise and rest timers, cues, and Lock Screen controls.
+- `exercise-progression`: Effort balances and confirmable suggestions.
+- `app-localization`: English and Spanish interface and regional formatting without changing user data.
 
 ### Modified Capabilities
 
-Ninguna; el proyecto no tiene especificaciones ni implementación previa.
+None; this project has no archived capability specs yet.
 
 ## Impact
 
-Nuevo proyecto iOS nativo en Swift/SwiftUI, almacenamiento local y servicios de Apple para iCloud y experiencia bloqueada. La importación visual podrá requerir un servicio remoto aislado del entrenamiento. Se requiere Mac con Xcode y, para Ad Hoc e iCloud, membresía Apple Developer; los dispositivos objetivo son iPhone 15 Pro e iPhone 16 actualizados. Las entregas serán flujos completos incrementales, sin eliminar requisitos del alcance inicial.
+Native Swift and SwiftUI iPhone app with a local versioned store, TrainingKit modules, and Apple adapters for Lock Screen behavior. The target devices are iPhone 15 Pro and iPhone 16. The current change remains in progress until tasks 6.1–6.7 are completed. Subsequent changes consume its local data and UI foundations.
