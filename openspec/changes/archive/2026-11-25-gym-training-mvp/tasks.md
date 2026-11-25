@@ -95,7 +95,7 @@ Once both flows are defined, connect the agreed screens to the domain, persisten
   - In a gym workout on the locked iPhone 15 Pro, the user heard the end of the rest but none of the superset hold cues. A macOS scheduling check with a delayed Lock Screen update reproduced that pattern. With independent notification scheduling, the same check registered the hold start, set end and rest end. On retesting the corrected build on the locked iPhone 15 Pro, the user confirmed the superset hold cues were audible.
   - On the locked iPhone 15 Pro, the user confirmed that both the set and rest completion cues sounded and only the end-of-rest notification remained visible beside the workout card.
 - [x] 5.7 Document verified capabilities, system limits and permission steps. Cross-check the guide against the device matrix.
-  - [Workout Lock Screen guide](../../../HotFace/WorkoutLockScreen.md): cross-checked against the physical-device and audio matrices and task 5.6 observations; outstanding iPhone 16 and system-termination checks remain explicit.
+  - [Workout Lock Screen guide](../../../../HotFace/WorkoutLockScreen.md): cross-checked against the physical-device and audio matrices and task 5.6 observations; outstanding iPhone 16 and system-termination checks remain explicit.
 
 ## 6. Progression and ratings
 
