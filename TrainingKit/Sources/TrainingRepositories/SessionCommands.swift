@@ -264,6 +264,15 @@ struct SessionWriter {
                 predicate: #Predicate { $0.sessionID == sessionID && $0.exerciseID == id })
             guard try context.fetchCount(sets) > 0 else { throw SessionCommandError.exerciseNotStarted }
             context.insert(V1.Rating(sessionID: sessionID, exerciseID: id, effort: effort, date: date))
+            let query = FetchDescriptor<V1.Progression>(predicate: #Predicate { $0.exerciseID == id })
+            let progression: V1.Progression
+            if let stored = try context.fetch(query).first {
+                progression = stored
+            } else {
+                progression = V1.Progression(exerciseID: id)
+                context.insert(progression)
+            }
+            progression.balance = min(2, max(-2, progression.balance + (effort == .easy ? 1 : -1)))
         case .skip(let id):
             let session = try openSession()
             _ = try session.exercise(id)

@@ -74,6 +74,40 @@ private struct Fixture {
 }
 
 struct SessionCommandTests {
+    @Test func balancesOptionalRatingsAcrossCompletePartialAndAdjustedWorkouts() throws {
+        let f = try Fixture()
+        defer { try? FileManager.default.removeItem(at: f.directory) }
+        guard case .start(let routine, let gym, let day, _) = f.start.action else { return }
+        let cases: [(Effort?, Int)] = [
+            (.easy, 1), (nil, 1), (.easy, 2), (.easy, 2), (.hard, 1),
+            (.hard, 0), (.hard, -1), (.hard, -2), (.hard, -2), (.easy, -1),
+        ]
+        for (index, entry) in cases.enumerated() {
+            let sessionID = UUID()
+            func perform(_ action: SessionCommand.Action) throws {
+                _ = try f.store.apply(.init(sessionID: sessionID, action: action), clock: FixedClock(100))
+            }
+            try perform(.start(routineID: routine, gymID: gym, dayID: day, cycleID: nil))
+            try perform(
+                .adjust(
+                    exerciseID: f.exercise.id, sets: 2, segments: [.repetitions(9)], load: .undefined,
+                    saveAsUsual: false))
+            try perform(.completeSet(exerciseID: f.exercise.id, number: 1, performance: f.performance))
+            if index.isMultiple(of: 2) {
+                try perform(.completeSet(exerciseID: f.exercise.id, number: 2, performance: f.performance))
+            }
+            try perform(.finish)
+            if let effort = entry.0 {
+                let rate = SessionCommand.Action.rateFinished(exerciseID: f.exercise.id, effort: effort)
+                try perform(rate)
+                try perform(rate)
+            }
+            let balance = try f.store.withContext { try $0.fetch(FetchDescriptor<V1.Progression>()).first?.balance }
+            #expect(balance == entry.1)
+            #expect(try f.store.routine(id: routine)?.plan.days[0].exercises[0] == f.exercise)
+        }
+    }
+
     @Test func lockedControlsRejectStaleSetsRestAndClosedSessions() throws {
         let f = try Fixture()
         defer { try? FileManager.default.removeItem(at: f.directory) }
