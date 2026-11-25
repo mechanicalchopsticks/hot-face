@@ -214,16 +214,11 @@ struct SessionWriter {
                 adjust(&plan.days[d].exercises[e], count: countChanged ? sets : previous.sets)
                 if previous != plan.days[d].exercises[e] {
                     try plan.days[d].validateSupersets(defaultSets: plan.defaultSets)
-                    try routine.replacePlan(plan)
+                    try routine.saveUsualPlan(plan, in: context)
                     context.insert(
                         try V1.PrescriptionChange(
                             routineID: routine.id, date: date, origin: "workout", previous: previous,
                             updated: plan.days[d].exercises[e]))
-                    let query = FetchDescriptor<V1.Progression>(predicate: #Predicate { $0.exerciseID == id })
-                    if let progression = try context.fetch(query).first {
-                        progression.balance = 0
-                        progression.returnRepetitions = nil
-                    }
                 }
                 temporaryIDs.remove(id)
             } else {
@@ -338,7 +333,7 @@ struct SessionWriter {
                 throw SessionCommandError.dayUnavailable
             }
             try plan.days[index].apply(edit, defaultSets: plan.defaultSets)
-            try routine.replacePlan(plan)
+            try routine.saveUsualPlan(plan, in: context)
         }
         try session.updatePrescription(snapshot)
         // Editing membership must not restart a rest that ended, or invent one mid-round.
@@ -434,7 +429,7 @@ struct SessionWriter {
                 plan.days[d].exercises.append(newExercise)
             }
             plan.days[d].assignGroup(newExercise.group, to: newExercise.id)
-            try routine.replacePlan(plan)
+            try routine.saveUsualPlan(plan, in: context)
             context.insert(V1.Progression(exerciseID: newExercise.id))
         }
         try session.updatePrescription(snapshot)

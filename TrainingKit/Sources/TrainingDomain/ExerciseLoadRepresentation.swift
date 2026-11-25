@@ -75,3 +75,17 @@ extension ExerciseLoad.Unit {
         return self == .lb ? amount * Self.kilogramsPerPound : amount / Self.kilogramsPerPound
     }
 }
+
+extension ExerciseLoad {
+    /// Total external load, excluding the implement's base weight for plate-loaded equipment.
+    public func addedKilograms(equipment: EquipmentDescription?) throws -> Decimal {
+        let total: Representation
+        switch representation {
+        case .perSide, .totalAdded, .includingEquipment: total = .totalAdded
+        case .perImplement, .combined: total = .combined
+        }
+        let base = equipment.flatMap { item in item.baseWeight.map { item.unit.converted($0, to: unit) } }
+        let load = try displayed(as: total, equipmentWeightInLoadUnit: base)
+        return unit.converted(load.amount, to: .kg)
+    }
+}

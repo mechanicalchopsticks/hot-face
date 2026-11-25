@@ -1,4 +1,5 @@
 import Foundation
+import SwiftData
 import Testing
 import TrainingDomain
 import TrainingRepositories
@@ -80,6 +81,43 @@ struct ManualRoutineTests {
         #expect(plan.days[1].groupNames == ["Pierna"])
         #expect(plan.days[1].exercises.first?.group == "Pierna")
         #expect(plan.copiedForNewRoutine().days[0].groupNames == ["Pierna", "Core"])
+    }
+
+    @Test func usualEditsResetOnlyTheAffectedExercise() throws {
+        let directory = try temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let store = CoordinatedModelStore(trainingDirectory: directory)
+        let gym = try #require(store.createGym(name: "Gym").gyms.first)
+        let load = ExerciseLoad(amount: 10, unit: .kg, representation: .perImplement, implementCount: 2)
+        var curl = ExercisePrescription(name: "Curl", segments: [.repetitions(8)])
+        curl.load = .confirmed(load)
+        let row = ExercisePrescription(name: "Row", sets: 3, segments: [.seconds(30)])
+        var routine = ManualRoutine(gymID: gym.id)
+        routine.plan = RoutinePlan(name: "Plan", days: [.init(name: "Day", exercises: [curl, row])])
+        try store.saveRoutine(routine)
+        func edit(expectedCurl: Int, expectedRow: Int, _ change: (inout RoutinePlan) throws -> Void) throws {
+            try store.withContext { context in
+                for record in try context.fetch(FetchDescriptor<TrainingSchemaV1.Progression>()) { record.balance = 2 }
+                try context.save()
+            }
+            var draft = try #require(try store.activeRoutine())
+            try change(&draft.plan)
+            try store.saveRoutine(draft)
+            try CoordinatedModelStore(trainingDirectory: directory).withContext { context in
+                let records = try context.fetch(FetchDescriptor<TrainingSchemaV1.Progression>())
+                #expect(records.first { $0.exerciseID == curl.id }?.balance == expectedCurl)
+                #expect(records.first { $0.exerciseID == row.id }?.balance == expectedRow)
+            }
+        }
+        try edit(expectedCurl: 2, expectedRow: 2) {
+            $0.days[0].exercises[0].load = .confirmed(try load.displayed(as: .combined))
+            $0.days[0].exercises[0].instructions = "Keep elbows still"
+            $0.days[0].exercises.reverse()
+        }
+        try edit(expectedCurl: 0, expectedRow: 2) { $0.defaultSets += 1 }
+        try edit(expectedCurl: 2, expectedRow: 0) { $0.days[0].exercises[0].segments = [.seconds(45)] }
+        try edit(expectedCurl: 0, expectedRow: 2) { $0.days[0].exercises[1].segments = [.repetitions(12)] }
+        try edit(expectedCurl: 0, expectedRow: 2) { $0.days[0].exercises[1].load = .undefined }
     }
 
     private func temporaryDirectory() throws -> URL {

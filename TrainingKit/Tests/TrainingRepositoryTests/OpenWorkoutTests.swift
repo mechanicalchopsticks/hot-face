@@ -288,6 +288,7 @@ struct OpenWorkoutTests {
         try apply(.moveExercise(id: squat.id, toFront: false))
         #expect(try store.openWorkout()?.nextSet?.exercise == walk)
         try apply(.completeSet(exerciseID: walk.id, number: 1, performance: .init(asPrescribed: walk)))
+        try apply(.rate(exerciseID: walk.id, effort: .easy))
         try apply(.moveExercise(id: squat.id, toFront: true))
         #expect(try store.openWorkout()?.nextSet?.exercise == squat)
         try apply(.skip(exerciseID: squat.id))
@@ -300,6 +301,11 @@ struct OpenWorkoutTests {
         let usual = try #require(try store.activeRoutine()?.plan.days.first)
         #expect(usual.exercises.map(\.name) == ["Squat", "Walk", "Walk"])
         #expect(usual.exercises[2].id != walk.id)
+        try store.withContext { context in
+            let records = try context.fetch(FetchDescriptor<TrainingSchemaV1.Progression>())
+            #expect(records.first { $0.exerciseID == walk.id }?.balance == 1)
+            #expect(records.first { $0.exerciseID == usual.exercises[2].id }?.balance == 0)
+        }
     }
 
     @Test func completePersistsFailureWithoutCountAndStartsTheApplicableRest() throws {

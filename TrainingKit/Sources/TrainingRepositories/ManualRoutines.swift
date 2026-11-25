@@ -95,7 +95,7 @@ extension CoordinatedModelStore {
                 for id in addedIDs { context.insert(TrainingSchemaV1.Progression(exerciseID: id)) }
             }
             if let existing {
-                try existing.replacePlan(plan)
+                try existing.saveUsualPlan(plan, in: context)
             } else {
                 context.insert(try TrainingSchemaV1.Routine(id: id, gymID: draft.gymID, plan: plan))
             }
