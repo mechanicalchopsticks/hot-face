@@ -2,6 +2,10 @@ import Foundation
 import SwiftData
 import TrainingDomain
 
+extension ExercisePrescription {
+    var executionBlockID: UUID { supersetID ?? id }
+}
+
 public struct WorkoutTimingCue: Equatable, Sendable {
     public enum Kind: String, Codable, Sendable {
         case holdStarted, lastHoldStarted, holdEnded, sideCompleted, setCompleted, lastSetCompleted, restCompleted
@@ -178,16 +182,14 @@ public struct OpenWorkout: Identifiable, Sendable {
         // Keep the choice through expiry and all sets of the chosen block, including its superset rounds.
         let selection = prescription.restSelection
         let preferredBlock: UUID? =
-            selection?.setID == performed.first?.id
-                || selection?.blockID == (lastExercise?.supersetID ?? lastExercise?.id)
+            selection?.setID == performed.first?.id || selection?.blockID == lastExercise?.executionBlockID
             ? selection?.blockID : nil
         var candidates: [(set: PendingSet, block: Int, round: Int, index: Int)] = []
         var remaining: [ExercisePrescription] = []
         var blockIndices: [UUID: Int] = [:]
-        var eligibleBlocks = Set<UUID>()
-        var blockIDs: [UUID] = []
+        var eligibleBlockPositions: [UUID: Int] = [:]
         for (index, exercise) in prescription.day.exercises.enumerated() {
-            let blockID = exercise.supersetID ?? exercise.id
+            let blockID = exercise.executionBlockID
             let firstIndex = blockIndices[blockID] ?? index
             blockIndices[blockID] = firstIndex
             guard !skipped.contains(exercise.id) else { continue }
@@ -195,7 +197,7 @@ public struct OpenWorkout: Identifiable, Sendable {
             let completed = performedNumbers[exercise.id, default: []]
             let numbers = (1...count).lazy.filter { !completed.contains($0) }.prefix(2)
             guard !numbers.isEmpty else { continue }
-            if eligibleBlocks.insert(blockID).inserted { blockIDs.append(blockID) }
+            eligibleBlockPositions[blockID] = firstIndex
             // A choice promotes only this block. The session day remains the baseline for subsequent taps.
             let block = preferredBlock == blockID ? -1 : firstIndex
             remaining.append(exercise)
@@ -208,7 +210,7 @@ public struct OpenWorkout: Identifiable, Sendable {
         candidates.sort {
             ($0.block, $0.round, $0.index, $0.set.number) < ($1.block, $1.round, $1.index, $1.set.number)
         }
-        eligibleBlockIDs = blockIDs
+        eligibleBlockIDs = eligibleBlockPositions.sorted { $0.value < $1.value }.map(\.key)
         pendingExercises = remaining
         let pending = candidates.first?.set
         nextSet = pending

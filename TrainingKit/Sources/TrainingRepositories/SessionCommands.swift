@@ -258,7 +258,7 @@ struct SessionWriter {
             let state = try workout(session, at: date)
             guard state.postponeAction == action, let current = state.nextSet?.exercise,
                 let rest = state.rest,
-                let index = state.eligibleBlockIDs.firstIndex(of: current.supersetID ?? current.id)
+                let index = state.eligibleBlockIDs.firstIndex(of: current.executionBlockID)
             else { throw SessionCommandError.restUnavailable }
             var plan = state.prescription
             let next = state.eligibleBlockIDs[(index + 1) % state.eligibleBlockIDs.count]
