@@ -45,11 +45,11 @@ struct ExerciseEditor: View {
             }
             if let holds = exercise.timedHolds, holds.count > 1 {
                 Section("Hold timing") {
-                    Stepper(
-                        "Pause between holds: \(exercise.pauseBetweenHolds ?? 0) s",
-                        value: Binding(
+                    DurationPicker(
+                        "Pause between holds",
+                        seconds: Binding(
                             get: { exercise.pauseBetweenHolds ?? 0 }, set: { exercise.pauseBetweenHolds = $0 }),
-                        in: 0...Int.max)
+                        range: 0...600)
                     Toggle(
                         "Start next hold automatically",
                         isOn: Binding(
@@ -162,7 +162,7 @@ struct ExerciseEditor: View {
         func segment(quantity: Int?) -> ExerciseSegment {
             switch self {
             case .repetitions: .repetitions(quantity ?? 8)
-            case .seconds: .seconds(quantity ?? 30)
+            case .seconds: .seconds(min(3600, quantity ?? 30))
             case .toFailure: .toFailure
             }
         }
@@ -193,14 +193,18 @@ struct ExerciseEditor: View {
                 Text("Seconds").tag(SegmentKind.seconds)
                 Text(TrainingDisplayFormat.toFailure(locale: locale)).tag(SegmentKind.toFailure)
             }.pickerStyle(.segmented)
-            if let quantity {
+            if let quantity, kind == .seconds {
+                DurationPicker(
+                    "Duration", seconds: Binding(get: { quantity }, set: { exercise.segments[index] = .seconds($0) }),
+                    range: 1...3600)
+            } else if let quantity {
                 Stepper(
                     value: Binding(
                         get: { quantity },
                         set: { exercise.segments[index] = kind.segment(quantity: $0) }),
                     in: 1...Int.max
                 ) {
-                    if kind == .seconds { Text("\(quantity) s") } else { Text("Reps: \(quantity)") }
+                    Text("Reps: \(quantity)")
                 }
             }
         }
@@ -391,8 +395,8 @@ struct RestStepper: View {
     @Binding var seconds: TimeInterval
 
     var body: some View {
-        Stepper(value: $seconds, in: 0...TimeInterval.greatestFiniteMagnitude, step: 1) {
-            LabeledContent(title) { Text("\(seconds.formatted(.number)) s") }
-        }
+        DurationPicker(
+            title, seconds: Binding(get: { Int(min(max(seconds, 0), 600)) }, set: { seconds = Double($0) }),
+            range: 0...600)
     }
 }

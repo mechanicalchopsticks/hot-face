@@ -7,7 +7,7 @@
 
 ## 2. Durations
 
-- [ ] 2.1 Share minute and second selectors across routine, superset and workout adjustment editors. Verify both maximums and values below one minute.
+- [x] 2.1 Share minute and second selectors across routine, superset and workout adjustment editors. Verify both maximums and values below one minute.
 - [ ] 2.2 Format durations consistently across the app and Live Activity. Verify countdowns and static values at 0, 59, 60 and 75 seconds.
 
 ## 3. Workout presentation
