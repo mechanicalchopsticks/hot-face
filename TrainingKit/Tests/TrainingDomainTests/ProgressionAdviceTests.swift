@@ -60,6 +60,20 @@ struct ProgressionAdviceTests {
         #expect(suggestion.load.amount == 45 && suggestion.repetitions == 10)
     }
 
+    @Test func pendingBridgeTakesPrecedenceAfterSwitchingToAggressive() throws {
+        let weights: [Decimal] = [57.5, 50]
+        guard case .suggested(let bridge) = advice(2, segments: [.repetitions(10)], weights: weights, baseline: 50),
+            case .suggested(let completed) = advice(
+                2, segments: [.repetitions(bridge.repetitions)], weights: weights,
+                returnRepetitions: bridge.returnRepetitionsOnAcceptance, baseline: 50, mode: .aggressive)
+        else {
+            Issue.record("Expected a bridge followed by a load increase")
+            return
+        }
+        #expect(completed.reason == .completeBridge)
+        #expect(completed.load.amount == 57.5 && completed.repetitions == 10)
+    }
+
     @Test func prefersNearestLowerLoad() {
         guard case .suggested(let suggestion) = advice(-2, segments: [.repetitions(6)], weights: [10, 30, 35]) else {
             Issue.record("Expected a lower load")
@@ -82,18 +96,21 @@ struct ProgressionAdviceTests {
         }
         let metric = try current.displayed(
             as: representation, equipmentWeightInLoadUnit: bar.unit.converted(45, to: .kg))
-        for load in [metric, picker[10]] {
-            exercise.load = .confirmed(load)
-            let advice = ProgressionAdvice.evaluate(
-                for: exercise, balance: balance, equipment: bar, inventory: inventory)
-            guard case .suggested(let suggestion) = advice else {
-                Issue.record("Expected the adjacent plate load")
-                continue
+        for mode in WeightProgressionMode.allCases {
+            for load in [metric, picker[10]] {
+                exercise.load = .confirmed(load)
+                let advice = ProgressionAdvice.evaluate(
+                    for: exercise, balance: balance, equipment: bar, inventory: inventory, mode: mode)
+                guard case .suggested(let suggestion) = advice else {
+                    Issue.record("Expected the adjacent plate load")
+                    continue
+                }
+                #expect(suggestion.load == picker[balance == 2 ? 11 : 9])
+                #expect(suggestion.repetitions == 10)
+                #expect(suggestion.reason == (balance == 2 ? .higherLoad : .lowerLoad))
             }
-            #expect(suggestion.load == picker[balance == 2 ? 11 : 9])
-            #expect(suggestion.repetitions == 10)
-            #expect(suggestion.reason == (balance == 2 ? .higherLoad : .lowerLoad))
         }
+
     }
 
     @Test func manualAdjustmentAtLimitsAndForSpecialExercises() {
