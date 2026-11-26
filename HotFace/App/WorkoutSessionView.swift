@@ -57,10 +57,10 @@ struct WorkoutSessionView: View {
                     Section {
                         WorkoutRestCountdown(remaining: rest.endsAt.timeIntervalSince(date))
                         HStack {
-                            Button("−15 s") { adjustRest(rest, by: .shorten) }
+                            Button("−0:15") { adjustRest(rest, by: .shorten) }
                                 .accessibilityLabel("Shorten rest by 15 seconds")
                             Spacer()
-                            Button("+15 s") { adjustRest(rest, by: .extend) }
+                            Button("+0:15") { adjustRest(rest, by: .extend) }
                                 .accessibilityLabel("Extend rest by 15 seconds")
                         }
                         .buttonStyle(.bordered)
@@ -384,9 +384,13 @@ struct FinishedWorkoutView: View {
                                     case .toFailure: Text("To failure · Reps unspecified")
                                     case .seconds(let seconds):
                                         if set.performance.perSide && set.performance.secondSideSegments == nil {
-                                            Text("\(seconds) s per side")
+                                            Text(
+                                                "\(TrainingDisplayFormat.duration(seconds: seconds, locale: locale)) per side"
+                                            )
                                         } else {
-                                            Text("\(seconds) s")
+                                            Text(
+                                                verbatim: TrainingDisplayFormat.duration(
+                                                    seconds: seconds, locale: locale))
                                         }
                                     case .repetitions(let count):
                                         if set.performance.perSide {
@@ -399,7 +403,11 @@ struct FinishedWorkoutView: View {
                                 if let second = set.performance.secondSideSegments {
                                     Text("Second side").font(.caption)
                                     ForEach(second.indices, id: \.self) { index in
-                                        if case .seconds(let seconds) = second[index] { Text("\(seconds) s") }
+                                        if case .seconds(let seconds) = second[index] {
+                                            Text(
+                                                verbatim: TrainingDisplayFormat.duration(
+                                                    seconds: seconds, locale: locale))
+                                        }
                                     }
                                 }
                                 if let load = set.performance.load {
@@ -529,7 +537,7 @@ private struct WorkoutSetPrescription: View {
     private func segmentLabel(_ segment: ExerciseSegment) -> String {
         switch segment {
         case .repetitions(let count): String(localized: "\(count) reps", locale: locale)
-        case .seconds(let count): String(localized: "\(count) s", locale: locale)
+        case .seconds(let count): TrainingDisplayFormat.duration(seconds: count, locale: locale)
         case .toFailure: String(localized: TrainingDisplayFormat.toFailure(locale: locale))
         }
     }
@@ -551,12 +559,16 @@ private struct SetCorrectionView: View {
                 if !secondSide.isEmpty { Text("First side") }
                 ForEach(values.indices, id: \.self) { index in
                     let seconds = if case .seconds = record.prescribedSegments[index] { true } else { false }
-                    TextField(seconds ? "Seconds" : "Actual repetitions", text: $values[index]).keyboardType(.numberPad)
+                    if seconds {
+                        durationCorrection($values[index])
+                    } else {
+                        TextField("Actual repetitions", text: $values[index]).keyboardType(.numberPad)
+                    }
                 }
                 if !secondSide.isEmpty {
                     Text("Second side")
                     ForEach(secondSide.indices, id: \.self) { index in
-                        TextField("Seconds", text: $secondSide[index]).keyboardType(.numberPad)
+                        durationCorrection($secondSide[index])
                     }
                 }
                 if record.prescribedSegments.contains(.toFailure) {
@@ -603,6 +615,12 @@ private struct SetCorrectionView: View {
                 }
             }
         }
+    }
+
+    private func durationCorrection(_ text: Binding<String>) -> some View {
+        DurationPicker(
+            "Duration", seconds: Binding(get: { Int(text.wrappedValue) ?? 0 }, set: { text.wrappedValue = String($0) }),
+            range: 0...3600)
     }
 
     private var corrected: SetPerformance? {

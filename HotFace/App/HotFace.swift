@@ -42,7 +42,7 @@ private struct ProbeView: View {
     var body: some View {
         Form {
             Section("Sample squat") {
-                Text("3 s preparation · 20 s exercise · 15 s rest")
+                Text("0:03 preparation · 0:20 exercise · 0:15 rest")
                 if let activity {
                     WorkoutControls(activityID: activity.id, workout: workout) { action, number in
                         let revision = workout.revision

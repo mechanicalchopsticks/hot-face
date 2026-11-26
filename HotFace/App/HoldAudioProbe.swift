@@ -171,7 +171,9 @@ struct HoldAudioProbe: View {
                         Text("Get ready")
                     }
                     if let next = trial.events.first(where: { $0.date > now }) {
-                        LabeledContent(next.cue.title) { Text(timerInterval: now...next.date, countsDown: true) }
+                        LabeledContent(next.cue.title) {
+                            Text(timerInterval: now...next.date, countsDown: true, showsHours: false)
+                        }
                     }
                     if let next = trial.continuation(at: now) {
                         Button {
@@ -195,7 +197,7 @@ struct HoldAudioProbe: View {
                 }
                 Toggle("Automatically start last hold", isOn: $automatic)
                 DurationPicker("Pause between holds", seconds: $pause, range: 1...10)
-                Toggle("Use 90 s holds for reboot test", isOn: $longHold)
+                Toggle("Use 1:30 holds for reboot test", isOn: $longHold)
                 Button("Start audio test") {
                     scheduling = true
                     Task { @MainActor in

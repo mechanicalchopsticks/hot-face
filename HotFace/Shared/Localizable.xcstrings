@@ -149,7 +149,7 @@
         }
       }
     },
-    "%@ s per side" : {
+    "%@ per side" : {
 
     },
     "%lld reps" : {
@@ -196,24 +196,24 @@
         }
       }
     },
-    "+15 s" : {
+    "+0:15" : {
       "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "+15 s"
+            "value" : "+0:15"
           }
         }
       }
     },
-    "−15 s" : {
+    "−0:15" : {
       "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "−15 s"
+            "value" : "−0:15"
           }
         }
       }
@@ -224,12 +224,12 @@
     "2" : {
 
     },
-    "3 s preparation · 20 s exercise · 15 s rest" : {
+    "0:03 preparation · 0:20 exercise · 0:15 rest" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "3 s preparation · 20 s exercise · 15 s rest"
+            "value" : "0:03 preparation · 0:20 exercise · 0:15 rest"
           }
         },
         "es" : {
@@ -3544,13 +3544,13 @@
         }
       }
     },
-    "Use 90 s holds for reboot test" : {
+    "Use 1:30 holds for reboot test" : {
       "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Usar sostenimientos de 90 s para probar el reinicio"
+            "value" : "Usar sostenimientos de 1:30 para probar el reinicio"
           }
         }
       }
