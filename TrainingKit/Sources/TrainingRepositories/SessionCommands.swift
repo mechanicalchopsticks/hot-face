@@ -451,7 +451,8 @@ struct SessionWriter {
     private func insertExercise(_ sourceID: UUID, replacing: UUID?, usual: Bool, in session: V1.Session, at date: Date)
         throws
     {
-        var snapshot = try session.prescription
+        let current = try workout(session, at: date)
+        var snapshot = current.prescription
         guard let routine = try routineRecord(id: snapshot.routineID, context: context)
         else { throw SessionCommandError.missingRoutine }
         var plan = try routine.plan
@@ -484,6 +485,16 @@ struct SessionWriter {
                 session.skippedExerciseIDs.append(replacing)
             }
             snapshot.day.exercises.insert(newExercise, at: index)
+            if let selected = current.nextSet?.exercise, selected.executionBlockID == snapshot.restSelection?.blockID,
+                let setID = current.lastPerformedSetID
+            {
+                // Removing a superset member can also turn the selected survivor into a standalone block.
+                let successor =
+                    selected.id == replacing ? newExercise : snapshot.day.exercises.first { $0.id == selected.id }
+                if let successor, successor.executionBlockID != selected.executionBlockID {
+                    snapshot.restSelection = .init(setID: setID, blockID: successor.executionBlockID)
+                }
+            }
         } else {
             snapshot.day.exercises.append(newExercise)
         }

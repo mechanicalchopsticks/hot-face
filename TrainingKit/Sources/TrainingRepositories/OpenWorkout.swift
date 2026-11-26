@@ -99,6 +99,7 @@ public struct OpenWorkout: Identifiable, Sendable {
 
     public let skippedExerciseIDs: Set<UUID>
     public let pendingExercises: [ExercisePrescription]
+    let lastPerformedSetID: UUID?
     let eligibleBlockIDs: [UUID]
     public var postponeAction: SessionCommand.Action? {
         guard let rest = activeRest(at: reconciledAt), rest.betweenExercises,
@@ -179,10 +180,11 @@ public struct OpenWorkout: Identifiable, Sendable {
         let skipped = Set(session.skippedExerciseIDs)
         skippedExerciseIDs = skipped
         let lastExercise = prescription.day.exercises.first { $0.id == performed.first?.exerciseID }
+        lastPerformedSetID = performed.first?.id
         // Keep the choice through expiry and all sets of the chosen block, including its superset rounds.
         let selection = prescription.restSelection
         let preferredBlock: UUID? =
-            selection?.setID == performed.first?.id || selection?.blockID == lastExercise?.executionBlockID
+            selection?.setID == lastPerformedSetID || selection?.blockID == lastExercise?.executionBlockID
             ? selection?.blockID : nil
         var candidates: [(set: PendingSet, block: Int, round: Int, index: Int)] = []
         var remaining: [ExercisePrescription] = []

@@ -109,6 +109,29 @@ struct SessionCommandTests {
         #expect(try f.workout(at: 201).nextSet?.exercise.id == exercises[1].id)
     }
 
+    @Test(arguments: [false, true])
+    func replacementKeepsTheSelectedRestSlot(afterFirstSet: Bool) throws {
+        let source = ExercisePrescription(name: "X", sets: 1, segments: [.repetitions(8)])
+        let a = ExercisePrescription(name: "A", sets: 1, segments: [.repetitions(8)])
+        let b = ExercisePrescription(name: "B", sets: 2, segments: [.repetitions(8)])
+        let f = try Fixture(exercise: source, following: [a, b])
+        defer { try? FileManager.default.removeItem(at: f.directory) }
+        try f.beginRest()
+        try f.postpone(at: 2)
+        if afterFirstSet {
+            _ = try f.store.apply(f.command(.logCurrentSet(exerciseID: b.id, number: 1)), clock: FixedClock(200))
+        }
+        _ = try f.store.apply(
+            f.command(.insertExercise(sourceID: source.id, replacing: b.id, saveAsUsual: false)),
+            clock: FixedClock(afterFirstSet ? 201 : 3))
+        let restored = try f.workout(at: afterFirstSet ? 202 : 4)
+        let replacement = try #require(restored.pendingExercises.first { $0.name == source.name })
+        #expect(replacement.id != source.id)
+        #expect(restored.nextSet?.exercise.id == replacement.id)
+        _ = try f.store.apply(f.command(.logCurrentSet(exerciseID: replacement.id, number: 1)), clock: FixedClock(400))
+        #expect(try f.workout(at: 401).nextSet?.exercise.id == a.id)
+    }
+
     @Test func draggingAcrossTheSelectedBlockKeepsItNextUntilItIsMoved() throws {
         let exercises = ["Press", "A", "B", "C"].map {
             ExercisePrescription(name: $0, sets: 1, segments: [.repetitions(8)])
@@ -126,6 +149,26 @@ struct SessionCommandTests {
         _ = try f.store.apply(
             f.command(.reorderBlocks(original: [c, a, b], reordered: [c, b, a], moved: [b])), clock: FixedClock(5))
         #expect(try f.workout(at: 6).nextSet?.exercise.id == c)
+    }
+
+    @Test func replacingTheOtherSupersetMemberKeepsTheSelectedExerciseNext() throws {
+        var exercises = ["Press", "A", "G1", "G2"].map {
+            ExercisePrescription(name: $0, sets: 1, segments: [.repetitions(8)])
+        }
+        let group = UUID()
+        exercises[2].supersetID = group
+        exercises[3].supersetID = group
+        let f = try Fixture(exercise: exercises[0], following: Array(exercises.dropFirst()))
+        defer { try? FileManager.default.removeItem(at: f.directory) }
+        try f.beginRest()
+        try f.postpone(at: 2)
+        _ = try f.store.apply(
+            f.command(.insertExercise(sourceID: exercises[0].id, replacing: exercises[3].id, saveAsUsual: false)),
+            clock: FixedClock(3))
+        let survivor = try #require(try f.workout(at: 4).nextSet?.exercise)
+        #expect(survivor.id == exercises[2].id && survivor.supersetID == nil)
+        _ = try f.store.apply(f.command(.logCurrentSet(exerciseID: exercises[2].id, number: 1)), clock: FixedClock(200))
+        #expect(try f.workout(at: 201).nextSet?.exercise.id == exercises[1].id)
     }
 
     @Test func reorderReceiptDecodesWithoutDraggedBlockIDs() throws {
