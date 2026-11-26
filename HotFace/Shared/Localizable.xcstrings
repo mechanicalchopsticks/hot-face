@@ -1,6 +1,46 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Could not discard workout" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo descartar el entrenamiento"
+          }
+        }
+      }
+    },
+    "Your sets will be removed. Ratings and changes saved as usual will be kept." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se eliminarán las series. Se conservarán las valoraciones y los cambios guardados como habituales."
+          }
+        }
+      }
+    },
+    "Discard workout?" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Descartar el entrenamiento?"
+          }
+        }
+      }
+    },
+    "Discard workout" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descartar entrenamiento"
+          }
+        }
+      }
+    },
     "Upcoming" : {"localizations" : {"es" : {"stringUnit" : {"state" : "translated", "value" : "Pendiente"}}}},
     "Current" : {"localizations" : {"es" : {"stringUnit" : {"state" : "translated", "value" : "Actual"}}}},
     "Starts next round" : {"localizations" : {"es" : {"stringUnit" : {"state" : "translated", "value" : "Inicia la siguiente ronda"}}}},

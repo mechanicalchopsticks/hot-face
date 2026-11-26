@@ -11,6 +11,7 @@ struct WorkoutSessionView: View {
     @WeightProgressionPreference private var progressionMode
     @State var workout: OpenWorkout
     @State private var actionError: LocalizedStringKey?
+    @State private var discardID: UUID?
     @State private var confirmsFinish = false
 
     @State private var correcting: OpenWorkout.Rest?
@@ -160,6 +161,7 @@ struct WorkoutSessionView: View {
                                 Label("Health session active", systemImage: "heart")
                             }
                             Button("Finish workout") { confirmsFinish = true }
+                            Button("Discard workout", role: .destructive) { discardID = workout.id }
                         } label: {
                             Label("More", systemImage: "ellipsis.circle")
                         }
@@ -197,6 +199,7 @@ struct WorkoutSessionView: View {
                 try? await Task.sleep(for: .seconds(max(0, end.timeIntervalSinceNow)))
                 if !Task.isCancelled { refresh() }
             }
+            .modifier(DiscardWorkoutConfirmation(sessionID: $discardID) { dismiss() })
             .confirmationDialog("Finish workout", isPresented: $confirmsFinish, titleVisibility: .visible) {
                 Button("Finish workout", action: finish)
             } message: {
