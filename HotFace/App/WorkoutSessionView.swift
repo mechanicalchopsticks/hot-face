@@ -8,6 +8,7 @@ struct WorkoutSessionView: View {
     @EnvironmentObject private var audio: HoldAudioDelegate
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) private var scenePhase
+    @WeightProgressionPreference private var progressionMode
     @State var workout: OpenWorkout
     @State private var actionError: LocalizedStringKey?
     @State private var confirmsFinish = false
@@ -102,7 +103,7 @@ struct WorkoutSessionView: View {
                                             suggestion, load: load, repetitions: repetitions,
                                             routineID: workout.prescription.routineID,
                                             exerciseID: set.exercise.id, sessionID: workout.id,
-                                            clock: SystemWorkoutClock())
+                                            clock: SystemWorkoutClock(), mode: progressionMode)
                                         self.progression = nil
                                         try reload(from: store)
                                     } catch {
@@ -197,7 +198,7 @@ struct WorkoutSessionView: View {
             guard let exerciseID, exerciseID != declinedProgressionFor,
                 let offer = try TrainingStorage.openStore().progressionOffer(
                     routineID: workout.prescription.routineID, exerciseID: exerciseID, sessionID: workout.id,
-                    clock: SystemWorkoutClock())
+                    clock: SystemWorkoutClock(), mode: progressionMode)
             else {
                 progression = nil
                 return
