@@ -69,7 +69,8 @@ struct SessionWriter {
 
         if try existing?.prescription.timer != nil {
             switch action {
-            case .adjust, .editSuperset, .moveExercise, .insertExercise, .skip, .skipAndAdvance, .completeSet, .logSet:
+            case .adjust, .editSuperset, .moveExercise, .reorderBlocks, .insertExercise, .skip, .skipAndAdvance,
+                .completeSet, .logSet:
                 throw SessionCommandError.invalidTimerTransition
             default: break
             }
@@ -171,6 +172,20 @@ struct SessionWriter {
             let ids = Set(block.map(\.id))
             plan.day.exercises.removeAll { ids.contains($0.id) }
             plan.day.exercises.insert(contentsOf: block, at: toFront ? 0 : plan.day.exercises.endIndex)
+            try session.updatePrescription(plan)
+        case .reorderBlocks(let original, let reordered):
+            let session = try openSession()
+            var plan = try session.prescription
+            let blocks = SessionExerciseBlock.blocks(in: plan.day)
+            let visible = Set(original)
+            guard visible.count == original.count, reordered.count == original.count, Set(reordered) == visible,
+                blocks.map(\.id).filter(visible.contains) == original
+            else { throw SessionCommandError.unknownExercise }
+            let byID = Dictionary(uniqueKeysWithValues: blocks.map { ($0.id, $0) })
+            var replacement = reordered.compactMap { byID[$0] }.makeIterator()
+            plan.day.exercises = blocks.flatMap { block in
+                (visible.contains(block.id) ? replacement.next() ?? block : block).exercises
+            }
             try session.updatePrescription(plan)
         case .editSuperset(let edit, let usual):
             try editSuperset(edit, saveAsUsual: usual, in: openSession(), at: date)

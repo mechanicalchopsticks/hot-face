@@ -19,6 +19,7 @@ public struct SessionCommand: Codable, Equatable, Sendable {
         case completeSet(exerciseID: UUID, number: Int, performance: SetPerformance)
         case adjust(exerciseID: UUID, sets: Int, segments: [ExerciseSegment], load: PrescribedLoad, saveAsUsual: Bool)
         case moveExercise(id: UUID, toFront: Bool)
+        case reorderBlocks(original: [UUID], reordered: [UUID])
         case editSuperset(SupersetEdit, saveAsUsual: Bool)
         case insertExercise(sourceID: UUID, replacing: UUID?, saveAsUsual: Bool)
         case logSet(exerciseID: UUID, number: Int, performance: SetPerformance)

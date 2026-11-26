@@ -12,7 +12,7 @@
 
 ## 3. Workout presentation
 
-- [ ] 3.1 Build session list blocks and session-only reordering. Test interleaved supersets spanning categories, completed members and persistence of order.
+- [x] 3.1 Build session list blocks and session-only reordering. Test interleaved supersets spanning categories, completed members and persistence of order.
 - [ ] 3.2 Show the open session list on Train with swipe actions, edit-mode drag and a reversible completed filter. Verify each action and resume the workout to check session state.
 - [ ] 3.3 Show superset members and round progress during exercise and rest. Test current, completed and upcoming states and the next round starter.
 
