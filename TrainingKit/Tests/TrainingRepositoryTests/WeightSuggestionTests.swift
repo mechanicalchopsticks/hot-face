@@ -64,7 +64,7 @@ struct WeightSuggestionTests {
             }
         }
         let first = try #require(try suggestion(curl))
-        #expect(first.load == dumbbellLoad(52.5) && first.repetitions == 15)
+        #expect(first.load == dumbbellLoad(55) && first.repetitions == 15)
         _ = try reopen().saveInventory([.init(55, .lb)], for: .dumbbells, in: gym.id)
         let inclusive = try #require(try suggestion(row))
         #expect(inclusive.load == dumbbellLoad(55) && inclusive.repetitions == 10)

@@ -1,5 +1,9 @@
 import Foundation
 
+public enum WeightProgressionMode: String, CaseIterable, Sendable {
+    case conservative, aggressive
+}
+
 public enum ProgressionAdvice: Equatable, Sendable {
     case adjustManually
     case suggested(WeightSuggestion)
@@ -8,7 +12,7 @@ public enum ProgressionAdvice: Equatable, Sendable {
 
     public static func evaluate(
         for usual: ExercisePrescription, balance: Int, equipment: EquipmentDescription?, inventory: GymInventory,
-        returnRepetitions: Int? = nil
+        returnRepetitions: Int? = nil, mode: WeightProgressionMode = .conservative
     ) -> Self? {
         guard balance == 2 || balance == -2 else { return nil }
         guard let equipment, usual.equipmentID == equipment.id, usual.segments.count == 1,
@@ -32,14 +36,23 @@ public enum ProgressionAdvice: Equatable, Sendable {
             return suggest(current, step, .fewerRepetitions)
         }
 
-        let higher = candidates.filter { $0.kilograms > kilograms }.min { $0.kilograms < $1.kilograms }
+        let heavier = candidates.filter { $0.kilograms > kilograms }
+        let higher = heavier.min { $0.kilograms < $1.kilograms }
         if let higher {
             if let returnRepetitions {
                 // Older bridges recorded the exact starting count, which could fall between steps.
                 let step = repetitionSteps.last(where: { $0 <= returnRepetitions }) ?? returnRepetitions
                 return suggest(higher.load, step, .completeBridge)
             }
-            if kilograms == 0 || higher.kilograms * 10 <= kilograms * 11 {
+            if kilograms == 0 {
+                return suggest(higher.load, repetitions, .higherLoad)
+            }
+            if let target = heavier.filter({ $0.kilograms * 10 <= kilograms * 11 }).max(by: {
+                $0.kilograms < $1.kilograms
+            }) {
+                return suggest(target.load, repetitions, .higherLoad)
+            }
+            if mode == .aggressive, higher.kilograms * 100 <= kilograms * 115 {
                 return suggest(higher.load, repetitions, .higherLoad)
             }
             if repetitions == 15 { return suggest(higher.load, 10, .increaseAfterFifteen) }
@@ -66,12 +79,12 @@ public struct WeightSuggestion: Equatable, Sendable {
 
     public static func increase(
         for usual: ExercisePrescription, balance: Int, equipment: EquipmentDescription, inventory: GymInventory,
-        returnRepetitions: Int? = nil
+        returnRepetitions: Int? = nil, mode: WeightProgressionMode = .conservative
     ) -> Self? {
         guard balance == 2,
             case .suggested(let suggestion) = ProgressionAdvice.evaluate(
                 for: usual, balance: balance, equipment: equipment, inventory: inventory,
-                returnRepetitions: returnRepetitions)
+                returnRepetitions: returnRepetitions, mode: mode)
         else { return nil }
         return suggestion
     }

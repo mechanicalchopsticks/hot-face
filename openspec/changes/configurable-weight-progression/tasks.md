@@ -2,7 +2,7 @@
 
 ## 1. Domain evaluation
 
-- [ ] 1.1 Add a typed mode to ProgressionAdvice.evaluate and WeightSuggestion.increase with a Conservative default. Implement the two candidate ranges. In ProgressionAdviceTests, use unordered inventories to cover multiple choices in each band, precedence across bands, exact 10% and 15%, and an increase just above 15%.
+- [x] 1.1 Add a typed mode to ProgressionAdvice.evaluate and WeightSuggestion.increase with a Conservative default. Implement the two candidate ranges. In ProgressionAdviceTests, use unordered inventories to cover multiple choices in each band, precedence across bands, exact 10% and 15%, and an increase just above 15%.
 - [ ] 1.2 Exercise both modes with normalized per-side and converted loads. Verify pending bridges complete after a mode switch and existing cases for zero load, 15 repetitions, no heavier load, decreases and manual adjustments still pass.
 
 ## 2. Repository integration

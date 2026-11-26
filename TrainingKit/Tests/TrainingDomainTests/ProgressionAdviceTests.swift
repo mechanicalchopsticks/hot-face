@@ -6,16 +6,37 @@ struct ProgressionAdviceTests {
     private let equipment = EquipmentDescription(name: "Dumbbell", kind: .dumbbell, unit: .lb)
 
     private func advice(
-        _ balance: Int, segments: [ExerciseSegment], weights: [Int] = [35], returnRepetitions: Int? = nil
+        _ balance: Int, segments: [ExerciseSegment], weights: [Decimal] = [35], returnRepetitions: Int? = nil,
+        baseline: Decimal = 35, mode: WeightProgressionMode = .conservative
     ) -> ProgressionAdvice? {
         var inventory = GymInventory()
-        inventory[.dumbbells] = weights.map { InventoryWeight(Decimal($0), .lb) }
+        inventory[.dumbbells] = weights.map { InventoryWeight($0, .lb) }
         var exercise = ExercisePrescription(name: "Row", sets: 2, segments: segments)
         exercise.equipmentID = equipment.id
-        exercise.load = .confirmed(.init(amount: 35, unit: .lb, representation: .perImplement, implementCount: 1))
+        exercise.load = .confirmed(.init(amount: baseline, unit: .lb, representation: .perImplement, implementCount: 1))
         return ProgressionAdvice.evaluate(
             for: exercise, balance: balance, equipment: equipment, inventory: inventory,
-            returnRepetitions: returnRepetitions)
+            returnRepetitions: returnRepetitions, mode: mode)
+    }
+
+    @Test(arguments: WeightProgressionMode.allCases)
+    func ranksDirectIncreases(mode: WeightProgressionMode) throws {
+        let cases: [([Decimal], Decimal, Int)] = [
+            ([55.5, 51, 50, 53], 53, 10),
+            ([52, 57.5, 55, 50], 55, 10),
+            ([57.5, 50, 56], mode == .aggressive ? 56 : 50, mode == .aggressive ? 10 : 12),
+            ([57.5, 50], mode == .aggressive ? 57.5 : 50, mode == .aggressive ? 10 : 12),
+            ([57.51, 50], 50, 12),
+        ]
+        for (weights, expectedLoad, expectedReps) in cases {
+            let result = advice(2, segments: [.repetitions(10)], weights: weights, baseline: 50, mode: mode)
+            guard case .suggested(let suggestion) = result else {
+                Issue.record("Expected a progression suggestion")
+                continue
+            }
+            #expect(suggestion.load.amount == expectedLoad)
+            #expect(suggestion.repetitions == expectedReps)
+        }
     }
 
     @Test(arguments: [(2, 9, 10), (-2, 9, 8), (-2, 8, 6), (-2, 10, 8)])
