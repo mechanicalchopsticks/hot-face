@@ -144,6 +144,43 @@ final class RoutineEditorUITests: XCTestCase {
         checkOffer(load: "57.5 lb", reps: 10)
     }
 
+    func testOpenWorkoutListActionsAndCompletedFilter() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        func press(_ title: String) { tap(button(title, in: app)) }
+        createDayWithTwoExercises(in: app)
+        press("Add exercise")
+        enter("Curl", in: app.textFields["Exercise name"])
+        tap(app.navigationBars["Edit exercise"].buttons["BackButton"])
+        tap(app.navigationBars["Edit day"].buttons["BackButton"])
+        for count in [4, 3, 2] { tap(app.steppers["Sets: \(count)"].buttons.element(boundBy: 0)) }
+        let activate = button("Save and activate", in: app)
+        if !activate.exists { tap(app.navigationBars.buttons["More"]) }
+        tap(activate)
+        press("Train")
+        press("Day 1")
+        allowWorkoutAccessIfRequested(app)
+        press("Complete set")
+        press("Close")
+        let row = app.staticTexts["Row"]
+        XCTAssertTrue(row.waitForExistence(timeout: 5))
+        let filter = app.switches["Hide completed"]
+        func toggleFilter() { filter.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.5)).tap() }
+        toggleFilter()
+        XCTAssertFalse(row.exists)
+        toggleFilter()
+        XCTAssertTrue(row.exists)
+        app.staticTexts["Press"].swipeLeft()
+        press("Postpone exercise")
+        press("Continue workout")
+        XCTAssertTrue(app.staticTexts["Curl"].waitForExistence(timeout: 5))
+        press("Close")
+        app.staticTexts["Curl"].swipeLeft()
+        press("Skip exercise")
+        press("Continue workout")
+        XCTAssertTrue(app.staticTexts["Press"].waitForExistence(timeout: 5))
+    }
+
     func testCreateUsualSupersetAndDissolveForThisWorkout() {
         continueAfterFailure = false
         let app = XCUIApplication()

@@ -1,6 +1,11 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Ungrouped" : {"localizations" : {"es" : {"stringUnit" : {"state" : "translated", "value" : "Sin grupo"}}}},
+    "Skipped" : {"localizations" : {"es" : {"stringUnit" : {"state" : "translated", "value" : "Omitido"}}}},
+    "Completed" : {"localizations" : {"es" : {"stringUnit" : {"state" : "translated", "value" : "Completado"}}}},
+    "Superset" : {"localizations" : {"es" : {"stringUnit" : {"state" : "translated", "value" : "Superserie"}}}},
+    "Hide completed" : {"localizations" : {"es" : {"stringUnit" : {"state" : "translated", "value" : "Ocultar completados"}}}},
     "Duration" : {
       "localizations" : {
         "es" : {

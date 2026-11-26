@@ -744,21 +744,7 @@ private struct WorkoutExerciseList: View {
     var body: some View {
         NavigationStack {
             List {
-                ForEach(sections(workout.pendingExercises)) { group in
-                    Section {
-                        ForEach(group.exercises) { exercise in
-                            Menu {
-                                Button("Select exercise") { run(.moveExercise(id: exercise.id, toFront: true)) }
-                                Button("Postpone exercise") { run(.moveExercise(id: exercise.id, toFront: false)) }
-                                Button("Skip exercise") { run(.skipAndAdvance(exerciseID: exercise.id)) }
-                            } label: {
-                                Text(verbatim: exercise.name)
-                            }
-                        }
-                    } header: {
-                        if let heading = group.heading(locale: locale) { Text(verbatim: heading) }
-                    }
-                }
+                SessionExerciseRows(workout: workout, apply: run)
                 NavigationLink("Add exercise") { catalog(replacing: nil) }
                 if workout.pendingExercises.filter({ $0.supersetID == nil }).count >= 2
                     || workout.pendingExercises.contains(where: { $0.supersetID != nil })
