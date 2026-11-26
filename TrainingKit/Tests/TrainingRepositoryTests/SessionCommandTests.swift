@@ -89,6 +89,57 @@ private struct Fixture {
 }
 
 struct SessionCommandTests {
+    @Test(arguments: [false, true])
+    func listEditsKeepTheSelectedRestBlock(reorder: Bool) throws {
+        let exercises = ["Press", "A", "B", "C", "D"].map {
+            ExercisePrescription(name: $0, sets: 1, segments: [.repetitions(8)])
+        }
+        let f = try Fixture(exercise: exercises[0], following: Array(exercises.dropFirst()))
+        defer { try? FileManager.default.removeItem(at: f.directory) }
+        try f.beginRest()
+        try f.postpone(at: 2)
+        let selected = exercises[2].id
+        let c = exercises[3].id
+        let d = exercises[4].id
+        let action: SessionCommand.Action =
+            reorder ? .reorderBlocks(original: [c, d], reordered: [d, c]) : .moveExercise(id: d, toFront: false)
+        _ = try f.store.apply(f.command(action), clock: FixedClock(3))
+        #expect(try f.workout(at: 4).nextSet?.exercise.id == selected)
+        _ = try f.store.apply(f.command(.logCurrentSet(exerciseID: selected, number: 1)), clock: FixedClock(200))
+        #expect(try f.workout(at: 201).nextSet?.exercise.id == exercises[1].id)
+    }
+
+    @Test func draggingAcrossTheSelectedBlockKeepsItNextUntilItIsMoved() throws {
+        let exercises = ["Press", "A", "B", "C"].map {
+            ExercisePrescription(name: $0, sets: 1, segments: [.repetitions(8)])
+        }
+        let f = try Fixture(exercise: exercises[0], following: Array(exercises.dropFirst()))
+        defer { try? FileManager.default.removeItem(at: f.directory) }
+        try f.beginRest()
+        try f.postpone(at: 2)
+        let a = exercises[1].id
+        let b = exercises[2].id
+        let c = exercises[3].id
+        _ = try f.store.apply(
+            f.command(.reorderBlocks(original: [a, b, c], reordered: [c, a, b], moved: [c])), clock: FixedClock(3))
+        #expect(try f.workout(at: 4).nextSet?.exercise.id == b)
+        _ = try f.store.apply(
+            f.command(.reorderBlocks(original: [c, a, b], reordered: [c, b, a], moved: [b])), clock: FixedClock(5))
+        #expect(try f.workout(at: 6).nextSet?.exercise.id == c)
+    }
+
+    @Test func reorderReceiptDecodesWithoutDraggedBlockIDs() throws {
+        let url = try #require(
+            Bundle.module.url(
+                forResource: "before-reorder-drag-selection", withExtension: "json", subdirectory: "Fixtures"))
+        let command = try JSONDecoder().decode(SessionCommand.self, from: Data(contentsOf: url))
+        guard case .reorderBlocks(let original, let reordered, let moved) = command.action else {
+            Issue.record("Expected a reorder command")
+            return
+        }
+        #expect(original.count == 2 && reordered == Array(original.reversed()) && moved == nil)
+    }
+
     @Test func postponingAPartiallySkippedSupersetFollowsItsOriginalPosition() throws {
         var exercises = ["Press", "G1", "A", "G2", "B"].map {
             ExercisePrescription(name: $0, sets: 1, segments: [.repetitions(8)])

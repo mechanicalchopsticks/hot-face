@@ -1,0 +1,16 @@
+{
+  "action" : {
+    "reorderBlocks" : {
+      "original" : [
+        "80D6EC14-BF81-4BA8-AF7E-BC0DA822A45C",
+        "864C41C2-4805-449F-BFA2-A399B7A3F551"
+      ],
+      "reordered" : [
+        "864C41C2-4805-449F-BFA2-A399B7A3F551",
+        "80D6EC14-BF81-4BA8-AF7E-BC0DA822A45C"
+      ]
+    }
+  },
+  "id" : "72FFEEAD-3379-4F78-BB28-0C90D5DDE386",
+  "sessionID" : "BBCC07CA-D5A9-47F7-B9D4-2EC8B81D0EC1"
+}

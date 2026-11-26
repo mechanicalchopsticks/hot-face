@@ -278,7 +278,7 @@ struct SessionExerciseRows: View {
                         let ids = blocks.map(\.id)
                         var reordered = ids
                         reordered.move(fromOffsets: offsets, toOffset: destination)
-                        apply(.reorderBlocks(original: ids, reordered: reordered))
+                        apply(.reorderBlocks(original: ids, reordered: reordered, moved: offsets.map { ids[$0] }))
                     }
                 } header: {
                     heading(for: section)
