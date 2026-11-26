@@ -198,15 +198,23 @@ final class RoutineEditorUITests: XCTestCase {
         XCTAssertFalse(row.exists)
         toggleFilter()
         XCTAssertTrue(row.exists)
-        app.staticTexts["Press"].swipeLeft()
+        press("Edit")
+        let curl = app.cells.containing(.staticText, identifier: "Curl").firstMatch
+        let pressRow = app.cells.containing(.staticText, identifier: "Press").firstMatch
+        let handle = curl.coordinate(withNormalizedOffset: CGVector(dx: 0.94, dy: 0.5))
+        handle.press(
+            forDuration: 0.6, thenDragTo: pressRow.coordinate(withNormalizedOffset: CGVector(dx: 0.94, dy: 0.15)))
+        press("Done")
+        XCTAssertLessThan(app.staticTexts["Curl"].frame.midY, app.staticTexts["Press"].frame.midY)
+        app.staticTexts["Curl"].swipeLeft()
         press("Postpone exercise")
         press("Continue workout")
-        XCTAssertTrue(app.staticTexts["Curl"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Press"].waitForExistence(timeout: 5))
         press("Close")
-        app.staticTexts["Curl"].swipeLeft()
+        app.staticTexts["Press"].swipeLeft()
         press("Skip exercise")
         press("Continue workout")
-        XCTAssertTrue(app.staticTexts["Press"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Curl"].waitForExistence(timeout: 5))
     }
 
     func testCreateUsualSupersetAndDissolveForThisWorkout() {
