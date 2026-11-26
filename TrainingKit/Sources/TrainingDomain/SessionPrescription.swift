@@ -72,6 +72,7 @@ public struct SessionPrescription: Codable, Equatable, Sendable {
         }
     }
 
+    public var acknowledgedRestID: UUID?
     public var restSelection: RestSelection?
     public var restPrescription: RestPrescription?
     public var timer: WorkoutTimeline?
