@@ -44,8 +44,13 @@ public struct OpenWorkout: Identifiable, Sendable {
         }
     }
 
+    public enum Transition: Sendable {
+        case nextSet, nextExercise, nextSupersetMember
+    }
+
     public struct Rest: Identifiable, Sendable {
         public let id: UUID
+        public let exercise: ExercisePrescription
         public let performance: SetPerformance
         public let prescribedSegments: [ExerciseSegment]
         public let completedSetNumber: Int
@@ -89,6 +94,7 @@ public struct OpenWorkout: Identifiable, Sendable {
 
     public let skippedExerciseIDs: Set<UUID>
     public let pendingExercises: [ExercisePrescription]
+    public let transition: Transition?
     public let nextSet: PendingSet?
     /// The pending set after the current one completes, including superset round order.
     public let followingSet: PendingSet?
@@ -190,6 +196,11 @@ public struct OpenWorkout: Identifiable, Sendable {
             let exercise = prescription.day.exercises.first(where: { $0.id == last.exerciseID })
         {
             let sameSuperset = exercise.supersetID != nil && exercise.supersetID == pending.exercise.supersetID
+            if exercise.id == pending.exercise.id {
+                transition = .nextSet
+            } else {
+                transition = sameSuperset ? .nextSupersetMember : .nextExercise
+            }
             let completedRound = prescription.roundNumber(for: exercise, set: last.number)
             let startsNextRound =
                 sameSuperset && completedRound > 0
@@ -205,13 +216,14 @@ public struct OpenWorkout: Identifiable, Sendable {
             rest =
                 seconds > 0
                 ? Rest(
-                    id: last.id, performance: performance,
+                    id: last.id, exercise: exercise, performance: performance,
                     prescribedSegments: prescribedSegments ?? performance.segments, completedSetNumber: last.number,
                     endsAt: deadline ?? last.performedAt.addingTimeInterval(seconds),
                     betweenExercises: !sameSuperset && pending.exercise.id != last.exerciseID,
                     startsNextRound: startsNextRound)
                 : nil
         } else {
+            transition = nil
             rest = nil
         }
     }
