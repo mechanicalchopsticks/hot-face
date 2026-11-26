@@ -207,7 +207,7 @@ struct OpenWorkoutTests {
         row.supersetID = supersetID
         curl.supersetID = supersetID
         plank.supersetID = supersetID
-        let squat = ExercisePrescription(name: "Squat", sets: 1, segments: [.repetitions(8)])
+        let squat = ExercisePrescription(name: "Squat", sets: 2, segments: [.repetitions(8)])
         let settings = SupersetRest(restBetweenRounds: 40, restAfterSuperset: 70)
         let day = RoutineDay(name: "Day", exercises: [row, squat, curl, plank], supersetRests: [supersetID: settings])
         var routine = ManualRoutine(gymID: gymID)
@@ -233,6 +233,14 @@ struct OpenWorkoutTests {
         #expect(try store.openWorkout()?.nextSet?.exercise.id == curl.id)
         #expect(try store.openWorkout()?.rest == nil)
         #expect(throws: SessionCommandError.invalidSetNumber) { try log(row, 2, at: 6) }
+        try command(.moveExercise(id: squat.id, toFront: true), at: 6)
+        try log(squat, 1, at: 7)
+        try command(.moveExercise(id: squat.id, toFront: false), at: 8)
+        let returning = try #require(try store.openWorkout(clock: SetClock(8)))
+        let exerciseRest = try #require(returning.activeRest(at: SetClock(8).now))
+        #expect(returning.nextSet?.exercise.id == curl.id && returning.nextSupersetRound?.number == 1)
+        #expect(exerciseRest.betweenExercises && !exerciseRest.startsNextRound)
+        try command(.adjustRest(setID: exerciseRest.id, adjustment: .end), at: 9)
         try command(.controlTimer(exerciseID: curl.id, number: 1, expectedRevision: 0, action: .start), at: 10)
         let midRound = try #require(try store.openWorkout(clock: SetClock(11)))
         #expect(midRound.roundMembers.map(\.id) == [row.id, curl.id, plank.id])
@@ -249,6 +257,7 @@ struct OpenWorkoutTests {
         #expect(roundEnd.nextSet?.exercise.id == row.id && roundEnd.nextSet?.number == 2)
         #expect(roundEnd.roundMembers.map(\.status) == [.current, .upcoming, .upcoming])
         #expect(roundEnd.nextSupersetRound?.number == 2)
+        #expect(roundEnd.rest?.startsNextRound == true)
         #expect(roundEnd.timer == nil && roundEnd.rest?.endsAt == SetClock(98).now)
         if skipFirst {
             try command(.skipAndAdvance(exerciseID: row.id), at: 60)
@@ -325,6 +334,7 @@ struct OpenWorkoutTests {
         try recordNext(press, 1, at: 241)
         #expect(try reopen().openWorkout()?.rest?.endsAt == SetClock(346).now)
         #expect(try reopen().openWorkout()?.nextSupersetRound?.number == 2)
+        #expect(try reopen().openWorkout()?.roundMembers.map(\.status) == [.completed, .current])
         var expectedUsual = usual
         if createAsUsual {
             try apply(.editSuperset(.dissolve(id: group), saveAsUsual: dissolveAsUsual), at: 242)

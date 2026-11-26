@@ -83,8 +83,10 @@ struct WorkoutSessionView: View {
                                     switch member.status {
                                     case .completed: Label("Completed", systemImage: "checkmark")
                                     case .current:
-                                        if rest != nil {
-                                            Label("Starts next round", systemImage: "arrow.right")
+                                        if let rest {
+                                            let title: LocalizedStringKey =
+                                                rest.startsNextRound ? "Starts next round" : "Next exercise"
+                                            Label(title, systemImage: "arrow.right")
                                         } else {
                                             Label("Current", systemImage: "play.fill")
                                         }

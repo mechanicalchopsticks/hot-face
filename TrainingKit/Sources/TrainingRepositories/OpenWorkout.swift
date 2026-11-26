@@ -51,6 +51,7 @@ public struct OpenWorkout: Identifiable, Sendable {
         public let completedSetNumber: Int
         public let endsAt: Date
         public let betweenExercises: Bool
+        public let startsNextRound: Bool
     }
 
     public let id: UUID
@@ -69,17 +70,18 @@ public struct OpenWorkout: Identifiable, Sendable {
             return []
         }
         return prescription.day.exercises.filter { $0.supersetID == group }.map { exercise in
+            let completedSets = performedNumbers[exercise.id, default: []]
             let status: RoundMember.Status
             if exercise.id == current.exercise.id {
                 status = .current
-            } else if performedNumbers[exercise.id, default: []].contains(where: {
+            } else if completedSets.contains(where: {
                 prescription.roundNumber(for: exercise, set: $0) == round.number
             }) {
                 status = .completed
             } else if skippedExerciseIDs.contains(exercise.id) {
                 status = .skipped
             } else {
-                status = .upcoming
+                status = completedSets.count == exercise.sets ? .completed : .upcoming
             }
             return RoundMember(exercise: exercise, status: status)
         }
@@ -188,7 +190,10 @@ public struct OpenWorkout: Identifiable, Sendable {
             let exercise = prescription.day.exercises.first(where: { $0.id == last.exerciseID })
         {
             let sameSuperset = exercise.supersetID != nil && exercise.supersetID == pending.exercise.supersetID
-            let betweenExercises = !sameSuperset && pending.exercise.id != last.exerciseID
+            let completedRound = prescription.roundNumber(for: exercise, set: last.number)
+            let startsNextRound =
+                sameSuperset && completedRound > 0
+                && prescription.roundNumber(for: pending.exercise, set: pending.number) > completedRound
             let seconds = prescription.restDuration(
                 after: exercise, completedSet: last.number, before: pending.exercise, nextSet: pending.number)
             let override = prescription.restOverride
@@ -203,7 +208,8 @@ public struct OpenWorkout: Identifiable, Sendable {
                     id: last.id, performance: performance,
                     prescribedSegments: prescribedSegments ?? performance.segments, completedSetNumber: last.number,
                     endsAt: deadline ?? last.performedAt.addingTimeInterval(seconds),
-                    betweenExercises: betweenExercises)
+                    betweenExercises: !sameSuperset && pending.exercise.id != last.exerciseID,
+                    startsNextRound: startsNextRound)
                 : nil
         } else {
             rest = nil
