@@ -118,6 +118,7 @@ struct ExerciseEditor: View {
                 }
             }
             Section("Sets and rest") {
+                WeightProgressionPicker()
                 Toggle(
                     "Custom set count",
                     isOn: Binding(

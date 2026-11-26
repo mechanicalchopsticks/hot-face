@@ -1,6 +1,36 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Weight progression (all exercises)" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Progresión de peso (todos los ejercicios)"
+          }
+        }
+      }
+    },
+    "Conservative" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conservadora"
+          }
+        }
+      }
+    },
+    "Aggressive" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agresiva"
+          }
+        }
+      }
+    },
     "Progression suggestion" : {
       "localizations" : {
         "es" : {
