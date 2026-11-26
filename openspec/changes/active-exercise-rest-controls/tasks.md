@@ -4,7 +4,7 @@
 
 - [x] 1.1 Expose the rest origin, transition kind and selected next set through OpenWorkout. Test repeated sets, exercise changes and superset member transitions through logged session commands.
 - [x] 1.2 Add rest-scoped circular selection over eligible blocks. Test repeated wraparound, choosing C then resuming A/B/D, single-block behavior, supersets and explicit dissolution through SessionCommandTests.
-- [ ] 1.3 Connect selection to actual next-work execution. With an injected clock verify expiry, early rest completion, repeated command receipts and stale taps preserve the correct deadline and exercise. Reopen a disk store to verify recovery and cover changed encoded payloads with frozen pre-change fixtures.
+- [x] 1.3 Connect selection to actual next-work execution. With an injected clock verify expiry, early rest completion, repeated command receipts and stale taps preserve the correct deadline and exercise. Reopen a disk store to verify recovery and cover changed encoded payloads with frozen pre-change fixtures.
 
 ## 2. Effort feedback
 
