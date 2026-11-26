@@ -61,14 +61,7 @@ private struct ActiveRoutineView: View {
                 } else if let openWorkout {
                     let boundary = presentedWorkout == nil ? openWorkout.nextBoundary : nil
                     List {
-                        Section {
-                            Button("Continue workout") { presentedWorkout = openWorkout }
-                            Button("Finish workout") { confirmsFinish = true }
-                            Button("Discard workout", role: .destructive) { discardID = openWorkout.id }
-                        } header: {
-                            Text(verbatim: openWorkout.prescription.day.name)
-                        }
-                        SessionExerciseRows(workout: openWorkout) { action in
+                        SessionExerciseRows(workout: openWorkout, header: openWorkout.prescription.day.name) { action in
                             do {
                                 _ = try TrainingStorage.openStore().apply(
                                     SessionCommand(sessionID: openWorkout.id, action: action),
@@ -81,6 +74,11 @@ private struct ActiveRoutineView: View {
                             }
                         }
                         .id(openWorkout.id)
+                        Section {
+                            Button("Continue workout") { presentedWorkout = openWorkout }
+                            Button("Finish workout") { confirmsFinish = true }
+                            Button("Discard workout", role: .destructive) { discardID = openWorkout.id }
+                        }
                     }
                     .toolbar { if openWorkout.timer == nil { EditButton() } }
                     .task(id: boundary) {
@@ -246,6 +244,7 @@ struct SessionExerciseRows: View {
     @Environment(\.locale) private var locale
     @State private var hidesCompleted = false
     let workout: OpenWorkout
+    var header: String? = nil
     let apply: (SessionCommand.Action) -> Void
 
     var body: some View {
@@ -258,7 +257,11 @@ struct SessionExerciseRows: View {
         let byAnchor = Dictionary(uniqueKeysWithValues: visible.map { ($0.id, $0) })
         let sections = ExerciseGroupSection.sections(
             for: RoutineDay(name: "", exercises: visible.map { $0.exercises[0] }))
-        Section { Toggle("Hide completed", isOn: $hidesCompleted) }
+        Section {
+            Toggle("Hide completed", isOn: $hidesCompleted)
+        } header: {
+            if let header { Text(verbatim: header) }
+        }
         if editMode?.wrappedValue.isEditing == true {
             ForEach(sections) { section in
                 let blocks = section.exercises.compactMap { byAnchor[$0.id] }

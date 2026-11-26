@@ -194,6 +194,10 @@ final class RoutineEditorUITests: XCTestCase {
         press("Close")
         let row = app.staticTexts["Row"]
         XCTAssertTrue(row.waitForExistence(timeout: 5))
+        let continueButton = button("Continue workout", in: app)
+        for name in ["Row", "Curl", "Press"] {
+            XCTAssertLessThan(app.staticTexts[name].frame.maxY, continueButton.frame.minY)
+        }
         let filter = app.switches["Hide completed"]
         func toggleFilter() { filter.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.5)).tap() }
         toggleFilter()
