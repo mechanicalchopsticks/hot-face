@@ -2183,6 +2183,7 @@
         }
       }
     },
+    "Next superset member" : {"localizations" : {"es" : {"stringUnit" : {"state" : "translated", "value" : "Siguiente ejercicio de la superserie"}}}},
     "Next exercise" : {
       "extractionState" : "stale",
       "localizations" : {
