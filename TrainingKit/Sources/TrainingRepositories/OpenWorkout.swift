@@ -56,6 +56,35 @@ public struct OpenWorkout: Identifiable, Sendable {
     public let id: UUID
     public let reconciledAt: Date
     public let prescription: SessionPrescription
+    public struct RoundMember: Identifiable, Sendable {
+        public enum Status: Sendable { case completed, current, upcoming, skipped }
+        public let exercise: ExercisePrescription
+        public let status: Status
+        public var id: UUID { exercise.id }
+    }
+
+    private let performedNumbers: [UUID: Set<Int>]
+    public var roundMembers: [RoundMember] {
+        guard let current = nextSet, let group = current.exercise.supersetID, let round = nextSupersetRound else {
+            return []
+        }
+        return prescription.day.exercises.filter { $0.supersetID == group }.map { exercise in
+            let status: RoundMember.Status
+            if exercise.id == current.exercise.id {
+                status = .current
+            } else if performedNumbers[exercise.id, default: []].contains(where: {
+                prescription.roundNumber(for: exercise, set: $0) == round.number
+            }) {
+                status = .completed
+            } else if skippedExerciseIDs.contains(exercise.id) {
+                status = .skipped
+            } else {
+                status = .upcoming
+            }
+            return RoundMember(exercise: exercise, status: status)
+        }
+    }
+
     public let skippedExerciseIDs: Set<UUID>
     public let pendingExercises: [ExercisePrescription]
     public let nextSet: PendingSet?
@@ -121,6 +150,7 @@ public struct OpenWorkout: Identifiable, Sendable {
         self.prescription = prescription
 
         let byExercise = Dictionary(grouping: performed, by: \.exerciseID)
+        performedNumbers = byExercise.mapValues { Set($0.map(\.number)) }
         let skipped = Set(session.skippedExerciseIDs)
         skippedExerciseIDs = skipped
         var candidates: [(set: PendingSet, block: Int, round: Int, index: Int)] = []
@@ -135,7 +165,7 @@ public struct OpenWorkout: Identifiable, Sendable {
                 } ?? index
             guard !skipped.contains(exercise.id) else { continue }
             guard let count = exercise.sets, count > 0 else { throw CocoaError(.coderReadCorrupt) }
-            let completed = Set(byExercise[exercise.id, default: []].map(\.number))
+            let completed = performedNumbers[exercise.id, default: []]
             let numbers = (1...count).lazy.filter { !completed.contains($0) }.prefix(2)
             guard !numbers.isEmpty else { continue }
             remaining.append(exercise)

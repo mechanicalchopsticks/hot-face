@@ -1,6 +1,9 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Upcoming" : {"localizations" : {"es" : {"stringUnit" : {"state" : "translated", "value" : "Pendiente"}}}},
+    "Current" : {"localizations" : {"es" : {"stringUnit" : {"state" : "translated", "value" : "Actual"}}}},
+    "Starts next round" : {"localizations" : {"es" : {"stringUnit" : {"state" : "translated", "value" : "Inicia la siguiente ronda"}}}},
     "Ungrouped" : {"localizations" : {"es" : {"stringUnit" : {"state" : "translated", "value" : "Sin grupo"}}}},
     "Skipped" : {"localizations" : {"es" : {"stringUnit" : {"state" : "translated", "value" : "Omitido"}}}},
     "Completed" : {"localizations" : {"es" : {"stringUnit" : {"state" : "translated", "value" : "Completado"}}}},

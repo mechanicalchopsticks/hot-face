@@ -75,6 +75,24 @@ struct WorkoutSessionView: View {
                         WorkoutSetHeader(name: set.exercise.name, number: set.number, count: set.count)
                         if let round = workout.nextSupersetRound {
                             Text("Superset · Round \(round.number) of \(round.count)")
+                            ForEach(workout.roundMembers) { member in
+                                HStack {
+                                    Text(verbatim: member.exercise.name)
+                                    Spacer()
+                                    switch member.status {
+                                    case .completed: Label("Completed", systemImage: "checkmark")
+                                    case .current:
+                                        if rest != nil {
+                                            Label("Starts next round", systemImage: "arrow.right")
+                                        } else {
+                                            Label("Current", systemImage: "play.fill")
+                                        }
+                                    case .upcoming: Text("Upcoming")
+                                    case .skipped: Text("Skipped")
+                                    }
+                                }.fontWeight(member.status == .current ? .bold : .regular)
+                                    .accessibilityElement(children: .combine)
+                            }
                         }
                         if let timer = workout.timer {
                             if set.exercise.perSide { Text("Side \(timer.sideNumber) of 2") }
