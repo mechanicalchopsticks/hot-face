@@ -38,6 +38,95 @@ final class RoutineEditorUITests: XCTestCase {
             picker.label.contains("Conservative") || picker.value as? String == "Conservative", picker.debugDescription)
     }
 
+    func testWeightProgressionOffersAfterRelaunch() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchEnvironment["HOTFACE_UI_TEST_STORE_ID"] = UUID().uuidString
+        func press(_ title: String) { tap(button(title, in: app)) }
+        func reveal(_ element: XCUIElement) {
+            for _ in 0..<5 where !element.isHittable { app.swipeUp() }
+            XCTAssertTrue(element.isHittable, app.debugDescription)
+        }
+        launch(app, spanish: false)
+        press("Settings")
+        let mode = app.buttons["weightProgressionMode"]
+        tap(mode)
+        press("Conservative")
+        press("Add gym")
+        enter("Gym", in: app.textFields["Gym name"])
+        press("Save")
+        press("Gym")
+        press("Add equipment")
+        enter("Stack", in: app.textFields["Equipment name"])
+        press("Equipment type")
+        press("Selectorized machine")
+        press("Weight unit")
+        press("lb")
+        for (index, amount) in ["50", "57.5"].enumerated() {
+            press("Add load")
+            let field = app.textFields.matching(identifier: "Weight").element(boundBy: index)
+            tap(field)
+            field.typeText(amount)
+        }
+        press("Save")
+        tap(app.navigationBars["Gym"].buttons["BackButton"])
+        press("Routines")
+        press("Add routine")
+        for count in [4, 3, 2] { tap(app.steppers["Sets: \(count)"].buttons.element(boundBy: 0)) }
+        press("Add day")
+        for name in ["Row", "Press"] {
+            press("Add exercise")
+            enter(name, in: app.textFields["Exercise name"])
+            reveal(app.steppers["Reps: 8"])
+            for reps in [8, 9] { tap(app.steppers["Reps: \(reps)"].buttons.element(boundBy: 1)) }
+            reveal(button("Equipment", in: app))
+            press("Equipment")
+            press("Stack")
+            reveal(button("Usual load", in: app))
+            press("Usual load")
+            press("50 lb")
+            tap(app.navigationBars["Usual load"].buttons["BackButton"])
+            tap(app.navigationBars["Edit exercise"].buttons["BackButton"])
+        }
+        activateDayAndOpenTrain(in: app)
+        for session in 1...2 {
+            press("Day 1")
+            if session == 1 { allowWorkoutAccessIfRequested(app) }
+            press("Complete set")
+            if button("End rest", in: app).exists { press("End rest") }
+            press("Complete set")
+            for _ in 0..<2 {
+                let menu = button("Rate exercise", in: app)
+                reveal(menu)
+                menu.coordinate(withNormalizedOffset: CGVector(dx: 0.16, dy: 0.5)).tap()
+                tap(app.buttons["Easy"].firstMatch)
+            }
+            press("Done")
+        }
+        press("Day 1")
+        func checkOffer(load: String, reps: Int) {
+            let field = button("Load", in: app)
+            reveal(field)
+            XCTAssertTrue(field.label.contains(load) || field.value as? String == load, field.debugDescription)
+            XCTAssertTrue(app.steppers["\(reps) reps"].exists)
+        }
+        checkOffer(load: "50 lb", reps: 12)
+        press("Complete set")
+        if button("End rest", in: app).exists { press("End rest") }
+        press("Close")
+        press("Settings")
+        tap(mode)
+        press("Aggressive")
+        app.terminate()
+        launch(app, spanish: false)
+        press("Settings")
+        XCTAssertTrue(mode.label.contains("Aggressive") || mode.value as? String == "Aggressive", mode.debugDescription)
+        press("Train")
+        press("Continue workout")
+        XCTAssertTrue(app.staticTexts["Press"].waitForExistence(timeout: 5))
+        checkOffer(load: "57.5 lb", reps: 10)
+    }
+
     func testCreateUsualSupersetAndDissolveForThisWorkout() {
         continueAfterFailure = false
         let app = XCUIApplication()

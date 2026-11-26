@@ -14,7 +14,7 @@
 
 - [x] 3.1 Persist one mode preference and pass its current value from WorkoutSessionView on offer and confirmation. Verify missing and unknown values resolve to Conservative and a saved Aggressive choice survives relaunch.
 - [x] 3.2 Bind the Settings picker and the control beside “Sets and rest” to the same preference. Localize the labels in English and Spanish. Verify Settings works with an empty gym catalog and that changing either control updates the other even if the exercise edit is cancelled.
-- [ ] 3.3 On an iPhone simulator, use 50 lb × 10 with 57.5 lb as the only heavier option. Verify Conservative offers 50 lb × 12, then select Aggressive, relaunch and verify an eligible exercise offers 57.5 lb × 10.
+- [x] 3.3 On an iPhone simulator, use 50 lb × 10 with 57.5 lb as the only heavier option. Verify Conservative offers 50 lb × 12, then select Aggressive, relaunch and verify an eligible exercise offers 57.5 lb × 10.
 
 ## 4. Integration verification
 
