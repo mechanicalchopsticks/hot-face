@@ -148,7 +148,7 @@ final class RoutineEditorUITests: XCTestCase {
         continueAfterFailure = false
         let app = XCUIApplication()
         func press(_ title: String) { tap(button(title, in: app)) }
-        createDayWithTwoExercises(in: app)
+        createDayWithExercises(in: app)
         activateDayAndOpenTrain(in: app)
         for fromTrain in [false, true] {
             press("Day 1")
@@ -176,7 +176,7 @@ final class RoutineEditorUITests: XCTestCase {
         continueAfterFailure = false
         let app = XCUIApplication()
         func press(_ title: String) { tap(button(title, in: app)) }
-        createDayWithTwoExercises(in: app, rowGroup: "Upper")
+        createDayWithExercises(in: app, rowGroup: "Upper")
         press("Add exercise")
         enter("Curl", in: app.textFields["Exercise name"])
         press("Exercise group")
@@ -227,12 +227,47 @@ final class RoutineEditorUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Curl"].waitForExistence(timeout: 5))
     }
 
+    func testInlineFeedbackKeepsCompletedExerciseWhenPreviewChanges() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        func press(_ title: String) { tap(button(title, in: app)) }
+        createDayWithExercises(in: app, names: ["Row", "Press", "Curl"])
+        tap(app.navigationBars["Edit day"].buttons["BackButton"])
+        for count in [4, 3, 2] { tap(app.steppers["Sets: \(count)"].buttons.element(boundBy: 0)) }
+        let activate = button("Save and activate", in: app)
+        if !activate.exists { tap(app.navigationBars.buttons["More"]) }
+        tap(activate)
+        press("Train")
+        press("Day 1")
+        allowWorkoutAccessIfRequested(app)
+        press("Complete set")
+        let question = app.staticTexts["How did Row feel?"]
+        XCTAssertTrue(question.waitForExistence(timeout: 5))
+        for choice in ["Hard", "OK", "Easy"] { XCTAssertTrue(button(choice, in: app).exists) }
+        press("More")
+        press("Exercises")
+        let curl = app.staticTexts.matching(identifier: "Curl").allElementsBoundByIndex.last(where: \.isHittable)
+        guard let curl else { return XCTFail("Missing Curl in the exercise list") }
+        curl.swipeLeft()
+        press("Select exercise")
+        XCTAssertTrue(app.navigationBars["Exercises"].waitForNonExistence(timeout: 5))
+        XCTAssertEqual(app.staticTexts["workoutSetName"].label, "Curl")
+        XCTAssertTrue(question.exists)
+        press("Hard")
+        XCTAssertTrue(question.waitForNonExistence(timeout: 5))
+        XCTAssertTrue(button("End rest", in: app).exists)
+        let countdown = app.staticTexts["Rest remaining"]
+        guard let previous = countdown.value as? String else { return XCTFail("Missing countdown") }
+        let tick = XCTNSPredicateExpectation(predicate: NSPredicate(format: "value != %@", previous), object: countdown)
+        XCTAssertEqual(XCTWaiter.wait(for: [tick], timeout: 5), .completed)
+    }
+
     func testCreateUsualSupersetAndDissolveForThisWorkout() {
         continueAfterFailure = false
         let app = XCUIApplication()
         func press(_ title: String) { tap(button(title, in: app)) }
 
-        createDayWithTwoExercises(in: app)
+        createDayWithExercises(in: app)
         press("Supersets")
         selectSupersetMembers(in: app)
         press("Create superset")
@@ -257,7 +292,7 @@ final class RoutineEditorUITests: XCTestCase {
         continueAfterFailure = false
         let app = XCUIApplication()
         func press(_ title: String) { tap(button(title, in: app)) }
-        createDayWithTwoExercises(in: app)
+        createDayWithExercises(in: app)
         activateDayAndOpenTrain(in: app)
         for session in 1...2 {
             press("Day 1")
@@ -306,7 +341,9 @@ final class RoutineEditorUITests: XCTestCase {
         XCTAssertTrue(suggestion.waitForNonExistence(timeout: 5), app.debugDescription)
     }
 
-    private func createDayWithTwoExercises(in app: XCUIApplication, rowGroup: String? = nil) {
+    private func createDayWithExercises(
+        in app: XCUIApplication, rowGroup: String? = nil, names: [String] = ["Row", "Press"]
+    ) {
         app.launchEnvironment["HOTFACE_UI_TEST_STORE_ID"] = UUID().uuidString
         func press(_ title: String) { tap(button(title, in: app)) }
         launch(app, spanish: false)
@@ -318,7 +355,7 @@ final class RoutineEditorUITests: XCTestCase {
         press("Routines")
         press("Add routine")
         press("Add day")
-        for name in ["Row", "Press"] {
+        for name in names {
             press("Add exercise")
             let field = app.textFields["Exercise name"]
             tap(field)

@@ -41,6 +41,7 @@
         }
       }
     },
+    "How did %@ feel?" : {"localizations" : {"es" : {"stringUnit" : {"state" : "translated", "value" : "¿Cómo sentiste %@?"}}}},
     "Upcoming" : {"localizations" : {"es" : {"stringUnit" : {"state" : "translated", "value" : "Pendiente"}}}},
     "Current" : {"localizations" : {"es" : {"stringUnit" : {"state" : "translated", "value" : "Actual"}}}},
     "Starts next round" : {"localizations" : {"es" : {"stringUnit" : {"state" : "translated", "value" : "Inicia la siguiente ronda"}}}},

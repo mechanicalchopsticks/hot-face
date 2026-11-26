@@ -65,6 +65,21 @@ struct WorkoutSessionView: View {
                                 .accessibilityLabel("Extend rest by 15 seconds")
                         }
                         .buttonStyle(.bordered)
+                        if let target = rest.feedbackTarget {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("How did \(target.name) feel?").font(.headline)
+                                HStack {
+                                    Button("Hard") { respondToRest(.answerRestFeedback(setID: rest.id, effort: .hard)) }
+                                    Button {
+                                        respondToRest(.answerRestFeedback(setID: rest.id, effort: nil))
+                                    } label: {
+                                        Text(verbatim: "OK")
+                                    }
+                                    Button("Easy") { respondToRest(.answerRestFeedback(setID: rest.id, effort: .easy)) }
+                                }
+                                .buttonStyle(.bordered)
+                            }
+                        }
                         Button("Correct set") { correcting = rest }
                         Label("Set \(rest.completedSetNumber) completed", systemImage: "checkmark.circle")
                     } header: {
@@ -302,6 +317,12 @@ struct WorkoutSessionView: View {
         try reload(from: store)
     }
 
+    private func respondToRest(_ action: SessionCommand.Action) {
+        do { try apply(action) } catch SessionCommandError.restUnavailable {
+            refresh()
+        } catch { actionError = "Could not update workout" }
+    }
+
     private func refresh() {
         do { try reload(from: TrainingStorage.openStore()) } catch { actionError = "Could not update workout" }
     }
@@ -488,7 +509,7 @@ struct WorkoutSetHeader: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(verbatim: name).font(.title2.bold())
+            Text(verbatim: name).font(.title2.bold()).accessibilityIdentifier("workoutSetName")
             Text("Set \(number) of \(count)").font(.subheadline).foregroundStyle(.secondary)
         }
     }
