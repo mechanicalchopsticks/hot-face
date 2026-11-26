@@ -30,6 +30,7 @@ public struct SessionCommand: Codable, Equatable, Sendable {
         case correctSet(id: UUID, performance: SetPerformance)
         case rate(exerciseID: UUID, effort: Effort)
         case skip(exerciseID: UUID)
+        case postponeDuringRest(setID: UUID, exerciseID: UUID, revision: UUID?)
         case adjustRest(setID: UUID, adjustment: RestAdjustment)
         case finish
         case discard

@@ -94,6 +94,15 @@ public struct OpenWorkout: Identifiable, Sendable {
 
     public let skippedExerciseIDs: Set<UUID>
     public let pendingExercises: [ExercisePrescription]
+    let eligibleBlockIDs: [UUID]
+    public var postponeAction: SessionCommand.Action? {
+        guard let rest = activeRest(at: reconciledAt), rest.betweenExercises,
+            eligibleBlockIDs.count > 1, let nextSet
+        else { return nil }
+        return .postponeDuringRest(
+            setID: rest.id, exerciseID: nextSet.exercise.id, revision: prescription.restSelection?.revision)
+    }
+
     public let transition: Transition?
     public let nextSet: PendingSet?
     /// The pending set after the current one completes, including superset round order.
@@ -163,19 +172,21 @@ public struct OpenWorkout: Identifiable, Sendable {
         skippedExerciseIDs = skipped
         var candidates: [(set: PendingSet, block: Int, round: Int, index: Int)] = []
         var remaining: [ExercisePrescription] = []
-        var firstMemberIndex: [UUID: Int] = [:]
+        var blockIndices: [UUID: Int] = [:]
+        var eligibleBlocks = Set<UUID>()
+        var blockIDs: [UUID] = []
         for (index, exercise) in prescription.day.exercises.enumerated() {
-            let block =
-                exercise.supersetID.map { id in
-                    if let first = firstMemberIndex[id] { return first }
-                    firstMemberIndex[id] = index
-                    return index
-                } ?? index
+            let blockID = exercise.supersetID ?? exercise.id
+            let firstIndex = blockIndices[blockID] ?? index
+            blockIndices[blockID] = firstIndex
             guard !skipped.contains(exercise.id) else { continue }
             guard let count = exercise.sets, count > 0 else { throw CocoaError(.coderReadCorrupt) }
             let completed = performedNumbers[exercise.id, default: []]
             let numbers = (1...count).lazy.filter { !completed.contains($0) }.prefix(2)
             guard !numbers.isEmpty else { continue }
+            if eligibleBlocks.insert(blockID).inserted { blockIDs.append(blockID) }
+            // A choice promotes only this block. The session day remains the baseline for subsequent taps.
+            let block = prescription.restSelection?.blockID == blockID ? -1 : firstIndex
             remaining.append(exercise)
             let equipment = prescription.equipment.first { $0.id == exercise.equipmentID }
             for number in numbers {
@@ -186,6 +197,7 @@ public struct OpenWorkout: Identifiable, Sendable {
         candidates.sort {
             ($0.block, $0.round, $0.index, $0.set.number) < ($1.block, $1.round, $1.index, $1.set.number)
         }
+        eligibleBlockIDs = blockIDs
         pendingExercises = remaining
         let pending = candidates.first?.set
         nextSet = pending
@@ -213,13 +225,14 @@ public struct OpenWorkout: Identifiable, Sendable {
             let original = prescription.restPrescription
             let segments = original?.setID == last.id ? original?.segments : exercise.segments
             let prescribedSegments = segments?.count == performance.segments.count ? segments : nil
+            let browsing = prescription.restSelection?.setID == last.id
             rest =
-                seconds > 0
+                seconds > 0 || browsing
                 ? Rest(
                     id: last.id, exercise: exercise, performance: performance,
                     prescribedSegments: prescribedSegments ?? performance.segments, completedSetNumber: last.number,
                     endsAt: deadline ?? last.performedAt.addingTimeInterval(seconds),
-                    betweenExercises: !sameSuperset && pending.exercise.id != last.exerciseID,
+                    betweenExercises: browsing || (!sameSuperset && pending.exercise.id != last.exerciseID),
                     startsNextRound: startsNextRound)
                 : nil
         } else {

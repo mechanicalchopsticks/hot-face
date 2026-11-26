@@ -60,6 +60,19 @@ public struct SessionPrescription: Codable, Equatable, Sendable {
         }
     }
 
+    public struct RestSelection: Codable, Equatable, Sendable {
+        public let setID: UUID
+        public let blockID: UUID
+        public let revision: UUID
+
+        public init(setID: UUID, blockID: UUID) {
+            self.setID = setID
+            self.blockID = blockID
+            self.revision = UUID()
+        }
+    }
+
+    public var restSelection: RestSelection?
     public var restPrescription: RestPrescription?
     public var timer: WorkoutTimeline?
     /// Seed for new timers after a cancelled start, including when the exercise is postponed.

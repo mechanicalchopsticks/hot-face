@@ -244,6 +244,18 @@ struct SessionWriter {
             }
             snapshot.temporaryExerciseIDs = temporaryIDs
             try session.updatePrescription(snapshot)
+        case .postponeDuringRest(let setID, _, _):
+            let session = try openSession()
+            let state = try workout(session, at: date)
+            guard state.postponeAction == action, let current = state.nextSet?.exercise,
+                let rest = state.rest,
+                let index = state.eligibleBlockIDs.firstIndex(of: current.supersetID ?? current.id)
+            else { throw SessionCommandError.restUnavailable }
+            var plan = state.prescription
+            let next = state.eligibleBlockIDs[(index + 1) % state.eligibleBlockIDs.count]
+            plan.restSelection = .init(setID: setID, blockID: next)
+            plan.restOverride = .init(setID: setID, endsAt: rest.endsAt)
+            try session.updatePrescription(plan)
         case .adjustRest(let id, let adjustment):
             let session = try openSession()
             let workout = try workout(session, at: date)

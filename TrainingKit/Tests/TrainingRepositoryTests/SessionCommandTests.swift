@@ -21,12 +21,13 @@ private struct Fixture {
 
     init(
         withExistingSet: Bool = false,
-        exercise: ExercisePrescription = .init(name: "Curl", sets: 2, segments: [.repetitions(10)])
+        exercise: ExercisePrescription = .init(name: "Curl", sets: 2, segments: [.repetitions(10)]),
+        following: [ExercisePrescription] = []
     ) throws {
         self.exercise = exercise
         directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        let day = RoutineDay(name: "A", exercises: [exercise])
+        let day = RoutineDay(name: "A", exercises: [exercise] + following)
         // Seed a real V1 store, as it would exist before installing the command-capable repository.
         let oldStore = CoordinatedModelStore(
             schema: Schema(versionedSchema: V1.self),
@@ -61,6 +62,20 @@ private struct Fixture {
         SessionCommand(sessionID: sessionID, action: action)
     }
 
+    func workout(at seconds: TimeInterval) throws -> OpenWorkout {
+        try #require(try store.openWorkout(clock: FixedClock(seconds)))
+    }
+
+    func beginRest() throws {
+        _ = try store.apply(start, clock: FixedClock(0))
+        _ = try store.apply(command(.logCurrentSet(exerciseID: exercise.id, number: 1)), clock: FixedClock(1))
+    }
+
+    func postpone(at seconds: TimeInterval) throws {
+        let action = try #require(try workout(at: seconds).postponeAction)
+        _ = try store.apply(command(action), clock: FixedClock(seconds))
+    }
+
     func complete(_ number: Int) -> SessionCommand {
         command(.completeSet(exerciseID: exercise.id, number: number, performance: performance))
     }
@@ -74,6 +89,49 @@ private struct Fixture {
 }
 
 struct SessionCommandTests {
+    @Test func restSelectionCyclesThroughBlocksAndResumesBaselineOrder() throws {
+        let exercises = ["Press", "A", "B", "C", "D"].map {
+            ExercisePrescription(name: $0, sets: 1, segments: [.repetitions(8)])
+        }
+        let f = try Fixture(exercise: exercises[0], following: Array(exercises.dropFirst()))
+        defer { try? FileManager.default.removeItem(at: f.directory) }
+        try f.beginRest()
+        for expected in ["B", "C", "D", "A", "B", "C"] {
+            try f.postpone(at: 2)
+            #expect(try f.workout(at: 2).nextSet?.exercise.name == expected)
+        }
+        for (index, name) in ["C", "A", "B", "D"].enumerated() {
+            let time = Double(index + 1) * 200
+            let state = try f.workout(at: time)
+            let next = try #require(state.nextSet)
+            #expect(next.exercise.name == name)
+            if name == "D" { #expect(try f.workout(at: time - 199).postponeAction == nil) }
+            _ = try f.store.apply(
+                f.command(.logCurrentSet(exerciseID: next.exercise.id, number: 1)), clock: FixedClock(time))
+        }
+    }
+
+    @Test func restSelectionTreatsAnIntactSupersetAsOneChoiceUntilDissolved() throws {
+        var exercises = ["Press", "B", "D", "C"].map {
+            ExercisePrescription(name: $0, sets: 1, segments: [.repetitions(8)])
+        }
+        let group = UUID()
+        exercises[1].supersetID = group
+        exercises[3].supersetID = group
+        let f = try Fixture(exercise: exercises[0], following: Array(exercises.dropFirst()))
+        defer { try? FileManager.default.removeItem(at: f.directory) }
+        try f.beginRest()
+        try f.postpone(at: 2)
+        #expect(try f.workout(at: 2).nextSet?.exercise.name == "D")
+        try f.postpone(at: 3)
+        let grouped = try f.workout(at: 3)
+        #expect(grouped.nextSet?.exercise.name == "B" && grouped.followingSet?.exercise.name == "C")
+        _ = try f.store.apply(f.command(.editSuperset(.dissolve(id: group), saveAsUsual: false)), clock: FixedClock(4))
+        try f.postpone(at: 5)
+        try f.postpone(at: 6)
+        #expect(try f.workout(at: 6).nextSet?.exercise.name == "C")
+    }
+
     @Test func balancesOptionalRatingsAcrossCompletePartialAndAdjustedWorkouts() throws {
         let f = try Fixture()
         defer { try? FileManager.default.removeItem(at: f.directory) }
