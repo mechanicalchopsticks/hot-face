@@ -56,6 +56,7 @@ public struct OpenWorkout: Identifiable, Sendable {
     public let id: UUID
     public let reconciledAt: Date
     public let prescription: SessionPrescription
+    public let skippedExerciseIDs: Set<UUID>
     public let pendingExercises: [ExercisePrescription]
     public let nextSet: PendingSet?
     /// The pending set after the current one completes, including superset round order.
@@ -121,6 +122,7 @@ public struct OpenWorkout: Identifiable, Sendable {
 
         let byExercise = Dictionary(grouping: performed, by: \.exerciseID)
         let skipped = Set(session.skippedExerciseIDs)
+        skippedExerciseIDs = skipped
         var candidates: [(set: PendingSet, block: Int, round: Int, index: Int)] = []
         var remaining: [ExercisePrescription] = []
         var firstMemberIndex: [UUID: Int] = [:]

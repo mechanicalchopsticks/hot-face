@@ -1,6 +1,7 @@
 import SwiftUI
 import TrainingAdapters
 import TrainingDomain
+import TrainingInterface
 import TrainingRepositories
 
 struct TrainingTabView: View {
@@ -40,6 +41,7 @@ private struct ActiveRoutineView: View {
     @State private var cycle: RoutineCycle?
     @State private var openWorkout: OpenWorkout?
     @State private var presentedWorkout: OpenWorkout?
+    @State private var updateFailed = false
     @State private var confirmsFinish = false
     @State private var summary: WorkoutSummary?
     @State private var finishFailed = false
@@ -63,7 +65,21 @@ private struct ActiveRoutineView: View {
                         } header: {
                             Text(verbatim: openWorkout.prescription.day.name)
                         }
+                        SessionExerciseRows(workout: openWorkout) { action in
+                            do {
+                                _ = try TrainingStorage.openStore().apply(
+                                    SessionCommand(sessionID: openWorkout.id, action: action),
+                                    clock: SystemWorkoutClock())
+                                reload()
+                                SessionActivityController.shared.refresh()
+                            } catch {
+                                updateFailed = true
+                                reload()
+                            }
+                        }
+                        .id(openWorkout.id)
                     }
+                    .toolbar { if openWorkout.timer == nil { EditButton() } }
                 } else if let active, let cycle {
                     List {
                         Section {
@@ -96,6 +112,7 @@ private struct ActiveRoutineView: View {
             .sheet(item: $summary, onDismiss: reload) { value in
                 FinishedWorkoutView(summary: value) { summary = nil }
             }
+            .alert("Could not update workout", isPresented: $updateFailed) { Button("OK") {} }
             .alert("Could not finish workout", isPresented: $finishFailed) { Button("OK") {} }
             .sheet(item: $presentedWorkout, onDismiss: closeWorkoutScreen) { workout in
                 WorkoutSessionView(workout: workout)
@@ -208,6 +225,97 @@ private struct EmptySectionContent: View {
                 .frame(maxWidth: .infinity, minHeight: viewport.size.height)
             }
             .defaultScrollAnchor(.top, for: .initialOffset)
+        }
+    }
+}
+
+struct SessionExerciseRows: View {
+    @Environment(\.editMode) private var editMode
+    @Environment(\.locale) private var locale
+    @State private var hidesCompleted = false
+    let workout: OpenWorkout
+    let apply: (SessionCommand.Action) -> Void
+
+    var body: some View {
+        let pending = Set(workout.pendingExercises.map(\.id))
+        let blocks = SessionExerciseBlock.blocks(in: workout.prescription.day)
+        let visible = blocks.filter { block in
+            !hidesCompleted
+                || block.exercises.contains { pending.contains($0.id) || workout.skippedExerciseIDs.contains($0.id) }
+        }
+        let byAnchor = Dictionary(uniqueKeysWithValues: visible.map { ($0.id, $0) })
+        let sections = ExerciseGroupSection.sections(
+            for: RoutineDay(name: "", exercises: visible.map { $0.exercises[0] }))
+        Section { Toggle("Hide completed", isOn: $hidesCompleted) }
+        if editMode?.wrappedValue.isEditing == true {
+            Section {
+                ForEach(visible) { block in
+                    VStack(alignment: .leading) {
+                        if sections.count > 1 {
+                            Text(verbatim: block.category ?? String(localized: "Ungrouped")).font(.caption)
+                        }
+                        if block.exercises.count > 1 { Text("Superset").font(.caption.bold()) }
+                        ForEach(members(of: block, pending: pending)) { exercise in
+                            memberLabel(exercise, pending: pending)
+                        }
+                    }
+                }
+                .onMove { offsets, destination in
+                    let ids = visible.map(\.id)
+                    var reordered = ids
+                    reordered.move(fromOffsets: offsets, toOffset: destination)
+                    apply(.reorderBlocks(original: ids, reordered: reordered))
+                }
+            }
+        } else {
+            ForEach(sections) { section in
+                Section {
+                    ForEach(section.exercises) { anchor in
+                        if let block = byAnchor[anchor.id] {
+                            let members = members(of: block, pending: pending)
+                            ForEach(members) { exercise in
+                                VStack(alignment: .leading) {
+                                    if block.exercises.count > 1 && exercise.id == members.first?.id {
+                                        Text("Superset").font(.caption.bold())
+                                    }
+                                    memberLabel(exercise, pending: pending)
+                                }
+                                .swipeActions(allowsFullSwipe: false) {
+                                    if pending.contains(exercise.id), workout.timer == nil {
+                                        Button("Skip exercise") { apply(.skipAndAdvance(exerciseID: exercise.id)) }
+                                        Button("Postpone exercise") {
+                                            apply(.moveExercise(id: exercise.id, toFront: false))
+                                        }
+                                        Button("Select exercise") {
+                                            apply(.moveExercise(id: exercise.id, toFront: true))
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } header: {
+                    if let heading = section.heading(locale: locale) { Text(verbatim: heading) }
+                }
+            }
+        }
+    }
+
+    private func members(of block: SessionExerciseBlock, pending: Set<UUID>) -> [ExercisePrescription] {
+        block.exercises.filter {
+            !hidesCompleted || pending.contains($0.id) || workout.skippedExerciseIDs.contains($0.id)
+        }
+    }
+
+    private func memberLabel(_ exercise: ExercisePrescription, pending: Set<UUID>) -> some View {
+        HStack {
+            Text(verbatim: exercise.name)
+            Spacer()
+            if workout.skippedExerciseIDs.contains(exercise.id) {
+                Image(systemName: "forward.end").accessibilityLabel("Skipped")
+            } else if !pending.contains(exercise.id) {
+                Image(systemName: "checkmark").accessibilityLabel("Completed")
+            }
         }
     }
 }
