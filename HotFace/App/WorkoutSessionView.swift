@@ -122,7 +122,19 @@ struct WorkoutSessionView: View {
                         WorkoutSetPrescription(
                             exercise: set.exercise, equipment: set.equipment, gymID: workout.prescription.gymID)
                     } header: {
-                        if rest != nil { Text("Up next") } else if workout.timer == nil { Text("Ready") }
+                        if rest != nil
+                            || (workout.timer == nil && workout.rest == nil
+                                && workout.transition == .nextSupersetMember)
+                        {
+                            switch workout.transition {
+                            case .nextSet: Text("Next set")
+                            case .nextExercise: Text("Next exercise")
+                            case .nextSupersetMember: Text("Next superset member")
+                            case nil: EmptyView()
+                            }
+                        } else if workout.timer == nil {
+                            Text("Ready")
+                        }
                     }
                     if let progression, progression.exerciseID == startingID {
                         Section("Progression suggestion") {

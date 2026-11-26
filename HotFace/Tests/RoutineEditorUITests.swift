@@ -262,6 +262,50 @@ final class RoutineEditorUITests: XCTestCase {
         XCTAssertEqual(XCTWaiter.wait(for: [tick], timeout: 5), .completed)
     }
 
+    func testUpcomingSetExerciseAndSupersetHeadingsInSpanish() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        func press(_ title: String) { tap(button(title, in: app)) }
+        createDayWithExercises(in: app, names: ["Sentadilla", "Remo", "Press"], sets: 2)
+        press("Supersets")
+        selectSupersetMembers(in: app, names: ["Remo", "Press"])
+        press("Create superset")
+        activateDayAndOpenTrain(in: app)
+        openWorkoutInSpanish(app)
+
+        let name = app.staticTexts["workoutSetName"]
+        press("Completar serie")
+        XCTAssertTrue(app.staticTexts["Siguiente serie"].waitForExistence(timeout: 5), app.debugDescription)
+        XCTAssertTrue(app.staticTexts["Serie 2 de 2"].exists)
+        XCTAssertEqual(name.label, "Sentadilla")
+        press("Terminar descanso")
+        press("Completar serie")
+        XCTAssertTrue(app.staticTexts["Siguiente ejercicio"].firstMatch.exists)
+        XCTAssertEqual(name.label, "Remo")
+        press("Terminar descanso")
+        press("Completar serie")
+        XCTAssertTrue(app.staticTexts["Siguiente ejercicio de la superserie"].exists)
+        XCTAssertFalse(button("Terminar descanso", in: app).exists)
+        XCTAssertEqual(name.label, "Press")
+        XCTAssertTrue(app.staticTexts["Superserie · Ronda 1 de 2"].exists)
+        press("Completar serie")
+        press("Terminar descanso")
+        press("Completar serie")
+        XCTAssertTrue(app.staticTexts["Siguiente ejercicio de la superserie"].exists)
+        XCTAssertTrue(app.staticTexts["Superserie · Ronda 2 de 2"].exists)
+        XCTAssertEqual(name.label, "Press")
+    }
+
+    private func openWorkoutInSpanish(_ app: XCUIApplication) {
+        app.terminate()
+        launch(app, spanish: true)
+        tap(button("Entrenar", in: app))
+        tap(button("Day 1", in: app))
+        allowWorkoutAccessIfRequested(app)
+        let complete = button("Completar serie", in: app)
+        XCTAssertTrue(complete.wait(for: \.isHittable, toEqual: true, timeout: 15), app.debugDescription)
+    }
+
     func testCreateUsualSupersetAndDissolveForThisWorkout() {
         continueAfterFailure = false
         let app = XCUIApplication()
@@ -342,7 +386,7 @@ final class RoutineEditorUITests: XCTestCase {
     }
 
     private func createDayWithExercises(
-        in app: XCUIApplication, rowGroup: String? = nil, names: [String] = ["Row", "Press"]
+        in app: XCUIApplication, rowGroup: String? = nil, names: [String] = ["Row", "Press"], sets: Int = 4
     ) {
         app.launchEnvironment["HOTFACE_UI_TEST_STORE_ID"] = UUID().uuidString
         func press(_ title: String) { tap(button(title, in: app)) }
@@ -354,6 +398,9 @@ final class RoutineEditorUITests: XCTestCase {
         press("Save")
         press("Routines")
         press("Add routine")
+        for count in stride(from: 4, to: sets, by: -1) {
+            tap(app.steppers["Sets: \(count)"].buttons.element(boundBy: 0))
+        }
         press("Add day")
         for name in names {
             press("Add exercise")
@@ -372,11 +419,12 @@ final class RoutineEditorUITests: XCTestCase {
         }
     }
 
-    private func selectSupersetMembers(in app: XCUIApplication) {
-        for name in ["Row", "Press"] {
+    private func selectSupersetMembers(in app: XCUIApplication, names: [String] = ["Row", "Press"]) {
+        for name in names {
             let toggle = app.switches.matching(NSPredicate(format: "label BEGINSWITH %@", name)).firstMatch
             XCTAssertTrue(toggle.waitForExistence(timeout: 5), app.debugDescription)
-            toggle.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.5)).tap()
+            toggle.switches.firstMatch.tap()
+            XCTAssertEqual(toggle.value as? String, "1", toggle.debugDescription)
         }
     }
 
