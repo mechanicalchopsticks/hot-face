@@ -77,8 +77,7 @@ final class RoutineEditorUITests: XCTestCase {
         for name in ["Row", "Press"] {
             press("Add exercise")
             enter(name, in: app.textFields["Exercise name"])
-            reveal(app.steppers["Reps: 8"])
-            for reps in [8, 9] { tap(app.steppers["Reps: \(reps)"].buttons.element(boundBy: 1)) }
+            reveal(app.steppers["Reps: 10"])
             reveal(button("Equipment", in: app))
             press("Equipment")
             press("Stack")
@@ -276,6 +275,10 @@ final class RoutineEditorUITests: XCTestCase {
         press(label("Add day", "Añadir día"))
         press(label("Add exercise", "Añadir ejercicio"))
         enter("Squat", in: app.textFields[label("Exercise name", "Nombre del ejercicio")])
+        let initialReps = app.steppers[label("Reps: 10", "Repeticiones: 10")]
+        for _ in 0..<5 where !initialReps.isHittable { app.swipeUp() }
+        tap(initialReps.buttons.element(boundBy: 0))
+
         for _ in 0..<5 where !toggle.isHittable { app.swipeUp() }
         XCTAssertEqual(toggle.value as? String, "0")
         XCTAssertFalse(app.steppers[count(5)].exists)
@@ -304,6 +307,10 @@ final class RoutineEditorUITests: XCTestCase {
         adjust(1, from: 5)
         press(label("Day 1", "Día 1"))
         press("Squat")
+        let savedReps = app.steppers[label("Reps: 9", "Repeticiones: 9")]
+        for _ in 0..<5 where !savedReps.isHittable { app.swipeUp() }
+        XCTAssertTrue(savedReps.exists, app.debugDescription)
+
         for _ in 0..<5 where !toggle.isHittable { app.swipeUp() }
         XCTAssertEqual(toggle.value as? String, "0")
         XCTAssertFalse(app.steppers[count(6)].exists)
@@ -338,7 +345,7 @@ final class RoutineEditorUITests: XCTestCase {
         let option = failureOption(spanish: false)
         tap(option)
         XCTAssertTrue(option.isSelected)
-        XCTAssertFalse(app.staticTexts["Reps: 8"].exists)
+        XCTAssertFalse(app.staticTexts["Reps: 10"].exists)
         tap(app.navigationBars["Edit exercise"].buttons["BackButton"])
         tap(app.navigationBars["Edit day"].buttons["BackButton"])
         let activate = button("Save and activate", in: app)
@@ -350,7 +357,7 @@ final class RoutineEditorUITests: XCTestCase {
             press("Day 1")
             press("Push-up")
             XCTAssertTrue(failureOption(spanish: spanish).isSelected)
-            XCTAssertFalse(app.staticTexts[spanish ? "Repeticiones: 8" : "Reps: 8"].exists)
+            XCTAssertFalse(app.staticTexts[spanish ? "Repeticiones: 10" : "Reps: 10"].exists)
         }
 
         verifySavedFailure(spanish: false)

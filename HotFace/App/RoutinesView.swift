@@ -260,7 +260,7 @@ private struct RoutineEditor: View {
             }
             Section {
                 Button("Add exercise", systemImage: "plus") {
-                    let exercise = ExercisePrescription(name: "", segments: [.repetitions(8)])
+                    let exercise = ExercisePrescription(name: "", segments: [.repetitions(10)])
                     day.wrappedValue.exercises.append(exercise)
                     path.append(.exercise(day: day.wrappedValue.id, exercise: exercise.id))
                 }

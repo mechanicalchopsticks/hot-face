@@ -2,7 +2,7 @@
 
 ## 1. Exercise editing
 
-- [ ] 1.1 Initialize new repetition exercises at ten and verify an edited value survives saving and reopening.
+- [x] 1.1 Initialize new repetition exercises at ten and verify an edited value survives saving and reopening.
 - [ ] 1.2 Preserve text drafts across forms and trim on save. Verify internal spaces, surrounding newlines and required-field validation through the editors.
 
 ## 2. Durations
