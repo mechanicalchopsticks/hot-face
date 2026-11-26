@@ -1,9 +1,33 @@
 import Foundation
+import SwiftData
 import Testing
 import TrainingDomain
 import TrainingRepositories
 
 struct SessionProgressionTests {
+    @Test func acceptsAggressiveIncreaseInRoutineAndSession() throws {
+        let fixture = try Fixture(baseline: 50, heavier: 57.5)
+        defer { try? FileManager.default.removeItem(at: fixture.directory) }
+        try fixture.rateEasy()
+        try fixture.rateEasy()
+        let session = try fixture.start()
+        let increase = try #require(try fixture.suggestion(mode: .aggressive))
+        #expect(increase.reason == .higherLoad && increase.load.amount == 57.5 && increase.repetitions == 10)
+        #expect(try fixture.offer(in: session, mode: .aggressive) == .suggested(increase))
+        try fixture.accept(increase, in: session, mode: .aggressive)
+        var expected = fixture.exercise
+        expected.load = .confirmed(increase.load)
+        #expect(try fixture.store.routine(id: fixture.routine.id)?.plan.days[0].exercises[0] == expected)
+        #expect(try fixture.store.openWorkout()?.nextSet?.exercise.load == expected.load)
+        try fixture.store.withContext { context in
+            let change = try #require(try context.fetch(FetchDescriptor<TrainingSchemaV1.PrescriptionChange>()).first)
+            #expect(change.origin == "suggestion.higherLoad")
+            #expect(try change.previous == fixture.exercise)
+            #expect(try change.updated == expected)
+            #expect(try context.fetch(FetchDescriptor<TrainingSchemaV1.Progression>()).first?.balance == 0)
+        }
+    }
+
     @Test func changingPerSideClearsBalanceAndRepetitionBridge() throws {
         let fixture = try Fixture()
         defer { try? FileManager.default.removeItem(at: fixture.directory) }
@@ -110,15 +134,15 @@ private struct Fixture {
     let routine: ManualRoutine
     var store: CoordinatedModelStore { CoordinatedModelStore(trainingDirectory: directory) }
 
-    init() throws {
+    init(baseline: Decimal = 35, heavier: Decimal = 45) throws {
         directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         let store = CoordinatedModelStore(trainingDirectory: directory)
         let gym = try #require(try store.createGym(name: "Gym").gyms.first)
-        _ = try store.saveInventory([.init(35, .lb), .init(45, .lb)], for: .dumbbells, in: gym.id)
+        _ = try store.saveInventory([.init(baseline, .lb), .init(heavier, .lb)], for: .dumbbells, in: gym.id)
         var row = ExercisePrescription(name: "Row", segments: [.repetitions(10)])
         row.equipmentID = try #require(gym.genericEquipment.first { $0.kind == .dumbbell }).id
-        row.load = .confirmed(.init(amount: 35, unit: .lb, representation: .perImplement, implementCount: 1))
+        row.load = .confirmed(.init(amount: baseline, unit: .lb, representation: .perImplement, implementCount: 1))
         exercise = row
         var draft = ManualRoutine(gymID: gym.id)
         draft.plan = RoutinePlan(name: "Plan", days: [.init(name: "Day", exercises: [row])], defaultSets: 1)
@@ -156,18 +180,22 @@ private struct Fixture {
                 saveAsUsual: false), to: session, at: 5)
     }
 
-    func suggestion() throws -> WeightSuggestion? {
-        try store.suggestedWeightIncrease(routineID: routine.id, exerciseID: exercise.id)
+    func suggestion(mode: WeightProgressionMode = .conservative) throws -> WeightSuggestion? {
+        try store.suggestedWeightIncrease(routineID: routine.id, exerciseID: exercise.id, mode: mode)
     }
 
-    func offer(in session: UUID, at time: TimeInterval = 100) throws -> ProgressionAdvice? {
+    func offer(in session: UUID, at time: TimeInterval = 100, mode: WeightProgressionMode = .conservative) throws
+        -> ProgressionAdvice?
+    {
         try store.progressionOffer(
-            routineID: routine.id, exerciseID: exercise.id, sessionID: session, clock: Clock(time))?.advice
+            routineID: routine.id, exerciseID: exercise.id, sessionID: session, clock: Clock(time), mode: mode)?.advice
     }
 
-    func accept(_ suggestion: WeightSuggestion, in session: UUID? = nil) throws {
+    func accept(_ suggestion: WeightSuggestion, in session: UUID? = nil, mode: WeightProgressionMode = .conservative)
+        throws
+    {
         try store.acceptProgressionSuggestion(
             suggestion, load: suggestion.load, repetitions: suggestion.repetitions,
-            routineID: routine.id, exerciseID: exercise.id, sessionID: session, clock: Clock())
+            routineID: routine.id, exerciseID: exercise.id, sessionID: session, clock: Clock(), mode: mode)
     }
 }

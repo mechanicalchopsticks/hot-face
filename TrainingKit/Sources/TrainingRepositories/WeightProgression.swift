@@ -7,30 +7,41 @@ public enum WeightSuggestionError: Error {
 }
 
 extension CoordinatedModelStore {
-    public func suggestedWeightIncrease(routineID: UUID, exerciseID: UUID) throws -> WeightSuggestion? {
-        guard case .suggested(let suggestion) = try progressionAdvice(routineID: routineID, exerciseID: exerciseID),
+    public func suggestedWeightIncrease(routineID: UUID, exerciseID: UUID, mode: WeightProgressionMode = .conservative)
+        throws -> WeightSuggestion?
+    {
+        guard
+            case .suggested(let suggestion) = try progressionAdvice(
+                routineID: routineID, exerciseID: exerciseID, mode: mode),
             suggestion.reason != .lowerLoad, suggestion.reason != .fewerRepetitions
         else { return nil }
         return suggestion
     }
 
-    public func progressionAdvice(routineID: UUID, exerciseID: UUID) throws -> ProgressionAdvice? {
-        try progressionOffer(routineID: routineID, exerciseID: exerciseID)?.advice
+    public func progressionAdvice(routineID: UUID, exerciseID: UUID, mode: WeightProgressionMode = .conservative) throws
+        -> ProgressionAdvice?
+    {
+        try progressionOffer(routineID: routineID, exerciseID: exerciseID, mode: mode)?.advice
     }
 
-    public func progressionOffer(routineID: UUID, exerciseID: UUID) throws
+    public func progressionOffer(routineID: UUID, exerciseID: UUID, mode: WeightProgressionMode = .conservative) throws
         -> (advice: ProgressionAdvice, loads: [ExerciseLoad])?
     {
-        try progressionOffer(routineID: routineID, exerciseID: exerciseID, session: nil)
+        try progressionOffer(routineID: routineID, exerciseID: exerciseID, session: nil, mode: mode)
     }
 
-    public func progressionOffer(routineID: UUID, exerciseID: UUID, sessionID: UUID, clock: any WorkoutClock) throws
+    public func progressionOffer(
+        routineID: UUID, exerciseID: UUID, sessionID: UUID, clock: any WorkoutClock,
+        mode: WeightProgressionMode = .conservative
+    ) throws
         -> (advice: ProgressionAdvice, loads: [ExerciseLoad])?
     {
-        try progressionOffer(routineID: routineID, exerciseID: exerciseID, session: (sessionID, clock))
+        try progressionOffer(routineID: routineID, exerciseID: exerciseID, session: (sessionID, clock), mode: mode)
     }
 
-    private func progressionOffer(routineID: UUID, exerciseID: UUID, session: (id: UUID, clock: any WorkoutClock)?)
+    private func progressionOffer(
+        routineID: UUID, exerciseID: UUID, session: (id: UUID, clock: any WorkoutClock)?, mode: WeightProgressionMode
+    )
         throws
         -> (advice: ProgressionAdvice, loads: [ExerciseLoad])?
     {
@@ -46,7 +57,7 @@ extension CoordinatedModelStore {
             {
                 return nil
             }
-            let pending = try pendingAdvice(for: usual, gymID: routine.gymID, in: context)
+            let pending = try pendingAdvice(for: usual, gymID: routine.gymID, mode: mode, in: context)
             // Reading a pre-inventory gym can materialize its shared inventory.
             if context.hasChanges { try context.save() }
             guard let pending else { return nil }
@@ -63,16 +74,17 @@ extension CoordinatedModelStore {
 
     /// Accept the suggestion as shown, checking the current inventory and progression under the store lock.
     public func acceptWeightIncrease(
-        _ suggestion: WeightSuggestion, routineID: UUID, exerciseID: UUID, clock: any WorkoutClock
+        _ suggestion: WeightSuggestion, routineID: UUID, exerciseID: UUID, clock: any WorkoutClock,
+        mode: WeightProgressionMode = .conservative
     ) throws {
         try acceptProgressionSuggestion(
             suggestion, load: suggestion.load, repetitions: suggestion.repetitions,
-            routineID: routineID, exerciseID: exerciseID, clock: clock)
+            routineID: routineID, exerciseID: exerciseID, clock: clock, mode: mode)
     }
 
     public func acceptProgressionSuggestion(
         _ suggestion: WeightSuggestion, load: ExerciseLoad, repetitions: Int, routineID: UUID, exerciseID: UUID,
-        sessionID: UUID? = nil, clock: any WorkoutClock
+        sessionID: UUID? = nil, clock: any WorkoutClock, mode: WeightProgressionMode = .conservative
     ) throws {
         try withContext { context in
             guard let routine = try routineRecord(id: routineID, context: context), !routine.isArchived
@@ -82,7 +94,7 @@ extension CoordinatedModelStore {
                 let index = plan.days[day].exercises.firstIndex(where: { $0.id == exerciseID })
             else { throw WeightSuggestionError.suggestionChanged }
             let previous = plan.days[day].exercises[index]
-            guard let pending = try pendingAdvice(for: previous, gymID: routine.gymID, in: context),
+            guard let pending = try pendingAdvice(for: previous, gymID: routine.gymID, mode: mode, in: context),
                 pending.advice == .suggested(suggestion)
             else { throw WeightSuggestionError.suggestionChanged }
 
@@ -145,7 +157,9 @@ private func eligibleSession(
     return (session, snapshot, position)
 }
 
-private func pendingAdvice(for usual: ExercisePrescription, gymID: UUID, in context: ModelContext) throws
+private func pendingAdvice(
+    for usual: ExercisePrescription, gymID: UUID, mode: WeightProgressionMode, in context: ModelContext
+) throws
     -> (advice: ProgressionAdvice, progression: TrainingSchemaV1.Progression, profile: GymProfile)?
 {
     let id = usual.id
@@ -156,7 +170,7 @@ private func pendingAdvice(for usual: ExercisePrescription, gymID: UUID, in cont
         let suggestion = ProgressionAdvice.evaluate(
             for: usual, balance: progression.balance, equipment: profile.equipment(withID: usual.equipmentID),
             inventory: profile.inventory,
-            returnRepetitions: progression.returnRepetitions)
+            returnRepetitions: progression.returnRepetitions, mode: mode)
     else { return nil }
     return (suggestion, progression, profile)
 }
