@@ -168,8 +168,10 @@ struct SessionWriter {
             guard let index = plan.day.exercises.firstIndex(where: { $0.id == id }) else {
                 throw SessionCommandError.unknownExercise
             }
-            plan.restSelection = nil
             let exercise = plan.day.exercises[index]
+            if toFront || plan.restSelection?.blockID == exercise.executionBlockID {
+                plan.restSelection = nil
+            }
             var block = plan.day.exercises.filter {
                 $0.id == id || (exercise.supersetID != nil && $0.supersetID == exercise.supersetID)
             }
@@ -181,17 +183,24 @@ struct SessionWriter {
             plan.day.exercises.removeAll { ids.contains($0.id) }
             plan.day.exercises.insert(contentsOf: block, at: toFront ? 0 : plan.day.exercises.endIndex)
             try session.updatePrescription(plan)
-        case .reorderBlocks(let original, let reordered):
+        case .reorderBlocks(let original, let reordered, let moved):
             let session = try openSession()
             let current = try workout(session, at: date)
             var plan = current.prescription
-            plan.restSelection = nil
             let blocks = SessionExerciseBlock.blocks(in: plan.day)
             let visible = Set(original)
             guard visible.count == original.count, reordered.count == original.count, Set(reordered) == visible,
+                moved?.allSatisfy(visible.contains) != false,
                 blocks.map(\.id).filter(visible.contains) == original
             else { throw SessionCommandError.unknownExercise }
             let byID = Dictionary(uniqueKeysWithValues: blocks.map { ($0.id, $0) })
+            if let selection = plan.restSelection,
+                let selected = blocks.first(where: { $0.exercises[0].executionBlockID == selection.blockID }),
+                let index = original.firstIndex(of: selected.id), reordered[index] != selected.id,
+                moved?.contains(selected.id) ?? true
+            {
+                plan.restSelection = nil
+            }
             var replacement = reordered.compactMap { byID[$0] }.makeIterator()
             plan.day.exercises = blocks.flatMap { block in
                 (visible.contains(block.id) ? replacement.next() ?? block : block).exercises
