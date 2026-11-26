@@ -19,4 +19,4 @@
 ## 4. Workout discard
 
 - [x] 4.1 Add coordinated discard and test recovery after reopening a disk store, history, progression, cycle availability, saved usual changes and stale session actions.
-- [ ] 4.2 Offer confirmed discard in Train and the active workout and end session activities and timers on success. Verify cancellation and restart through both entry points.
+- [x] 4.2 Offer confirmed discard in Train and the active workout and end session activities and timers on success. Verify cancellation and restart through both entry points.

@@ -144,6 +144,34 @@ final class RoutineEditorUITests: XCTestCase {
         checkOffer(load: "57.5 lb", reps: 10)
     }
 
+    func testCancelAndConfirmDiscardFromTrainAndActiveWorkout() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        func press(_ title: String) { tap(button(title, in: app)) }
+        createDayWithTwoExercises(in: app)
+        activateDayAndOpenTrain(in: app)
+        for fromTrain in [false, true] {
+            press("Day 1")
+            if !fromTrain { allowWorkoutAccessIfRequested(app) }
+            XCTAssertTrue(app.staticTexts["Set 1 of 4"].waitForExistence(timeout: 5))
+            press("Complete set")
+            if fromTrain { press("Close") } else { press("More") }
+            press("Discard workout")
+            XCTAssertTrue(app.alerts.firstMatch.waitForExistence(timeout: 6), app.debugDescription)
+            tap(app.alerts.buttons["Cancel"])
+            if fromTrain {
+                XCTAssertTrue(button("Continue workout", in: app).exists)
+            } else {
+                XCTAssertTrue(app.staticTexts["Set 1 completed"].exists)
+                press("More")
+            }
+            press("Discard workout")
+            tap(app.alerts.buttons["Discard workout"])
+            XCTAssertTrue(button("Day 1", in: app).waitForExistence(timeout: 8))
+            XCTAssertFalse(button("Continue workout", in: app).exists)
+        }
+    }
+
     func testOpenWorkoutListActionsAndCompletedFilter() {
         continueAfterFailure = false
         let app = XCUIApplication()

@@ -42,6 +42,7 @@ private struct ActiveRoutineView: View {
     @State private var openWorkout: OpenWorkout?
     @State private var presentedWorkout: OpenWorkout?
     @State private var updateFailed = false
+    @State private var discardID: UUID?
     @State private var confirmsFinish = false
     @State private var summary: WorkoutSummary?
     @State private var finishFailed = false
@@ -62,6 +63,7 @@ private struct ActiveRoutineView: View {
                         Section {
                             Button("Continue workout") { presentedWorkout = openWorkout }
                             Button("Finish workout") { confirmsFinish = true }
+                            Button("Discard workout", role: .destructive) { discardID = openWorkout.id }
                         } header: {
                             Text(verbatim: openWorkout.prescription.day.name)
                         }
@@ -104,6 +106,7 @@ private struct ActiveRoutineView: View {
             }
             .navigationTitle("Train")
             .navigationBarTitleDisplayMode(.inline)
+            .modifier(DiscardWorkoutConfirmation(sessionID: $discardID, didDiscard: reload))
             .confirmationDialog("Finish workout", isPresented: $confirmsFinish, titleVisibility: .visible) {
                 Button("Finish workout") { finishOpenWorkout() }
             } message: {
@@ -317,5 +320,36 @@ struct SessionExerciseRows: View {
                 Image(systemName: "checkmark").accessibilityLabel("Completed")
             }
         }
+    }
+}
+
+struct DiscardWorkoutConfirmation: ViewModifier {
+    @EnvironmentObject private var audio: HoldAudioDelegate
+    @Binding var sessionID: UUID?
+    let didDiscard: () -> Void
+    @State private var failed = false
+
+    func body(content: Content) -> some View {
+        content.alert(
+            "Discard workout?",
+            isPresented: Binding(
+                get: { sessionID != nil }, set: { if !$0 { sessionID = nil } }),
+            presenting: sessionID
+        ) { id in
+            Button("Discard workout", role: .destructive) {
+                do {
+                    _ = try TrainingStorage.openStore().apply(
+                        SessionCommand(sessionID: id, action: .discard), clock: SystemWorkoutClock())
+                    audio.schedule([])
+                    if HealthWorkoutController.shared.workoutID == id { HealthWorkoutController.shared.end() }
+                    SessionActivityController.shared.refresh(hideFor: id)
+                    didDiscard()
+                } catch { failed = true }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: { _ in
+            Text("Your sets will be removed. Ratings and changes saved as usual will be kept.")
+        }
+        .alert("Could not discard workout", isPresented: $failed) { Button("OK") {} }
     }
 }
