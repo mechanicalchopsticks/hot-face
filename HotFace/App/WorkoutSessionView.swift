@@ -665,16 +665,16 @@ private struct WorkoutAdjustmentView: View {
                 ForEach(exercise.segments.indices, id: \.self) { index in
                     switch exercise.segments[index] {
                     case .toFailure: Text("To failure")
-                    case .seconds(let count), .repetitions(let count):
-                        let seconds = exercise.segments[index] == .seconds(count)
+                    case .seconds(let count):
+                        DurationPicker(
+                            "Duration",
+                            seconds: Binding(get: { count }, set: { exercise.segments[index] = .seconds($0) }),
+                            range: 1...3600)
+                    case .repetitions(let count):
                         Stepper(
-                            value: Binding(
-                                get: { count },
-                                set: { exercise.segments[index] = seconds ? .seconds($0) : .repetitions($0) }),
-                            in: 1...Int.max
-                        ) {
-                            if seconds { Text("\(count) s") } else { Text("\(count) reps") }
-                        }
+                            "\(count) reps",
+                            value: Binding(get: { count }, set: { exercise.segments[index] = .repetitions($0) }),
+                            in: 1...Int.max)
                     }
                 }
                 if let gym, let equipment = gym.equipment(withID: exercise.equipmentID) {

@@ -2,6 +2,7 @@ import AVFAudio
 import AlarmKit
 import OSLog
 import SwiftUI
+import TrainingInterface
 import TrainingRepositories
 import UserNotifications
 
@@ -193,7 +194,7 @@ struct HoldAudioProbe: View {
                     Text("System alarms").tag(true)
                 }
                 Toggle("Automatically start last hold", isOn: $automatic)
-                Stepper("Pause between holds: \(pause) s", value: $pause, in: 1...10)
+                DurationPicker("Pause between holds", seconds: $pause, range: 1...10)
                 Toggle("Use 90 s holds for reboot test", isOn: $longHold)
                 Button("Start audio test") {
                     scheduling = true
