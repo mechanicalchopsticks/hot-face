@@ -8,7 +8,7 @@
 ## 2. Repository integration
 
 - [x] 2.1 Forward the mode through routine and session offers, acceptance and convenience APIs to pendingAdvice. Verify that accepting an Aggressive direct increase updates the usual prescription and session, records the change and resets the balance.
-- [ ] 2.2 Use SessionProgressionTests with an injected clock to show that changing the mode between offer and acceptance rejects a now-stale suggestion without mutating the prescription or balance. Verify that a bridge accepted in Conservative can complete in Aggressive.
+- [x] 2.2 Use SessionProgressionTests with an injected clock to show that changing the mode between offer and acceptance rejects a now-stale suggestion without mutating the prescription or balance. Verify that a bridge accepted in Conservative can complete in Aggressive.
 
 ## 3. App preference and controls
 

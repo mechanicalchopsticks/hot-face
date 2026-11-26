@@ -28,6 +28,29 @@ struct SessionProgressionTests {
         }
     }
 
+    @Test func modeSwitchRejectsStaleOfferAndPreservesAcceptedBridge() throws {
+        let fixture = try Fixture(baseline: 50, heavier: 57.5)
+        defer { try? FileManager.default.removeItem(at: fixture.directory) }
+        try fixture.rateEasy()
+        try fixture.rateEasy()
+        let session = try fixture.start()
+        let bridge = try #require(try fixture.suggestion())
+        #expect(try fixture.offer(in: session) == .suggested(bridge))
+        #expect(throws: WeightSuggestionError.suggestionChanged) {
+            try fixture.accept(bridge, in: session, mode: .aggressive)
+        }
+        #expect(try fixture.store.routine(id: fixture.routine.id)?.plan.days[0].exercises[0] == fixture.exercise)
+        #expect(try fixture.offer(in: session) == .suggested(bridge))
+        try fixture.accept(bridge, in: session)
+        try fixture.apply(.logCurrentSet(exerciseID: fixture.exercise.id, number: 1), to: session)
+        try fixture.apply(.rateFinished(exerciseID: fixture.exercise.id, effort: .easy), to: session)
+        try fixture.rateEasy()
+        let completed = try #require(try fixture.suggestion(mode: .aggressive))
+        #expect(completed.reason == .completeBridge && completed.load.amount == 57.5 && completed.repetitions == 10)
+        try fixture.accept(completed, mode: .aggressive)
+        #expect(try fixture.suggestion(mode: .aggressive) == nil)
+    }
+
     @Test func changingPerSideClearsBalanceAndRepetitionBridge() throws {
         let fixture = try Fixture()
         defer { try? FileManager.default.removeItem(at: fixture.directory) }
