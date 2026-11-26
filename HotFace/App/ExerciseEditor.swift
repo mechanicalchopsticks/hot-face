@@ -391,12 +391,25 @@ private struct RestOverrideEditor: View {
 }
 
 struct RestStepper: View {
+    @Environment(\.locale) private var locale
     let title: LocalizedStringKey
     @Binding var seconds: TimeInterval
 
     var body: some View {
-        DurationPicker(
-            title, seconds: Binding(get: { Int(min(max(seconds, 0), 600)) }, set: { seconds = Double($0) }),
-            range: 0...600)
+        if let wholeSeconds = Int(exactly: seconds) {
+            DurationPicker(
+                title, seconds: Binding(get: { wholeSeconds }, set: { seconds = Double($0) }), range: 0...600)
+        } else {
+            // Older routines can store a rest that cannot be expressed in whole seconds.
+            Menu {
+                ForEach(0...10, id: \.self) { minute in
+                    Button(TrainingDisplayFormat.duration(seconds: minute * 60, locale: locale)) {
+                        seconds = Double(minute * 60)
+                    }
+                }
+            } label: {
+                LabeledContent(title) { Text("\(seconds.formatted(.number)) s") }
+            }
+        }
     }
 }
