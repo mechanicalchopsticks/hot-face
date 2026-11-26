@@ -262,15 +262,44 @@ final class RoutineEditorUITests: XCTestCase {
         XCTAssertEqual(XCTWaiter.wait(for: [tick], timeout: 5), .completed)
     }
 
+    func testPostponeCyclesInPlaceAndStartsTheDisplayedExercise() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        func press(_ title: String) { tap(button(title, in: app)) }
+        createDayWithExercises(in: app, names: ["Remo", "Sentadilla", "Press"], sets: 1, spanish: true)
+        openWorkoutInSpanish(app)
+        let next = app.staticTexts["workoutSetName"]
+        let question = app.staticTexts["¿Cómo sentiste Remo?"]
+        press("Completar serie")
+        XCTAssertTrue(question.waitForExistence(timeout: 5))
+        XCTAssertEqual(next.label, "Sentadilla")
+        for candidate in ["Press", "Sentadilla", "Press"] {
+            press("Posponer")
+            XCTAssertEqual(next.label, candidate)
+            XCTAssertTrue(question.exists)
+        }
+        for choice in ["Difícil", "OK", "Fácil"] { XCTAssertTrue(button(choice, in: app).exists) }
+        press("OK")
+        XCTAssertTrue(question.waitForNonExistence(timeout: 5))
+        press("Terminar descanso")
+        XCTAssertEqual(next.label, "Press")
+        press("Completar serie")
+        XCTAssertTrue(app.staticTexts["¿Cómo sentiste Press?"].waitForExistence(timeout: 5))
+        XCTAssertEqual(next.label, "Sentadilla")
+        XCTAssertFalse(button("Posponer", in: app).exists)
+        press("Fácil")
+        press("Terminar descanso")
+        press("Completar serie")
+    }
+
     func testUpcomingSetExerciseAndSupersetHeadingsInSpanish() {
         continueAfterFailure = false
         let app = XCUIApplication()
         func press(_ title: String) { tap(button(title, in: app)) }
-        createDayWithExercises(in: app, names: ["Sentadilla", "Remo", "Press"], sets: 2)
-        press("Supersets")
+        createDayWithExercises(in: app, names: ["Sentadilla", "Remo", "Press"], sets: 2, spanish: true)
+        press("Superseries")
         selectSupersetMembers(in: app, names: ["Remo", "Press"])
-        press("Create superset")
-        activateDayAndOpenTrain(in: app)
+        press("Crear superserie")
         openWorkoutInSpanish(app)
 
         let name = app.staticTexts["workoutSetName"]
@@ -294,13 +323,12 @@ final class RoutineEditorUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Siguiente ejercicio de la superserie"].exists)
         XCTAssertTrue(app.staticTexts["Superserie · Ronda 2 de 2"].exists)
         XCTAssertEqual(name.label, "Press")
+        press("Completar serie")
     }
 
     private func openWorkoutInSpanish(_ app: XCUIApplication) {
-        app.terminate()
-        launch(app, spanish: true)
-        tap(button("Entrenar", in: app))
-        tap(button("Day 1", in: app))
+        activateDayAndOpenTrain(in: app, spanish: true)
+        tap(button("Día 1", in: app))
         allowWorkoutAccessIfRequested(app)
         let complete = button("Completar serie", in: app)
         XCTAssertTrue(complete.wait(for: \.isHittable, toEqual: true, timeout: 15), app.debugDescription)
@@ -386,25 +414,28 @@ final class RoutineEditorUITests: XCTestCase {
     }
 
     private func createDayWithExercises(
-        in app: XCUIApplication, rowGroup: String? = nil, names: [String] = ["Row", "Press"], sets: Int = 4
+        in app: XCUIApplication, rowGroup: String? = nil, names: [String] = ["Row", "Press"], sets: Int = 4,
+        spanish: Bool = false
     ) {
         app.launchEnvironment["HOTFACE_UI_TEST_STORE_ID"] = UUID().uuidString
         func press(_ title: String) { tap(button(title, in: app)) }
-        launch(app, spanish: false)
-        press("Settings")
-        XCTAssertTrue(app.staticTexts["No gym configured"].waitForExistence(timeout: 5), app.debugDescription)
-        press("Add gym")
-        enter("Gym", in: app.textFields["Gym name"])
-        press("Save")
-        press("Routines")
-        press("Add routine")
+        launch(app, spanish: spanish)
+        press(spanish ? "Ajustes" : "Settings")
+        XCTAssertTrue(
+            app.staticTexts[spanish ? "No hay un gimnasio configurado" : "No gym configured"].waitForExistence(
+                timeout: 5), app.debugDescription)
+        press(spanish ? "Añadir gimnasio" : "Add gym")
+        enter("Gym", in: app.textFields[spanish ? "Nombre del gimnasio" : "Gym name"])
+        press(spanish ? "Guardar" : "Save")
+        press(spanish ? "Rutinas" : "Routines")
+        press(spanish ? "Añadir rutina" : "Add routine")
         for count in stride(from: 4, to: sets, by: -1) {
-            tap(app.steppers["Sets: \(count)"].buttons.element(boundBy: 0))
+            tap(app.steppers[spanish ? "Series: \(count)" : "Sets: \(count)"].buttons.element(boundBy: 0))
         }
-        press("Add day")
+        press(spanish ? "Añadir día" : "Add day")
         for name in names {
-            press("Add exercise")
-            let field = app.textFields["Exercise name"]
+            press(spanish ? "Añadir ejercicio" : "Add exercise")
+            let field = app.textFields[spanish ? "Nombre del ejercicio" : "Exercise name"]
             tap(field)
             if !app.keyboards.firstMatch.waitForExistence(timeout: 2) { tap(field) }
             field.typeText(name + "\n")
@@ -413,9 +444,9 @@ final class RoutineEditorUITests: XCTestCase {
                 let field = app.alerts.textFields["Group name"]
                 tap(field)
                 field.typeText(rowGroup)
-                tap(app.alerts.buttons["Save"])
+                tap(app.alerts.buttons[spanish ? "Guardar" : "Save"])
             }
-            tap(app.navigationBars["Edit exercise"].buttons["BackButton"])
+            tap(app.navigationBars[spanish ? "Editar ejercicio" : "Edit exercise"].buttons["BackButton"])
         }
     }
 
@@ -428,14 +459,17 @@ final class RoutineEditorUITests: XCTestCase {
         }
     }
 
-    private func activateDayAndOpenTrain(in app: XCUIApplication) {
-        tap(app.navigationBars["Edit day"].buttons["BackButton"])
-        let activate = button("Save and activate", in: app)
-        if !activate.exists { tap(app.navigationBars.buttons["More"]) }
+    private func activateDayAndOpenTrain(in app: XCUIApplication, spanish: Bool = false) {
+        tap(app.navigationBars[spanish ? "Editar día" : "Edit day"].buttons["BackButton"])
+        let activate = button(spanish ? "Guardar y activar" : "Save and activate", in: app)
+        if !activate.exists { tap(app.navigationBars.buttons[spanish ? "Más" : "More"]) }
         tap(activate)
-        XCTAssertTrue(app.navigationBars["Edit routine"].waitForNonExistence(timeout: 8), app.debugDescription)
-        tap(app.tabBars.buttons["Train"])
-        XCTAssertTrue(app.navigationBars["Train"].waitForExistence(timeout: 5), app.debugDescription)
+        XCTAssertTrue(
+            app.navigationBars[spanish ? "Editar rutina" : "Edit routine"].waitForNonExistence(timeout: 8),
+            app.debugDescription)
+        tap(app.tabBars.buttons[spanish ? "Entrenar" : "Train"])
+        XCTAssertTrue(
+            app.navigationBars[spanish ? "Entrenar" : "Train"].waitForExistence(timeout: 5), app.debugDescription)
     }
 
     private func verifyCustomSetCount(spanish: Bool) {
