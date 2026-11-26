@@ -167,6 +167,9 @@ struct OpenWorkoutTests {
         try command(.start(routineID: routine.id, gymID: gymID, dayID: day.id, cycleID: nil), at: 0)
         try completeRowSet(1, at: 10)
         let first = try rest()
+        #expect(first.exercise.id == row.id)
+        let repeated = try #require(try reopen().openWorkout())
+        #expect(repeated.transition == .nextSet && repeated.nextSet?.number == 2)
         #expect(first.endsAt == SetClock(115).now)
         try command(.adjustRest(setID: first.id, adjustment: .extend), at: 20)
         #expect(try rest().endsAt == SetClock(130).now)
@@ -187,7 +190,9 @@ struct OpenWorkoutTests {
 
         try completeRowSet(3, at: 140)
         let afterExercise = try rest()
-        #expect(afterExercise.betweenExercises)
+        let upcoming = try #require(try reopen().openWorkout())
+        #expect(upcoming.transition == .nextExercise && upcoming.nextSet?.exercise.id == curl.id)
+        #expect(afterExercise.exercise.id == row.id && afterExercise.betweenExercises)
         #expect(afterExercise.endsAt == SetClock(275).now)
         #expect(try reopen().activeRoutine()?.plan == routine.plan)
     }
@@ -248,6 +253,7 @@ struct OpenWorkoutTests {
         #expect(midRound.timingCues.map(\.kind) == [.holdStarted, .setCompleted])
         #expect(midRound.timingCues.map(\.date) == [13, 43].map { SetClock($0).now })
         let waiting = try #require(try store.openWorkout(clock: SetClock(43)))
+        #expect(waiting.transition == .nextSupersetMember)
         #expect(waiting.nextSet?.exercise.id == plank.id && waiting.timer == nil && waiting.rest == nil)
         try command(.controlTimer(exerciseID: plank.id, number: 1, expectedRevision: 0, action: .start), at: 50)
         let lastMember = try #require(try store.openWorkout(clock: SetClock(51)))
