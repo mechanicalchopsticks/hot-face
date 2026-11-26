@@ -14,5 +14,5 @@
 ## 3. Upcoming work card
 
 - [x] 3.1 Render localized headings, exercise names and set or round context. Verify the three distinct transitions in the simulator, including immediate progression to a superset member.
-- [ ] 3.2 Wire Postpone to the inter-exercise rest card. Verify repeated taps cycle in place, one remaining block offers no action, and ending the rest starts the displayed candidate when the user begins its work.
+- [x] 3.2 Wire Postpone to the inter-exercise rest card. Verify repeated taps cycle in place, one remaining block offers no action, and ending the rest starts the displayed candidate when the user begins its work.
 - [ ] 3.3 Format edited Swift, run repository Swift format lint and run `swift test --package-path TrainingKit` with Xcode selected. Run the affected simulator UI tests and report the environments and results.

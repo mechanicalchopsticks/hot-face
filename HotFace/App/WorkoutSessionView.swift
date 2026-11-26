@@ -88,7 +88,14 @@ struct WorkoutSessionView: View {
                 }
                 if let set = workout.nextSet {
                     Section {
-                        WorkoutSetHeader(name: set.exercise.name, number: set.number, count: set.count)
+                        HStack {
+                            WorkoutSetHeader(name: set.exercise.name, number: set.number, count: set.count)
+                            if rest != nil, let action = workout.postponeAction {
+                                Spacer()
+                                Button("Postpone") { respondToRest(action) }
+                                    .buttonStyle(.bordered)
+                            }
+                        }
                         if let round = workout.nextSupersetRound {
                             Text("Superset · Round \(round.number) of \(round.count)")
                             ForEach(workout.roundMembers) { member in

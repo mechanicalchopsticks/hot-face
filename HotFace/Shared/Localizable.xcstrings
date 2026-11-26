@@ -2482,6 +2482,7 @@
         }
       }
     },
+    "Postpone" : {"localizations" : {"es" : {"stringUnit" : {"state" : "translated", "value" : "Posponer"}}}},
     "Postpone exercise" : {
       "extractionState" : "stale",
       "localizations" : {
