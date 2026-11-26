@@ -32,6 +32,7 @@ public struct SessionCommand: Codable, Equatable, Sendable {
         case skip(exerciseID: UUID)
         case adjustRest(setID: UUID, adjustment: RestAdjustment)
         case finish
+        case discard
     }
 
     public let id: UUID

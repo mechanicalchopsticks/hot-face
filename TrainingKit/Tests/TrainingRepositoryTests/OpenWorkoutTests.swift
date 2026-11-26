@@ -5,6 +5,52 @@ import TrainingDomain
 import TrainingRepositories
 
 struct OpenWorkoutTests {
+    @Test func discardRemovesSetsAndKeepsRatingsAfterReopening() throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        func store() -> CoordinatedModelStore { CoordinatedModelStore(trainingDirectory: directory) }
+        let gym = try #require(store().createGym(name: "Gym").activeGymID)
+        let row = ExercisePrescription(name: "Row", sets: 3, segments: [.repetitions(10)])
+        let day = RoutineDay(name: "Day", exercises: [row])
+        var routine = ManualRoutine(gymID: gym)
+        routine.plan = RoutinePlan(name: "Plan", days: [day])
+        try store().saveRoutine(routine)
+        let cycle = try store().currentCycle(for: routine.id)
+        let start = SessionCommand.Action.start(routineID: routine.id, gymID: gym, dayID: day.id, cycleID: cycle.id)
+        let sessionID = UUID()
+        let clock = SetClock(0)
+        func apply(_ action: SessionCommand.Action) throws {
+            _ = try store().apply(.init(sessionID: sessionID, action: action), clock: clock)
+        }
+        try apply(start)
+        try apply(
+            .adjust(exerciseID: row.id, sets: 3, segments: [.repetitions(11)], load: .undefined, saveAsUsual: true))
+        try apply(.logCurrentSet(exerciseID: row.id, number: 1))
+        try apply(.rate(exerciseID: row.id, effort: .easy))
+        let discard = SessionCommand(sessionID: sessionID, action: .discard)
+        #expect(try store().apply(discard, clock: clock) == .applied)
+        #expect(try store().apply(discard, clock: clock) == .alreadyApplied)
+        #expect(try store().openWorkout() == nil)
+        #expect(try store().pendingWorkoutSummary() == nil)
+        #expect(try store().currentCycle(for: routine.id).availableDayIDs == [day.id])
+        try store().withContext { context in
+            let setCount = try context.fetchCount(FetchDescriptor<TrainingSchemaV1.PerformedSet>())
+            #expect(setCount == 0)
+            let sessionCount = try context.fetchCount(FetchDescriptor<TrainingSchemaV1.Session>())
+            #expect(sessionCount == 0)
+            let ratings = try context.fetch(FetchDescriptor<TrainingSchemaV1.Rating>()).map(\.effort)
+            #expect(ratings == [.easy])
+            let balances = try context.fetch(FetchDescriptor<TrainingSchemaV1.Progression>()).map(\.balance)
+            #expect(balances == [1])
+        }
+        _ = try store().apply(.init(sessionID: UUID(), action: start), clock: clock)
+        #expect(throws: SessionCommandError.sessionNotFound) { try apply(.skipAndAdvance(exerciseID: row.id)) }
+        let restarted = try #require(try store().openWorkout())
+        #expect(restarted.nextSet?.number == 1)
+        #expect(restarted.nextSet?.exercise.segments == [.repetitions(11)])
+    }
+
     @Test func reorderMovesInterleavedSupersetWithCompletedMember() throws {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)

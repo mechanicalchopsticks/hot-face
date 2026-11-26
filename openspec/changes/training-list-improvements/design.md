@@ -12,7 +12,7 @@ Keep workout presentation consistent across Train and the active workout. Preser
 
 - Derive list blocks from session order before applying category sections or visibility filters. Anchor each superset to its earliest member's category, even when a filter hides that member. Translate drag operations into stable exercise IDs so hidden exercises retain their relative order.
 - Derive round status from session progress and the active phase. A separate UI counter would drift after recovery or a Lock Screen action.
-- Place discard in the repository that owns session writes. Resolve the specific open session and remove its dependent progress in one coordinated write. Perform activity cleanup after the successful write. A stale action must not affect a later workout.
+- Place discard in the repository that owns session writes. Resolve the specific open session and remove its performed sets in one coordinated write. Retain ratings, progression balances and command receipts. Perform activity cleanup after the successful write. A stale action must not affect a later workout.
 - Use shared duration presentation in TrainingInterface. Convert picker selections to the existing duration representation at the editing boundary. Opening an older prescription must not silently change its stored values.
 - Keep text drafts local to the editor. Validate and normalize at save. Initialize the repetition count when creating an exercise so reopening a saved exercise preserves its prescription.
 

@@ -31,7 +31,7 @@ extension CoordinatedModelStore {
 
             let writer = SessionWriter(context: context, sessionID: command.sessionID)
             let date = clock.now
-            if let session = try writer.session(), session.finishedAt == nil {
+            if command.action != .discard, let session = try writer.session(), session.finishedAt == nil {
                 try writer.reconcileTimer(in: session, at: date)
             }
             let result = try writer.perform(command.action, at: date)
@@ -288,6 +288,13 @@ struct SessionWriter {
             _ = try session.exercise(id)
             guard !session.skippedExerciseIDs.contains(id) else { return .alreadyApplied }
             session.skippedExerciseIDs.append(id)
+        case .discard:
+            let session = try openSession()
+            let sets = try context.fetch(
+                FetchDescriptor<V1.PerformedSet>(predicate: #Predicate { $0.sessionID == sessionID }))
+            for set in sets { context.delete(set) }
+            // Ratings and their progression balances survive discard. Receipts protect retried commands.
+            context.delete(session)
         case .finish:
             guard let session = existing else { throw SessionCommandError.sessionNotFound }
             guard session.finishedAt == nil else { return .alreadyApplied }
