@@ -89,6 +89,27 @@ private struct Fixture {
 }
 
 struct SessionCommandTests {
+    @Test func postponingAPartiallySkippedSupersetFollowsItsOriginalPosition() throws {
+        var exercises = ["Press", "G1", "A", "G2", "B"].map {
+            ExercisePrescription(name: $0, sets: 1, segments: [.repetitions(8)])
+        }
+        let group = UUID()
+        exercises[1].supersetID = group
+        exercises[3].supersetID = group
+        let f = try Fixture(exercise: exercises[0], following: Array(exercises.dropFirst()))
+        defer { try? FileManager.default.removeItem(at: f.directory) }
+        _ = try f.store.apply(f.start, clock: FixedClock(0))
+        _ = try f.store.apply(f.command(.skipAndAdvance(exerciseID: exercises[1].id)), clock: FixedClock(1))
+        _ = try f.store.apply(f.command(.logCurrentSet(exerciseID: exercises[0].id, number: 1)), clock: FixedClock(2))
+        #expect(try f.workout(at: 3).nextSet?.exercise.name == "G2")
+        for expected in ["A", "B", "G2"] {
+            try f.postpone(at: 4)
+            #expect(try f.workout(at: 4).nextSet?.exercise.name == expected)
+        }
+        _ = try f.store.apply(f.command(.logCurrentSet(exerciseID: exercises[3].id, number: 1)), clock: FixedClock(200))
+        #expect(try f.workout(at: 201).nextSet?.exercise.name == "A")
+    }
+
     @Test func restSelectionCyclesThroughBlocksAndResumesBaselineOrder() throws {
         let exercises = ["Press", "A", "B", "C", "D"].map {
             ExercisePrescription(name: $0, sets: 1, segments: [.repetitions(8)])
