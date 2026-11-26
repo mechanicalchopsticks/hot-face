@@ -198,7 +198,7 @@
       }
     },
     "%@ per side" : {
-
+      "localizations" : {"es" : {"stringUnit" : {"state" : "translated", "value" : "%@ por lado"}}}
     },
     "%lld reps" : {
       "extractionState" : "stale",
@@ -283,7 +283,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "3 s de preparación · 20 s de ejercicio · 15 s de descanso"
+            "value" : "0:03 de preparación · 0:20 de ejercicio · 0:15 de descanso"
           }
         }
       }

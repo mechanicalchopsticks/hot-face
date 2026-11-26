@@ -26,12 +26,14 @@ public struct DurationPicker: View {
                 ) {
                     ForEach(range.lowerBound / 60...range.upperBound / 60, id: \.self) { Text($0.formatted()) }
                 }
+                .accessibilityIdentifier("durationMinutes")
                 Picker(
                     "Seconds",
                     selection: Binding(get: { selection.seconds }, set: { seconds = selection.minutes * 60 + $0 })
                 ) {
                     ForEach(selection.availableSeconds, id: \.self) { Text($0.formatted()) }
                 }
+                .accessibilityIdentifier("durationSeconds")
             }.pickerStyle(.menu)
         }
     }

@@ -617,7 +617,10 @@ final class RoutineEditorUITests: XCTestCase {
         let restart = app.switches["Start next hold automatically"]
         reveal(restart)
         XCTAssertEqual(restart.value as? String, "0")
-        let pause = app.cells.containing(.staticText, identifier: "Pause between holds").buttons["Seconds"]
+        let pause = app.buttons.matching(identifier: "durationSeconds").matching(
+            NSPredicate(format: "label == %@", "Seconds, 0")
+        ).firstMatch
+        XCTAssertTrue(pause.exists, app.debugDescription)
         tap(pause)
         press("1")
         tap(app.navigationBars["Edit exercise"].buttons["BackButton"])
