@@ -56,7 +56,14 @@ struct SessionWriter {
             FetchDescriptor<V1.PerformedSet>(
                 predicate: #Predicate { $0.sessionID == sessionID },
                 sortBy: [SortDescriptor(\.performedAt, order: .reverse)]))
-        return try OpenWorkout(session: session, performed: sets, at: date)
+        let lastExerciseRated =
+            try sets.first.map { set in
+                let id = set.exerciseID
+                let ratings = FetchDescriptor<V1.Rating>(
+                    predicate: #Predicate { $0.sessionID == sessionID && $0.exerciseID == id })
+                return try context.fetchCount(ratings) > 0
+            } ?? false
+        return try OpenWorkout(session: session, performed: sets, lastExerciseRated: lastExerciseRated, at: date)
     }
 
     func perform(_ action: SessionCommand.Action, at date: Date) throws -> SessionCommandResult {
@@ -257,6 +264,17 @@ struct SessionWriter {
             let next = state.eligibleBlockIDs[(index + 1) % state.eligibleBlockIDs.count]
             plan.restSelection = .init(setID: setID, blockID: next)
             plan.restOverride = .init(setID: setID, endsAt: rest.endsAt)
+            try session.updatePrescription(plan)
+        case .answerRestFeedback(let setID, let effort):
+            let session = try openSession()
+            let state = try workout(session, at: date)
+            guard let rest = state.activeRest(at: date), rest.id == setID, let target = rest.feedbackTarget
+            else { throw SessionCommandError.restUnavailable }
+            if let effort {
+                return try perform(.rate(exerciseID: target.id, effort: effort), at: date)
+            }
+            var plan = state.prescription
+            plan.acknowledgedRestID = setID
             try session.updatePrescription(plan)
         case .adjustRest(let id, let adjustment):
             let session = try openSession()

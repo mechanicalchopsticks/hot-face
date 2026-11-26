@@ -51,6 +51,7 @@ public struct OpenWorkout: Identifiable, Sendable {
     public struct Rest: Identifiable, Sendable {
         public let id: UUID
         public let exercise: ExercisePrescription
+        public let feedbackTarget: ExercisePrescription?
         public let performance: SetPerformance
         public let prescribedSegments: [ExerciseSegment]
         public let completedSetNumber: Int
@@ -160,7 +161,10 @@ public struct OpenWorkout: Identifiable, Sendable {
             after: set.exercise, completedSet: set.number, before: followingSet.exercise, nextSet: followingSet.number)
     }
 
-    init(session: TrainingSchemaV1.Session, performed: [TrainingSchemaV1.PerformedSet], at date: Date) throws {
+    init(
+        session: TrainingSchemaV1.Session, performed: [TrainingSchemaV1.PerformedSet], lastExerciseRated: Bool,
+        at date: Date
+    ) throws {
         reconciledAt = date
         id = session.id
         let prescription = try session.prescription
@@ -233,13 +237,18 @@ public struct OpenWorkout: Identifiable, Sendable {
             let segments = original?.setID == last.id ? original?.segments : exercise.segments
             let prescribedSegments = segments?.count == performance.segments.count ? segments : nil
             let browsing = prescription.restSelection?.setID == last.id
+            let betweenExercises = browsing || (!sameSuperset && pending.exercise.id != last.exerciseID)
+            let wantsFeedback =
+                betweenExercises && performedNumbers[exercise.id]?.count == exercise.sets
+                && !lastExerciseRated && prescription.acknowledgedRestID != last.id
             rest =
                 seconds > 0 || browsing
                 ? Rest(
-                    id: last.id, exercise: exercise, performance: performance,
+                    id: last.id, exercise: exercise, feedbackTarget: wantsFeedback ? exercise : nil,
+                    performance: performance,
                     prescribedSegments: prescribedSegments ?? performance.segments, completedSetNumber: last.number,
                     endsAt: deadline ?? last.performedAt.addingTimeInterval(seconds),
-                    betweenExercises: browsing || (!sameSuperset && pending.exercise.id != last.exerciseID),
+                    betweenExercises: betweenExercises,
                     startsNextRound: startsNextRound)
                 : nil
         } else {

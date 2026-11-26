@@ -173,6 +173,53 @@ struct SessionCommandTests {
         #expect(second.prescription.day.exercises.map(\.id) == [press.id, row.id, hold.id])
     }
 
+    @Test(arguments: [Effort.hard, nil, .easy])
+    func restFeedbackSurvivesRecoveryAndOnlyRatesTheCompletedExercise(effort: Effort?) throws {
+        let exercises = ["Press", "Squat", "Row"].map {
+            ExercisePrescription(name: $0, sets: 1, segments: [.repetitions(8)])
+        }
+        let f = try Fixture(exercise: exercises[0], following: Array(exercises.dropFirst()))
+        defer { try? FileManager.default.removeItem(at: f.directory) }
+        try f.beginRest()
+        try f.postpone(at: 2)
+        let rest = try #require(try f.workout(at: 3).rest)
+        #expect(rest.feedbackTarget?.id == exercises[0].id)
+        let answer = f.command(.answerRestFeedback(setID: rest.id, effort: effort))
+        #expect(try f.store.apply(answer, clock: FixedClock(3)) == .applied)
+        #expect(try f.store.apply(answer, clock: FixedClock(4)) == .alreadyApplied)
+        #expect(throws: SessionCommandError.restUnavailable) {
+            _ = try f.store.apply(f.command(.answerRestFeedback(setID: rest.id, effort: .easy)), clock: FixedClock(5))
+        }
+        try f.postpone(at: 6)
+        let recovered = try #require(try f.workout(at: 6).activeRest(at: FixedClock(6).now))
+        #expect(recovered.feedbackTarget == nil && recovered.endsAt == rest.endsAt)
+        try f.store.withContext { context in
+            let ratings = try context.fetch(FetchDescriptor<V1.Rating>())
+            #expect(ratings.count == (effort == nil ? 0 : 1))
+            #expect(ratings.first?.effort == effort)
+            if effort != nil { #expect(ratings.first?.exerciseID == exercises[0].id) }
+            let balance = try context.fetch(FetchDescriptor<V1.Progression>()).first?.balance ?? 0
+            #expect(balance == (effort == .easy ? 1 : effort == .hard ? -1 : 0))
+        }
+    }
+
+    @Test func unansweredRestExpiresWithoutRating() throws {
+        let press = ExercisePrescription(name: "Press", sets: 1, segments: [.repetitions(10)])
+        let row = ExercisePrescription(name: "Row", sets: 2, segments: [.repetitions(8)])
+        let f = try Fixture(exercise: press, following: [row])
+        defer { try? FileManager.default.removeItem(at: f.directory) }
+        try f.beginRest()
+        let rest = try #require(try f.workout(at: 2).rest)
+        #expect(rest.feedbackTarget?.id == press.id)
+        #expect(throws: SessionCommandError.restUnavailable) {
+            _ = try f.store.apply(f.command(.answerRestFeedback(setID: rest.id, effort: .hard)), clock: FixedClock(200))
+        }
+        _ = try f.store.apply(f.command(.logCurrentSet(exerciseID: row.id, number: 1)), clock: FixedClock(201))
+        let repeated = try #require(try f.workout(at: 202).rest)
+        #expect(repeated.exercise.id == row.id && repeated.feedbackTarget == nil)
+        #expect(try f.store.withContext { try $0.fetchCount(FetchDescriptor<V1.Rating>()) } == 0)
+    }
+
     @Test func balancesOptionalRatingsAcrossCompletePartialAndAdjustedWorkouts() throws {
         let f = try Fixture()
         defer { try? FileManager.default.removeItem(at: f.directory) }
@@ -283,7 +330,7 @@ struct SessionCommandTests {
             SessionPrescription.self, from: fixture("before-timer-cancellation-session"))
         #expect(
             activity.timerStartRevision == nil && session.timerStartRevision == nil && session.summaryPending == nil)
-        #expect(session.restSelection == nil)
+        #expect(session.restSelection == nil && session.acknowledgedRestID == nil)
         #expect(activity.frame(at: FixedClock(6).now)?.timer?.revision == 2)
         #expect(activity.frame(at: FixedClock(10).now) == nil)
         #expect(session.timer?.revision == 1 && session.timer?.exerciseEnd == FixedClock(6).now)
