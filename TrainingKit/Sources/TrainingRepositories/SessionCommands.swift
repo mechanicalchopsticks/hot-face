@@ -31,7 +31,7 @@ extension CoordinatedModelStore {
 
             let writer = SessionWriter(context: context, sessionID: command.sessionID)
             let date = clock.now
-            if command.action != .discard, let session = try writer.session(), session.finishedAt == nil {
+            if let session = try writer.session(), session.finishedAt == nil {
                 try writer.reconcileTimer(in: session, at: date)
             }
             let result = try writer.perform(command.action, at: date)
@@ -175,7 +175,8 @@ struct SessionWriter {
             try session.updatePrescription(plan)
         case .reorderBlocks(let original, let reordered):
             let session = try openSession()
-            var plan = try session.prescription
+            let current = try workout(session, at: date)
+            var plan = current.prescription
             let blocks = SessionExerciseBlock.blocks(in: plan.day)
             let visible = Set(original)
             guard visible.count == original.count, reordered.count == original.count, Set(reordered) == visible,
@@ -186,7 +187,9 @@ struct SessionWriter {
             plan.day.exercises = blocks.flatMap { block in
                 (visible.contains(block.id) ? replacement.next() ?? block : block).exercises
             }
-            try session.updatePrescription(plan)
+            try updateOrder(
+                plan, in: session, at: date,
+                preservingRestUntil: current.activeRest(at: date) == nil ? current.rest?.endsAt ?? date : nil)
         case .editSuperset(let edit, let usual):
             try editSuperset(edit, saveAsUsual: usual, in: openSession(), at: date)
         case .insertExercise(let sourceID, let replacing, let usual):
@@ -357,13 +360,20 @@ struct SessionWriter {
             try plan.days[index].apply(edit, defaultSets: plan.defaultSets)
             try routine.saveUsualPlan(plan, in: context)
         }
-        try session.updatePrescription(snapshot)
-        // Editing membership must not restart a rest that ended, or invent one mid-round.
-        if let rest = try workout(session, at: date).rest {
-            snapshot.restOverride = .init(setID: rest.id, endsAt: current.rest?.endsAt ?? date)
-            try session.updatePrescription(snapshot)
-        }
+        try updateOrder(snapshot, in: session, at: date, preservingRestUntil: current.rest?.endsAt ?? date)
         try finishIfResolved(session, at: date)
+    }
+
+    private func updateOrder(
+        _ prescription: SessionPrescription, in session: V1.Session, at date: Date, preservingRestUntil deadline: Date?
+    ) throws {
+        try session.updatePrescription(prescription)
+        // A new successor can imply a longer rest, even when the previous successor was ready.
+        if let deadline, let rest = try workout(session, at: date).rest {
+            var plan = prescription
+            plan.restOverride = .init(setID: rest.id, endsAt: deadline)
+            try session.updatePrescription(plan)
+        }
     }
 
     func reconcileTimer(in session: TrainingSchemaV1.Session, at date: Date) throws {
