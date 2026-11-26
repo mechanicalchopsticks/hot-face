@@ -18,4 +18,4 @@
 
 ## 4. Integration verification
 
-- [ ] 4.1 Format edited Swift files with xcrun swift-format. Run the repository-wide strict Swift lint and swift test --package-path TrainingKit with Xcode selected. Build the app and its extensions and report the macOS and simulator verification results.
+- [x] 4.1 Format edited Swift files with xcrun swift-format. Run the repository-wide strict Swift lint and swift test --package-path TrainingKit with Xcode selected. Build the app and its extensions and report the macOS and simulator verification results.
