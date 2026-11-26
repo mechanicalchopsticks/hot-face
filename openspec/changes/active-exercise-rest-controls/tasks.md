@@ -9,7 +9,7 @@
 ## 2. Effort feedback
 
 - [x] 2.1 Expose the completed exercise as the feedback target and support neutral acknowledgment alongside open-session ratings. Verify Hard and Easy apply once, OK leaves effort empty, and unanswered rests can expire. Reopen the session after OK to verify dismissal survives recovery.
-- [ ] 2.2 Add the localized inline question and three one-tap responses to WorkoutSessionView. Verify in the simulator that changing the preview keeps the feedback target and answering leaves the countdown running.
+- [x] 2.2 Add the localized inline question and three one-tap responses to WorkoutSessionView. Verify in the simulator that changing the preview keeps the feedback target and answering leaves the countdown running.
 
 ## 3. Upcoming work card
 
