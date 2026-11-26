@@ -176,9 +176,11 @@ final class RoutineEditorUITests: XCTestCase {
         continueAfterFailure = false
         let app = XCUIApplication()
         func press(_ title: String) { tap(button(title, in: app)) }
-        createDayWithTwoExercises(in: app)
+        createDayWithTwoExercises(in: app, rowGroup: "Upper")
         press("Add exercise")
         enter("Curl", in: app.textFields["Exercise name"])
+        press("Exercise group")
+        press("Upper")
         tap(app.navigationBars["Edit exercise"].buttons["BackButton"])
         tap(app.navigationBars["Edit day"].buttons["BackButton"])
         for count in [4, 3, 2] { tap(app.steppers["Sets: \(count)"].buttons.element(boundBy: 0)) }
@@ -200,12 +202,16 @@ final class RoutineEditorUITests: XCTestCase {
         XCTAssertTrue(row.exists)
         press("Edit")
         let curl = app.cells.containing(.staticText, identifier: "Curl").firstMatch
-        let pressRow = app.cells.containing(.staticText, identifier: "Press").firstMatch
+        XCTAssertEqual(app.staticTexts.matching(identifier: "Upper").count, 1)
+        let firstRow = app.cells.containing(.staticText, identifier: "Row").firstMatch
+        let editingList = XCTAttachment(screenshot: app.screenshot())
+        editingList.name = "Grouped list in edit mode"
+        add(editingList)
         let handle = curl.coordinate(withNormalizedOffset: CGVector(dx: 0.94, dy: 0.5))
         handle.press(
-            forDuration: 0.6, thenDragTo: pressRow.coordinate(withNormalizedOffset: CGVector(dx: 0.94, dy: 0.15)))
+            forDuration: 0.6, thenDragTo: firstRow.coordinate(withNormalizedOffset: CGVector(dx: 0.94, dy: 0.15)))
         press("Done")
-        XCTAssertLessThan(app.staticTexts["Curl"].frame.midY, app.staticTexts["Press"].frame.midY)
+        XCTAssertLessThan(app.staticTexts["Curl"].frame.midY, app.staticTexts["Row"].frame.midY)
         app.staticTexts["Curl"].swipeLeft()
         press("Postpone exercise")
         press("Continue workout")
@@ -296,7 +302,7 @@ final class RoutineEditorUITests: XCTestCase {
         XCTAssertTrue(suggestion.waitForNonExistence(timeout: 5), app.debugDescription)
     }
 
-    private func createDayWithTwoExercises(in app: XCUIApplication) {
+    private func createDayWithTwoExercises(in app: XCUIApplication, rowGroup: String? = nil) {
         app.launchEnvironment["HOTFACE_UI_TEST_STORE_ID"] = UUID().uuidString
         func press(_ title: String) { tap(button(title, in: app)) }
         launch(app, spanish: false)
@@ -314,6 +320,13 @@ final class RoutineEditorUITests: XCTestCase {
             tap(field)
             if !app.keyboards.firstMatch.waitForExistence(timeout: 2) { tap(field) }
             field.typeText(name + "\n")
+            if name == "Row", let rowGroup {
+                press("Create group…")
+                let field = app.alerts.textFields["Group name"]
+                tap(field)
+                field.typeText(rowGroup)
+                tap(app.alerts.buttons["Save"])
+            }
             tap(app.navigationBars["Edit exercise"].buttons["BackButton"])
         }
     }
@@ -592,6 +605,7 @@ final class RoutineEditorUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Prepárate"].waitForExistence(timeout: 2))
         press("Cerrar")
         XCTAssertTrue(button("Continuar entrenamiento", in: app).isHittable)
+        XCTAssertTrue(button("Editar", in: app).waitForExistence(timeout: 20))
     }
 
     func testTimedHoldsWaitForManualRestartAndSecondSide() {

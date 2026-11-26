@@ -210,6 +210,23 @@ struct SessionCommandTests {
         #expect(queue.nextDate == nil)
     }
 
+    @Test func skippingLastPendingExerciseRemovesScheduledRestCue() throws {
+        let f = try Fixture(withExistingSet: true)
+        defer { try? FileManager.default.removeItem(at: f.directory) }
+        let clock = FixedClock(30)
+        let resting = try #require(try f.store.openWorkout(clock: clock))
+        var queue = ForegroundWorkoutCues()
+        queue.update(resting.timingCues, at: clock.now)
+        let deadline = try #require(queue.nextDate)
+        #expect(deadline > clock.now)
+
+        _ = try f.store.apply(f.command(.skipAndAdvance(exerciseID: f.exercise.id)), clock: clock)
+        let open = try f.store.openWorkout(clock: clock)
+        #expect(open == nil)
+        queue.update(open?.timingCues ?? [], at: clock.now)
+        #expect(queue.takeDue(at: deadline) == nil)
+    }
+
     @Test func mixedPrescriptionWaitsForManualCompletion() throws {
         let exercise = ExercisePrescription(
             name: "Mixed", sets: 1, segments: [.seconds(5), .repetitions(10), .toFailure])

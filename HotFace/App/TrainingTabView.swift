@@ -59,6 +59,7 @@ private struct ActiveRoutineView: View {
                         Button("Try again", action: reload)
                     }
                 } else if let openWorkout {
+                    let boundary = presentedWorkout == nil ? openWorkout.nextBoundary : nil
                     List {
                         Section {
                             Button("Continue workout") { presentedWorkout = openWorkout }
@@ -82,6 +83,13 @@ private struct ActiveRoutineView: View {
                         .id(openWorkout.id)
                     }
                     .toolbar { if openWorkout.timer == nil { EditButton() } }
+                    .task(id: boundary) {
+                        guard let boundary else { return }
+                        do { try await Task.sleep(for: .seconds(max(0, boundary.timeIntervalSinceNow))) } catch {
+                            return
+                        }
+                        reload()
+                    }
                 } else if let active, let cycle {
                     List {
                         Section {
@@ -159,6 +167,7 @@ private struct ActiveRoutineView: View {
             let store = try TrainingStorage.openStore()
             let workout = try store.openWorkout()
             openWorkout = workout
+            if scenePhase == .active { audio.schedule(workout?.timingCues ?? []) }
             let needsRoutine = workout == nil && presentedWorkout == nil
             if needsRoutine && summary == nil {
                 summary = try store.pendingWorkoutSummary()
@@ -251,57 +260,63 @@ struct SessionExerciseRows: View {
             for: RoutineDay(name: "", exercises: visible.map { $0.exercises[0] }))
         Section { Toggle("Hide completed", isOn: $hidesCompleted) }
         if editMode?.wrappedValue.isEditing == true {
-            Section {
-                ForEach(visible) { block in
-                    VStack(alignment: .leading) {
-                        if sections.count > 1 {
-                            Text(verbatim: block.category ?? String(localized: "Ungrouped")).font(.caption)
-                        }
-                        if block.exercises.count > 1 { Text("Superset").font(.caption.bold()) }
-                        ForEach(members(of: block, pending: pending)) { exercise in
-                            memberLabel(exercise, pending: pending)
+            ForEach(sections) { section in
+                let blocks = section.exercises.compactMap { byAnchor[$0.id] }
+                Section {
+                    ForEach(blocks) { block in
+                        VStack(alignment: .leading) {
+                            if block.exercises.count > 1 { Text("Superset").font(.caption.bold()) }
+                            ForEach(members(of: block, pending: pending)) { exercise in
+                                memberLabel(exercise, pending: pending)
+                            }
                         }
                     }
-                }
-                .onMove { offsets, destination in
-                    let ids = visible.map(\.id)
-                    var reordered = ids
-                    reordered.move(fromOffsets: offsets, toOffset: destination)
-                    apply(.reorderBlocks(original: ids, reordered: reordered))
+                    .onMove { offsets, destination in
+                        let ids = blocks.map(\.id)
+                        var reordered = ids
+                        reordered.move(fromOffsets: offsets, toOffset: destination)
+                        apply(.reorderBlocks(original: ids, reordered: reordered))
+                    }
+                } header: {
+                    heading(for: section)
                 }
             }
         } else {
             ForEach(sections) { section in
+                let blocks = section.exercises.compactMap { byAnchor[$0.id] }
                 Section {
-                    ForEach(section.exercises) { anchor in
-                        if let block = byAnchor[anchor.id] {
-                            let members = members(of: block, pending: pending)
-                            ForEach(members) { exercise in
-                                VStack(alignment: .leading) {
-                                    if block.exercises.count > 1 && exercise.id == members.first?.id {
-                                        Text("Superset").font(.caption.bold())
-                                    }
-                                    memberLabel(exercise, pending: pending)
+                    ForEach(blocks) { block in
+                        let members = members(of: block, pending: pending)
+                        ForEach(members) { exercise in
+                            VStack(alignment: .leading) {
+                                if block.exercises.count > 1 && exercise.id == members.first?.id {
+                                    Text("Superset").font(.caption.bold())
                                 }
-                                .swipeActions(allowsFullSwipe: false) {
-                                    if pending.contains(exercise.id), workout.timer == nil {
-                                        Button("Skip exercise") { apply(.skipAndAdvance(exerciseID: exercise.id)) }
-                                        Button("Postpone exercise") {
-                                            apply(.moveExercise(id: exercise.id, toFront: false))
-                                        }
-                                        Button("Select exercise") {
-                                            apply(.moveExercise(id: exercise.id, toFront: true))
-                                        }
+                                memberLabel(exercise, pending: pending)
+                            }
+                            .swipeActions(allowsFullSwipe: false) {
+                                if pending.contains(exercise.id), workout.timer == nil {
+                                    Button("Skip exercise") { apply(.skipAndAdvance(exerciseID: exercise.id)) }
+                                    Button("Postpone exercise") {
+                                        apply(.moveExercise(id: exercise.id, toFront: false))
+                                    }
+                                    Button("Select exercise") {
+                                        apply(.moveExercise(id: exercise.id, toFront: true))
                                     }
                                 }
                             }
                         }
                     }
                 } header: {
-                    if let heading = section.heading(locale: locale) { Text(verbatim: heading) }
+                    heading(for: section)
                 }
             }
         }
+    }
+
+    @ViewBuilder
+    private func heading(for section: ExerciseGroupSection) -> some View {
+        if let heading = section.heading(locale: locale) { Text(verbatim: heading) }
     }
 
     private func members(of block: SessionExerciseBlock, pending: Set<UUID>) -> [ExercisePrescription] {
