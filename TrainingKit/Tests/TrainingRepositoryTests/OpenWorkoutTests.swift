@@ -5,6 +5,39 @@ import TrainingDomain
 import TrainingRepositories
 
 struct OpenWorkoutTests {
+    @Test func reorderMovesInterleavedSupersetWithCompletedMember() throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        func store() -> CoordinatedModelStore { CoordinatedModelStore(trainingDirectory: directory) }
+        let gym = try #require(store().createGym(name: "Gym").activeGymID)
+        var row = ExercisePrescription(name: "Row", sets: 1, segments: [.repetitions(10)])
+        var press = ExercisePrescription(name: "Press", sets: 1, segments: [.repetitions(10)])
+        let squat = ExercisePrescription(name: "Squat", sets: 1, segments: [.repetitions(10)])
+        row.supersetID = UUID()
+        press.supersetID = row.supersetID
+        row.group = "Back"
+        press.group = "Chest"
+        let day = RoutineDay(name: "Day", exercises: [row, squat, press])
+        var routine = ManualRoutine(gymID: gym)
+        routine.plan = RoutinePlan(name: "Routine", days: [day])
+        try store().saveRoutine(routine)
+        let id = UUID()
+        func apply(_ action: SessionCommand.Action) throws {
+            _ = try store().apply(SessionCommand(sessionID: id, action: action), clock: SetClock(0))
+        }
+        try apply(.start(routineID: routine.id, gymID: gym, dayID: day.id, cycleID: nil))
+        try apply(.logCurrentSet(exerciseID: row.id, number: 1))
+        let blocks = SessionExerciseBlock.blocks(in: day)
+        #expect(blocks.map(\.id) == [row.id, squat.id])
+        #expect(blocks[0].category == "Back")
+        try apply(.reorderBlocks(original: [row.id, squat.id], reordered: [squat.id, row.id]))
+        let workout = try #require(try store().openWorkout())
+        #expect(workout.prescription.day.exercises.map(\.id) == [squat.id, row.id, press.id])
+        #expect(workout.pendingExercises.map(\.id) == [squat.id, press.id])
+        #expect(try store().activeRoutine()?.plan.days[0] == day)
+    }
+
     @Test func restAdjustmentsPersistOnlyForTheCurrentSet() throws {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)

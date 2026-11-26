@@ -57,3 +57,19 @@ extension RoutineDay {
         }
     }
 }
+
+public struct SessionExerciseBlock: Identifiable, Sendable {
+    public let exercises: [ExercisePrescription]
+    public var id: UUID { exercises[0].id }
+    public var category: String? { exercises[0].group }
+
+    public static func blocks(in day: RoutineDay) -> [Self] {
+        let supersets = Dictionary(grouping: day.exercises, by: \.supersetID)
+        var emitted = Set<UUID>()
+        return day.exercises.compactMap { exercise in
+            guard let superset = exercise.supersetID else { return Self(exercises: [exercise]) }
+            guard emitted.insert(superset).inserted, let members = supersets[superset] else { return nil }
+            return Self(exercises: members)
+        }
+    }
+}
