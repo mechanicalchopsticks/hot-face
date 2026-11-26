@@ -1,5 +1,6 @@
 import SwiftUI
 import TrainingDomain
+import TrainingInterface
 import TrainingRepositories
 
 @Observable
@@ -23,15 +24,16 @@ struct GymSettingsView: View {
         NavigationStack(path: $path) {
             Group {
                 if let catalog = model.catalog {
-                    if catalog.gyms.isEmpty {
-                        ContentUnavailableView {
-                            Label("No gym configured", systemImage: "building.2")
-                        } actions: {
-                            Button("Add gym") { addingGym = true }
-                                .buttonStyle(.borderedProminent)
-                        }
-                    } else {
-                        List {
+                    List {
+                        Section { WeightProgressionPicker() }
+                        if catalog.gyms.isEmpty {
+                            ContentUnavailableView {
+                                Label("No gym configured", systemImage: "building.2")
+                            } actions: {
+                                Button("Add gym") { addingGym = true }
+                                    .buttonStyle(.borderedProminent)
+                            }
+                        } else {
                             Section("Gyms") {
                                 ForEach(
                                     catalog.gyms.sorted {
@@ -52,7 +54,9 @@ struct GymSettingsView: View {
                                 }
                             }
                         }
-                        .toolbar {
+                    }
+                    .toolbar {
+                        if !catalog.gyms.isEmpty {
                             ToolbarItem(placement: .primaryAction) {
                                 Button("Add gym", systemImage: "plus") { addingGym = true }
                             }
@@ -299,5 +303,18 @@ private struct GymNameEditor: View {
         } catch {
             saveFailed = true
         }
+    }
+}
+
+struct WeightProgressionPicker: View {
+    @WeightProgressionPreference private var mode
+
+    var body: some View {
+        Picker("Weight progression (all exercises)", selection: $mode) {
+            Text("Conservative").tag(WeightProgressionMode.conservative)
+            Text("Aggressive").tag(WeightProgressionMode.aggressive)
+        }
+        .pickerStyle(.menu)
+        .accessibilityIdentifier("weightProgressionMode")
     }
 }

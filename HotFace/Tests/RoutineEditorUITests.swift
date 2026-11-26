@@ -7,6 +7,37 @@ final class RoutineEditorUITests: XCTestCase {
     func testCustomSetCountInEnglish() { verifyCustomSetCount(spanish: false) }
     func testCustomSetCountInSpanish() { verifyCustomSetCount(spanish: true) }
 
+    func testWeightProgressionPreferenceSurvivesCancellingExerciseEdits() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchEnvironment["HOTFACE_UI_TEST_STORE_ID"] = UUID().uuidString
+        func press(_ title: String) { tap(button(title, in: app)) }
+        let picker = app.buttons["weightProgressionMode"]
+        launch(app, spanish: false)
+        press("Settings")
+        XCTAssertTrue(app.staticTexts["No gym configured"].waitForExistence(timeout: 5))
+        tap(picker)
+        press("Aggressive")
+        press("Add gym")
+        enter("Gym", in: app.textFields["Gym name"])
+        press("Save")
+        press("Routines")
+        press("Add routine")
+        press("Add day")
+        press("Add exercise")
+        for _ in 0..<6 where !picker.isHittable { app.swipeUp() }
+        XCTAssertTrue(
+            picker.label.contains("Aggressive") || picker.value as? String == "Aggressive", picker.debugDescription)
+        tap(picker)
+        press("Conservative")
+        tap(app.navigationBars["Edit exercise"].buttons["BackButton"])
+        tap(app.navigationBars["Edit day"].buttons["BackButton"])
+        press("Cancel")
+        press("Settings")
+        XCTAssertTrue(
+            picker.label.contains("Conservative") || picker.value as? String == "Conservative", picker.debugDescription)
+    }
+
     func testCreateUsualSupersetAndDissolveForThisWorkout() {
         continueAfterFailure = false
         let app = XCUIApplication()
