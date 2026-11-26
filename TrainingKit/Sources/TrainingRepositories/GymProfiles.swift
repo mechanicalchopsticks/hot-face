@@ -91,7 +91,7 @@ extension CoordinatedModelStore {
     }
 
     public func createGym(name: String) throws -> GymCatalog {
-        try validateGymName(name)
+        let name = try validatedName(name)
         return try updateGymCatalog { context in
             let isFirstGym = try availableGyms(in: context).isEmpty
             let gym = try Gym(name: name)
@@ -102,7 +102,7 @@ extension CoordinatedModelStore {
     }
 
     public func renameGym(_ gymID: UUID, name: String) throws -> GymCatalog {
-        try validateGymName(name)
+        let name = try validatedName(name)
         return try updateGymCatalog { context in
             try gym(with: gymID, in: context).name = name
         }
@@ -180,7 +180,9 @@ extension CoordinatedModelStore {
     public func saveEquipment(_ equipment: EquipmentDescription, in gymID: UUID, updatingExisting: Bool = false) throws
         -> GymCatalog
     {
-        try validateGymName(equipment.name)
+        var equipment = equipment
+        equipment.name = try validatedName(equipment.name)
+        equipment.station = trimmedOptionalText(equipment.station)
         let weights =
             equipment.availableLoads + [equipment.baseWeight, equipment.maximumAddedWeightPerSide].compactMap { $0 }
         guard weights.allSatisfy({ !$0.isNaN && $0 >= 0 }),
@@ -189,7 +191,6 @@ extension CoordinatedModelStore {
         return try updateGymCatalog { context in
             let profile = try gym(with: gymID, in: context)
             let record = try inventoryRecord(for: profile, in: context)
-            var equipment = equipment
             var shared = try record.inventory
             transferSharedWeights(from: &equipment, to: &shared)
             record.data = try JSONEncoder().encode(shared)
@@ -263,10 +264,11 @@ private func setActiveGym(_ gymID: UUID, in context: ModelContext) throws {
     }
 }
 
-private func validateGymName(_ name: String) throws {
-    guard !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+private func validatedName(_ name: String) throws -> String {
+    guard let name = trimmedOptionalText(name) else {
         throw GymProfileError.emptyName
     }
+    return name
 }
 
 // A missing row identifies a pre-V4 gym. Insert the row and transfer its legacy

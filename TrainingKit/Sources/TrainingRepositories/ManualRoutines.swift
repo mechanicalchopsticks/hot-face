@@ -67,7 +67,19 @@ extension CoordinatedModelStore {
     }
 
     public func saveRoutine(_ draft: ManualRoutine) throws {
-        let plan = draft.plan
+        var plan = draft.plan
+        plan.name = plan.name.trimmingCharacters(in: .whitespacesAndNewlines)
+        for day in plan.days.indices {
+            plan.days[day].name = plan.days[day].name.trimmingCharacters(in: .whitespacesAndNewlines)
+            for index in plan.days[day].exercises.indices {
+                var exercise = plan.days[day].exercises[index]
+                exercise.name = exercise.name.trimmingCharacters(in: .whitespacesAndNewlines)
+                exercise.variant = trimmedOptionalText(exercise.variant)
+                exercise.instructions = trimmedOptionalText(exercise.instructions)
+                exercise.station = trimmedOptionalText(exercise.station)
+                plan.days[day].exercises[index] = exercise
+            }
+        }
         try validateForEditing(plan)
 
         try withContext { context in
@@ -173,4 +185,9 @@ func validateForEditing(_ plan: RoutinePlan) throws {
             }
         }
     }
+}
+
+func trimmedOptionalText(_ value: String?) -> String? {
+    guard let text = value?.trimmingCharacters(in: .whitespacesAndNewlines), !text.isEmpty else { return nil }
+    return text
 }

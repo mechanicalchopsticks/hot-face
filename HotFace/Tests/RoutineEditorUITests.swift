@@ -7,6 +7,24 @@ final class RoutineEditorUITests: XCTestCase {
     func testCustomSetCountInEnglish() { verifyCustomSetCount(spanish: false) }
     func testCustomSetCountInSpanish() { verifyCustomSetCount(spanish: true) }
 
+    func testGymNameKeepsDraftSpacesUntilSave() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchEnvironment["HOTFACE_UI_TEST_STORE_ID"] = UUID().uuidString
+        launch(app, spanish: false)
+        tap(button("Settings", in: app))
+        tap(button("Add gym", in: app))
+        let field = app.textFields["Gym name"]
+        tap(field)
+        field.typeText(" ")
+        XCTAssertFalse(button("Save", in: app).isEnabled)
+        field.typeText("North ")
+        XCTAssertEqual(field.value as? String, " North ")
+        field.typeText("Gym ")
+        tap(button("Save", in: app))
+        XCTAssertTrue(button("North Gym", in: app).waitForExistence(timeout: 5))
+    }
+
     func testWeightProgressionPreferenceSurvivesCancellingExerciseEdits() {
         continueAfterFailure = false
         let app = XCUIApplication()
