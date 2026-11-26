@@ -133,6 +133,8 @@ struct OpenWorkoutTests {
         #expect(throws: SessionCommandError.invalidSetNumber) { try log(row, 2, at: 6) }
         try command(.controlTimer(exerciseID: curl.id, number: 1, expectedRevision: 0, action: .start), at: 10)
         let midRound = try #require(try store.openWorkout(clock: SetClock(11)))
+        #expect(midRound.roundMembers.map(\.id) == [row.id, curl.id, plank.id])
+        #expect(midRound.roundMembers.map(\.status) == [.completed, .current, .upcoming])
         #expect(midRound.timingCues.map(\.kind) == [.holdStarted, .setCompleted])
         #expect(midRound.timingCues.map(\.date) == [13, 43].map { SetClock($0).now })
         let waiting = try #require(try store.openWorkout(clock: SetClock(43)))
@@ -143,6 +145,8 @@ struct OpenWorkoutTests {
         #expect(lastMember.timingCues.map(\.date) == [53, 58, 98].map { SetClock($0).now })
         let roundEnd = try #require(try store.openWorkout(clock: SetClock(58)))
         #expect(roundEnd.nextSet?.exercise.id == row.id && roundEnd.nextSet?.number == 2)
+        #expect(roundEnd.roundMembers.map(\.status) == [.current, .upcoming, .upcoming])
+        #expect(roundEnd.nextSupersetRound?.number == 2)
         #expect(roundEnd.timer == nil && roundEnd.rest?.endsAt == SetClock(98).now)
         if skipFirst {
             try command(.skipAndAdvance(exerciseID: row.id), at: 60)
