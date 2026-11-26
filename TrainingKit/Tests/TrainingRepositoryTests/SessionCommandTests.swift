@@ -132,6 +132,47 @@ struct SessionCommandTests {
         #expect(try f.workout(at: 6).nextSet?.exercise.name == "C")
     }
 
+    @Test(arguments: [false, true])
+    func selectedTimedBlockSurvivesRestEndAndRetries(endEarly: Bool) throws {
+        let press = ExercisePrescription(name: "Press", sets: 1, segments: [.repetitions(8)])
+        let row = ExercisePrescription(name: "Row", sets: 1, segments: [.repetitions(10)])
+        let hold = ExercisePrescription(name: "Hold", sets: 2, segments: [.seconds(5)])
+        let f = try Fixture(exercise: press, following: [row, hold])
+        defer { try? FileManager.default.removeItem(at: f.directory) }
+        try f.beginRest()
+        let initial = try f.workout(at: 2)
+        let rest = try #require(initial.rest)
+        let stale = try #require(initial.postponeAction)
+        let first = f.command(stale)
+        #expect(try f.store.apply(first, clock: FixedClock(3)) == .applied)
+        try f.postpone(at: 4)
+        #expect(throws: SessionCommandError.restUnavailable) {
+            _ = try f.store.apply(f.command(stale), clock: FixedClock(5))
+        }
+        try f.postpone(at: 6)
+        let restored = try f.workout(at: 7)
+        #expect(restored.nextSet?.exercise.id == hold.id && restored.rest?.endsAt == rest.endsAt)
+        let late = try #require(restored.postponeAction)
+        let start = endEarly ? 9 : rest.endsAt.timeIntervalSinceReferenceDate
+        if endEarly {
+            _ = try f.store.apply(f.command(.adjustRest(setID: rest.id, adjustment: .end)), clock: FixedClock(start))
+        }
+        #expect(try f.store.apply(first, clock: FixedClock(start)) == .alreadyApplied)
+        #expect(throws: SessionCommandError.restUnavailable) {
+            _ = try f.store.apply(f.command(late), clock: FixedClock(start))
+        }
+        let ready = try f.workout(at: start)
+        #expect(ready.nextSet?.exercise.id == hold.id && ready.activeRest(at: FixedClock(start).now) == nil)
+        #expect(WorkoutActivityState(ready).frame(at: FixedClock(start).now)?.set?.id == hold.id)
+        _ = try f.store.apply(
+            f.command(.controlTimer(exerciseID: hold.id, number: 1, expectedRevision: 0, action: .start)),
+            clock: FixedClock(start))
+        let second = try f.workout(at: start + 9)
+        #expect(second.nextSet?.exercise.id == hold.id && second.nextSet?.number == 2)
+        #expect(second.rest?.exercise.id == hold.id && second.postponeAction == nil)
+        #expect(second.prescription.day.exercises.map(\.id) == [press.id, row.id, hold.id])
+    }
+
     @Test func balancesOptionalRatingsAcrossCompletePartialAndAdjustedWorkouts() throws {
         let f = try Fixture()
         defer { try? FileManager.default.removeItem(at: f.directory) }
@@ -242,6 +283,7 @@ struct SessionCommandTests {
             SessionPrescription.self, from: fixture("before-timer-cancellation-session"))
         #expect(
             activity.timerStartRevision == nil && session.timerStartRevision == nil && session.summaryPending == nil)
+        #expect(session.restSelection == nil)
         #expect(activity.frame(at: FixedClock(6).now)?.timer?.revision == 2)
         #expect(activity.frame(at: FixedClock(10).now) == nil)
         #expect(session.timer?.revision == 1 && session.timer?.exerciseEnd == FixedClock(6).now)

@@ -161,6 +161,7 @@ struct SessionWriter {
             guard let index = plan.day.exercises.firstIndex(where: { $0.id == id }) else {
                 throw SessionCommandError.unknownExercise
             }
+            plan.restSelection = nil
             let exercise = plan.day.exercises[index]
             var block = plan.day.exercises.filter {
                 $0.id == id || (exercise.supersetID != nil && $0.supersetID == exercise.supersetID)
@@ -177,6 +178,7 @@ struct SessionWriter {
             let session = try openSession()
             let current = try workout(session, at: date)
             var plan = current.prescription
+            plan.restSelection = nil
             let blocks = SessionExerciseBlock.blocks(in: plan.day)
             let visible = Set(original)
             guard visible.count == original.count, reordered.count == original.count, Set(reordered) == visible,

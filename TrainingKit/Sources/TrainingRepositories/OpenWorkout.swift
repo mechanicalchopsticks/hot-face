@@ -170,6 +170,13 @@ public struct OpenWorkout: Identifiable, Sendable {
         performedNumbers = byExercise.mapValues { Set($0.map(\.number)) }
         let skipped = Set(session.skippedExerciseIDs)
         skippedExerciseIDs = skipped
+        let lastExercise = prescription.day.exercises.first { $0.id == performed.first?.exerciseID }
+        // Keep the choice through expiry and all sets of the chosen block, including its superset rounds.
+        let selection = prescription.restSelection
+        let preferredBlock: UUID? =
+            selection?.setID == performed.first?.id
+                || selection?.blockID == (lastExercise?.supersetID ?? lastExercise?.id)
+            ? selection?.blockID : nil
         var candidates: [(set: PendingSet, block: Int, round: Int, index: Int)] = []
         var remaining: [ExercisePrescription] = []
         var blockIndices: [UUID: Int] = [:]
@@ -186,7 +193,7 @@ public struct OpenWorkout: Identifiable, Sendable {
             guard !numbers.isEmpty else { continue }
             if eligibleBlocks.insert(blockID).inserted { blockIDs.append(blockID) }
             // A choice promotes only this block. The session day remains the baseline for subsequent taps.
-            let block = prescription.restSelection?.blockID == blockID ? -1 : firstIndex
+            let block = preferredBlock == blockID ? -1 : firstIndex
             remaining.append(exercise)
             let equipment = prescription.equipment.first { $0.id == exercise.equipmentID }
             for number in numbers {
@@ -205,7 +212,7 @@ public struct OpenWorkout: Identifiable, Sendable {
 
         // The set's saved timestamp is the start of rest, including when a completion is retried.
         if let pending, let last = performed.first,
-            let exercise = prescription.day.exercises.first(where: { $0.id == last.exerciseID })
+            let exercise = lastExercise
         {
             let sameSuperset = exercise.supersetID != nil && exercise.supersetID == pending.exercise.supersetID
             if exercise.id == pending.exercise.id {
