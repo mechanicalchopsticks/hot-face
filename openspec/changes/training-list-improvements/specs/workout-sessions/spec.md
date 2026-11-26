@@ -34,7 +34,7 @@ During a superset the app SHALL identify the round, show every member in order a
 - **THEN** the overview remains visible and identifies the next round's starting exercise
 
 ### Requirement: Discard an open workout
-The app SHALL offer a confirmed discard from Train and during training. Discard SHALL remove the workout and its progress from recovery, history and progression, end its timers and activities, and leave the day available to restart. Changes explicitly saved as usual SHALL persist.
+The app SHALL offer a confirmed discard from Train and during training. Discard SHALL remove the workout and its performed sets from recovery and history, end its timers and activities, and leave the day available to restart. Ratings, their effects on progression, and changes explicitly saved as usual SHALL persist.
 
 #### Scenario: Cancel discard
 - **WHEN** the user cancels the confirmation
@@ -43,3 +43,7 @@ The app SHALL offer a confirmed discard from Train and during training. Discard 
 #### Scenario: Restart after discard
 - **WHEN** the user confirms discard after logging a set and saving a prescription as usual
 - **THEN** restarting the day uses the saved prescription with no completed sets from the discarded session
+
+#### Scenario: Keep ratings after discard
+- **WHEN** the user discards a workout with a rated exercise
+- **THEN** the rating and its contribution to progression remain, including for workouts opened before this update
