@@ -51,6 +51,62 @@ struct OpenWorkoutTests {
         #expect(restarted.nextSet?.exercise.segments == [.repetitions(11)])
     }
 
+    @Test(arguments: [false, true])
+    func expiredFinalSetSurvivesDiscardAfterReopening(readFirst: Bool) throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        func reopen() -> CoordinatedModelStore { CoordinatedModelStore(trainingDirectory: directory) }
+        let gym = try #require(reopen().createGym(name: "Gym").activeGymID)
+        let hold = ExercisePrescription(name: "Hold", sets: 1, segments: [.seconds(10)])
+        let day = RoutineDay(name: "Day", exercises: [hold])
+        let otherDay = RoutineDay(name: "Other", exercises: [hold.copiedForWorkout()])
+        var routine = ManualRoutine(gymID: gym)
+        routine.plan = RoutinePlan(name: "Plan", days: [day, otherDay])
+        try reopen().saveRoutine(routine)
+        let cycle = try reopen().currentCycle(for: routine.id)
+        let session = UUID()
+        func apply(_ action: SessionCommand.Action, at clock: SetClock) throws {
+            _ = try reopen().apply(.init(sessionID: session, action: action), clock: clock)
+        }
+        try apply(.start(routineID: routine.id, gymID: gym, dayID: day.id, cycleID: cycle.id), at: SetClock(0))
+        try apply(.controlTimer(exerciseID: hold.id, number: 1, expectedRevision: 0, action: .start), at: SetClock(0))
+        let expiry = SetClock(13)
+        if readFirst { #expect(try reopen().openWorkout(clock: expiry) == nil) }
+        #expect(throws: SessionCommandError.sessionClosed) { try apply(.discard, at: expiry) }
+        // Read the persisted summary before any further call that could reconcile the timer.
+        let summary = try reopen().workoutSummary(id: session)
+        #expect(!summary.partial && summary.finishedAt == expiry.now)
+        #expect(summary.exercises.first?.sets.map(\.number) == [1])
+        #expect(try reopen().currentCycle(for: routine.id).availableDayIDs == [otherDay.id])
+        #expect(try reopen().openWorkout(clock: expiry) == nil)
+    }
+
+    @Test func draggingAfterRestExpiryKeepsNextSetReady() throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        func reopen() -> CoordinatedModelStore { CoordinatedModelStore(trainingDirectory: directory) }
+        let gym = try #require(reopen().createGym(name: "Gym").activeGymID)
+        let row = ExercisePrescription(name: "Row", sets: 2, segments: [.repetitions(8)])
+        let press = ExercisePrescription(name: "Press", sets: 1, segments: [.repetitions(8)])
+        let day = RoutineDay(name: "Day", exercises: [row, press])
+        var routine = ManualRoutine(gymID: gym)
+        routine.plan = RoutinePlan(name: "Plan", days: [day])
+        try reopen().saveRoutine(routine)
+        let session = UUID()
+        func apply(_ action: SessionCommand.Action, at clock: SetClock) throws {
+            _ = try reopen().apply(.init(sessionID: session, action: action), clock: clock)
+        }
+        try apply(.start(routineID: routine.id, gymID: gym, dayID: day.id, cycleID: nil), at: SetClock(0))
+        try apply(.logCurrentSet(exerciseID: row.id, number: 1), at: SetClock(1))
+        let now = SetClock(111)
+        try apply(.reorderBlocks(original: [row.id, press.id], reordered: [press.id, row.id]), at: now)
+        let workout = try #require(try reopen().openWorkout(clock: now))
+        #expect(workout.activeRest(at: now.now) == nil)
+        try apply(.logCurrentSet(exerciseID: press.id, number: 1), at: now)
+    }
+
     @Test func reorderMovesInterleavedSupersetWithCompletedMember() throws {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
