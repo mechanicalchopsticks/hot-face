@@ -147,3 +147,10 @@ The app SHALL keep the routine active between cycles until the user replaces it 
 #### Scenario: Finish a cycle
 - **WHEN** the user finishes the last day of the cycle
 - **THEN** the routine remains active
+
+### Requirement: Initial repetition prescription
+Each newly added repetition-based exercise SHALL start with ten editable repetitions.
+
+#### Scenario: Customize a new exercise
+- **WHEN** the user adds a repetition-based exercise and changes the initial ten repetitions to seven
+- **THEN** saving and reopening the exercise shows seven repetitions

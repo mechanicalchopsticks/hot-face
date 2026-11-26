@@ -59,3 +59,14 @@ For timed exercises performed per side, the app SHALL time each side separately 
 #### Scenario: Intermediate exercise in a superset
 - **WHEN** a timed exercise ends and another exercise remains in the round
 - **THEN** the app plays a cue and leaves the next exercise ready for the user to start without starting a round rest
+
+### Requirement: Configure and display durations in minutes and seconds
+Duration editors, including in-session adjustments, SHALL provide minute and second selectors with maximum totals of 10:00 for rests and 60:00 for other durations. Duration displays throughout the app and Live Activity SHALL use minutes and two-digit seconds.
+
+#### Scenario: Select a maximum
+- **WHEN** the user selects ten minutes for a rest or sixty minutes for another duration
+- **THEN** zero is the only selectable seconds value at that maximum
+
+#### Scenario: Observe a running countdown
+- **WHEN** a timer has 75 seconds remaining
+- **THEN** the app and Live Activity display 1:15
