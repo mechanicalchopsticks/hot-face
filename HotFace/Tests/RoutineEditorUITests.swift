@@ -552,8 +552,9 @@ final class RoutineEditorUITests: XCTestCase {
         let restart = app.switches["Start next hold automatically"]
         reveal(restart)
         XCTAssertEqual(restart.value as? String, "0")
-        let pause = app.steppers["Pause between holds: 0 s"]
-        tap(pause.buttons.element(boundBy: 1))
+        let pause = app.cells.containing(.staticText, identifier: "Pause between holds").buttons["Seconds"]
+        tap(pause)
+        press("1")
         tap(app.navigationBars["Edit exercise"].buttons["BackButton"])
         tap(app.navigationBars["Edit day"].buttons["BackButton"])
         let activate = button("Save and activate", in: app)

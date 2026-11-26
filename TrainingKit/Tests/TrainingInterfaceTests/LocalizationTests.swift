@@ -5,6 +5,11 @@ import TrainingDomain
 @testable import TrainingInterface
 
 struct LocalizationTests {
+    @Test(arguments: [(0, "0:00"), (59, "0:59"), (60, "1:00"), (75, "1:15")])
+    func formatsDuration(seconds: Int, expected: String) {
+        #expect(TrainingDisplayFormat.duration(seconds: seconds, locale: Locale(identifier: "en_US")) == expected)
+    }
+
     @Test(arguments: [
         (
             WeightSuggestion.Reason.higherLoad, "Use the next available load and keep the same repetitions.",
