@@ -5,6 +5,29 @@ import TrainingDomain
 import TrainingRepositories
 
 struct ManualRoutineTests {
+    @Test func savingTrimsTextWithoutChangingDraftOrInternalSpacing() throws {
+        let directory = try temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let store = CoordinatedModelStore(trainingDirectory: directory)
+        let gym = try #require(store.createGym(name: "\n Gym  One ").gyms.first)
+        #expect(gym.name == "Gym  One")
+        var exercise = ExercisePrescription(name: " Row ", segments: [.repetitions(10)])
+        exercise.instructions = "\nSlow  lowering\n"
+        exercise.variant = " \n "
+        var routine = ManualRoutine(gymID: gym.id)
+        routine.plan = RoutinePlan(name: " Week ", days: [.init(name: "\nDay ", exercises: [exercise])])
+        try store.saveRoutine(routine)
+        let saved = try #require(try store.activeRoutine()).plan
+        #expect(saved.name == "Week")
+        #expect(saved.days[0].name == "Day")
+        #expect(saved.days[0].exercises[0].name == "Row")
+        #expect(saved.days[0].exercises[0].instructions == "Slow  lowering")
+        #expect(saved.days[0].exercises[0].variant == nil)
+        #expect(routine.plan.days[0].exercises[0].instructions == "\nSlow  lowering\n")
+        routine.plan.name = " \n "
+        #expect(throws: RoutineEditorError.incompletePlan) { try store.saveRoutine(routine) }
+    }
+
     @Test func reopensFailureAndOlderNumericSegments() throws {
         let directory = try temporaryDirectory()
         defer { try? FileManager.default.removeItem(at: directory) }
