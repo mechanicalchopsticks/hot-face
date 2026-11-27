@@ -7,4 +7,4 @@
 - [x] 1.3 Record dated changes to usual prescriptions with previous and final values. Test edited suggestions, replacements, and archiving while preserving historical sessions.
 - [x] 1.4 Implement dated notes with editing, deletion, undo, and redo. Verify undo scope during editing and persistence after reopening.
 - [x] 1.5 Implement CSV export of workouts and changes. Test special characters, multiline text, mixed units, zero versus missing values, and relationships between rows.
-- [ ] 1.6 Document CSV columns and formats. Verify that a sample export has the same interpretation from the Spanish and English interfaces.
+- [x] 1.6 Document CSV columns and formats. Verify that a sample export has the same interpretation from the Spanish and English interfaces.
