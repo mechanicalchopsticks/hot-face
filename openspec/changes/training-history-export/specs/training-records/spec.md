@@ -31,7 +31,19 @@ The app SHALL record dated previous and final values when usual weight, sets, re
 
 #### Scenario: Accept an edited suggestion
 - **WHEN** a user edits and accepts a progression suggestion
-- **THEN** history shows the former usual values and the values actually confirmed
+- **THEN** history shows the former usual values and the values actually confirmed, including a single acceptance record when those values match
+
+#### Scenario: Edit the exercises in a saved routine
+- **WHEN** the routine editor saves a removed exercise and a newly added exercise
+- **THEN** History and the CSV identify the removed prescription and the added prescription independently
+
+#### Scenario: Change only the load display
+- **WHEN** a user saves an equivalent representation of the same physical load
+- **THEN** the exercise retains the selected display and the change history and effort balance stay the same
+
+#### Scenario: Review reassigned equipment
+- **WHEN** the equipment assignment changes
+- **THEN** History identifies the equipment on each side and uses its saved identifier when an item is unavailable
 
 ### Requirement: Editable dated notes
 The app SHALL save dated notes and allow editing and deletion, with undo and redo during the current edit.

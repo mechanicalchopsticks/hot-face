@@ -16,8 +16,10 @@ extension CoordinatedModelStore {
         for session in history.sessions { export.append(session) }
         for change in changes {
             let common = [change.id.uuidString, change.routineID.uuidString, timestamp(change.date), change.origin]
-            export.changes.append(common + ["previous"] + prescriptionFields(change.previous))
-            export.changes.append(common + ["final"] + prescriptionFields(change.updated))
+            if let previous = change.previous {
+                export.changes.append(common + ["previous"] + prescriptionFields(previous))
+            }
+            if let updated = change.updated { export.changes.append(common + ["final"] + prescriptionFields(updated)) }
         }
         for note in notes {
             export.notes.append([
@@ -81,16 +83,10 @@ private func loadFields(_ load: ExerciseLoad?) -> [String?] {
 }
 
 private func prescriptionFields(_ value: ExercisePrescription) -> [String?] {
-    let status =
-        switch value.load {
-        case .undefined: "undefined"
-        case .estimated: "estimated"
-        case .confirmed: "confirmed"
-        }
     return [
         value.id.uuidString, value.name, value.equipmentID?.uuidString, value.station, value.group,
         value.variant, value.bandColor?.rawValue, value.instructions, value.sets.map(String.init),
-        segmentField(value.segments), String(value.perSide), status,
+        segmentField(value.segments), String(value.perSide), value.load.status.rawValue,
     ] + loadFields(value.load.value)
 }
 

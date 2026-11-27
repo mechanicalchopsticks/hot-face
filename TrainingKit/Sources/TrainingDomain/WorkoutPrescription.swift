@@ -24,6 +24,16 @@ public enum PrescribedLoad: Codable, Equatable, Sendable {
     case estimated(ExerciseLoad)
     case confirmed(ExerciseLoad)
 
+    public enum Status: String, Sendable { case undefined, estimated, confirmed }
+
+    public var status: Status {
+        switch self {
+        case .undefined: .undefined
+        case .estimated: .estimated
+        case .confirmed: .confirmed
+        }
+    }
+
     public var value: ExerciseLoad? {
         switch self {
         case .undefined: nil

@@ -99,14 +99,29 @@ extension CoordinatedModelStore {
             if existing == nil || !others.isEmpty { try requireClosedSession(in: context) }
             let previousPlan = try existing?.plan
             let previousIDs = Set((previousPlan?.days ?? []).flatMap(\.exercises).map(\.id))
-            let addedIDs = plan.days.flatMap(\.exercises).map(\.id).filter { !previousIDs.contains($0) }
+            let currentExercises = plan.days.flatMap(\.exercises)
+            let addedIDs = currentExercises.map(\.id).filter { !previousIDs.contains($0) }
             if !addedIDs.isEmpty {
                 let conflicts = FetchDescriptor<TrainingSchemaV1.Progression>(
                     predicate: #Predicate { addedIDs.contains($0.exerciseID) })
                 guard try context.fetchCount(conflicts) == 0 else { throw RoutineEditorError.changedRoutine }
                 for id in addedIDs { context.insert(TrainingSchemaV1.Progression(exerciseID: id)) }
             }
-            if let existing {
+            if let existing, let previousPlan {
+                // An editor save can add and remove unrelated exercises at once. Record each observed change independently.
+                let currentIDs = Set(currentExercises.map(\.id))
+                for var old in previousPlan.days.flatMap(\.exercises) where !currentIDs.contains(old.id) {
+                    old.sets = previousPlan.setCount(for: old)
+                    context.insert(
+                        try TrainingSchemaV1.PrescriptionChange(
+                            routineID: id, date: date, origin: "routine", previous: old, updated: nil))
+                }
+                for var new in currentExercises where !previousIDs.contains(new.id) {
+                    new.sets = plan.setCount(for: new)
+                    context.insert(
+                        try TrainingSchemaV1.PrescriptionChange(
+                            routineID: id, date: date, origin: "routine", previous: nil, updated: new))
+                }
                 try existing.saveUsualPlan(plan, at: date, origin: "routine", in: context)
             } else {
                 context.insert(try TrainingSchemaV1.Routine(id: id, gymID: draft.gymID, plan: plan))

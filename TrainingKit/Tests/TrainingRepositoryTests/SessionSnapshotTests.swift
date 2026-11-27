@@ -105,6 +105,29 @@ struct SessionSnapshotTests {
         }
     }
 
+    @Test func reopensLegacyChangeAndResolvesEachEquipmentInItsGym() throws {
+        // Frozen before one-sided editor changes. The saved session lasted 75 seconds.
+        let fixture = try #require(
+            Bundle.module.url(forResource: "before-one-sided-changes", withExtension: "store", subdirectory: "Fixtures")
+        )
+        try withTemporaryStore { directory in
+            try FileManager.default.copyItem(at: fixture, to: directory.appendingPathComponent("training.store"))
+            func reopen() -> CoordinatedModelStore { CoordinatedModelStore(trainingDirectory: directory) }
+            let change = try #require(try reopen().prescriptionChanges().first)
+            #expect(change.previous?.name == "Curl" && change.updated?.name == "Curl")
+            #expect(change.previousEquipment == .generic(.dumbbell))
+            #expect(change.updatedEquipment == .named("West rack"))
+            let session = try #require(try reopen().workoutHistory().sessions.first)
+            #expect(session.duration == 75)
+            #expect(session.exercises.last?.prescription.bandColor == .red)
+            let rack = try #require(change.updated?.equipmentID)
+            _ = try reopen().deleteEquipment(rack, in: session.snapshot.gymID)
+            let reopenedChange = try #require(try reopen().prescriptionChanges().first)
+            #expect(reopenedChange.previousEquipment == .generic(.dumbbell))
+            #expect(reopenedChange.updatedEquipment == .unavailable(rack))
+        }
+    }
+
     @Test func reloadsPrescriptionChangesProgressionAndNotes() throws {
         try withTemporaryStore { directory in
             let previous = ExercisePrescription(name: "Remo", sets: 3, segments: [.repetitions(10)])
