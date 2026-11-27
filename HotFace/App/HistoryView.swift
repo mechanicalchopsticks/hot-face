@@ -1,13 +1,18 @@
+import CoreTransferable
 import SwiftUI
 import TrainingDomain
 import TrainingInterface
 import TrainingRepositories
+import UniformTypeIdentifiers
 
 struct HistoryView: View {
     @Environment(\.scenePhase) private var scenePhase
     @State private var history: WorkoutHistory?
     @State private var changes: [PrescriptionHistoryEntry] = []
     @State private var failed = false
+    @State private var exportFiles: [ExportedCSV] = []
+    @State private var exporting = false
+    @State private var exportFailed = false
 
     var body: some View {
         NavigationStack {
@@ -37,6 +42,21 @@ struct HistoryView: View {
                 }
             }
             .navigationTitle("History")
+            .toolbar {
+                Button("Export CSV", systemImage: "square.and.arrow.up") {
+                    do {
+                        exportFiles = try TrainingStorage.openStore().exportHistoryCSV().map(ExportedCSV.init)
+                        exporting = true
+                    } catch { exportFailed = true }
+                }.accessibilityIdentifier("exportHistoryCSV")
+            }
+            .fileExporter(isPresented: $exporting, items: exportFiles, contentTypes: [.commaSeparatedText]) { result in
+                if case .failure = result { exportFailed = true }
+                exportFiles = []
+            } onCancellation: {
+                exportFiles = []
+            }
+            .alert("Could not export history", isPresented: $exportFailed) { Button("OK") {} }
             .onAppear(perform: reload)
             .onChange(of: scenePhase) { if scenePhase == .active { reload() } }
         }
@@ -176,5 +196,14 @@ private struct ProgressViewList: View {
                 }
             }
         }.navigationTitle("Progress and records")
+    }
+}
+
+private struct ExportedCSV: Transferable {
+    let file: HistoryCSVFile
+
+    static var transferRepresentation: some TransferRepresentation {
+        DataRepresentation(exportedContentType: .commaSeparatedText) { item in item.file.data }
+            .suggestedFileName { $0.file.name }
     }
 }
