@@ -63,6 +63,18 @@ final class BandColorUITests: XCTestCase {
         let activate = button("Save and activate")
         if !activate.exists { tap(app.navigationBars.buttons["More"]) }
         tap(activate)
+        tap(button("Train"))
+        tap(button("Band Day"))
+        let permission = app.switches["UIA.Health.Write.Workouts.SwitchCell.Switch"]
+        if permission.waitForExistence(timeout: 5) {
+            if permission.value as? String == "0" { permission.tap() }
+            tap(app.buttons["UIA.Health.Allow.Button"])
+        }
+        tap(button("Complete set"))
+        tap(button("Close"))
+        tap(button("Finish workout"))
+        tap(button("Finish workout"))
+        tap(button("Done"))
         app.terminate()
 
         for (language, locale) in [("en", "en_US"), ("es", "es_CR")] {
@@ -81,6 +93,15 @@ final class BandColorUITests: XCTestCase {
                     colorRow.label.contains(color) || colorRow.value as? String == color,
                     app.debugDescription)
                 back(from: editor)
+            }
+            back(from: spanish ? "Editar día" : "Edit day")
+            tap(button(spanish ? "Cancelar" : "Cancel"))
+            tap(button(spanish ? "Historial" : "History"))
+            tap(app.buttons["historySession"].firstMatch)
+            for color in colors {
+                let swatch = app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", color)).firstMatch
+                for _ in 0..<5 where !swatch.exists { app.swipeUp() }
+                XCTAssertTrue(swatch.exists, app.debugDescription)
             }
             app.terminate()
         }

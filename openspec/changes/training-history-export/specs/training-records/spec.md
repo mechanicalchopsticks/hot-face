@@ -13,7 +13,11 @@ The app SHALL show complete and partial sessions, performed sets and values, ski
 
 #### Scenario: Review total session duration
 - **WHEN** a user views a complete or partial session in the History list or opens its detail
-- **THEN** both views show the elapsed time from the recorded start to finish, including rests
+- **THEN** both views show the elapsed time from the recorded start to finish, including rests, in minutes and two-digit seconds
+
+#### Scenario: Review band resistance
+- **WHEN** a user opens a session that prescribed a specific resistance band color
+- **THEN** the session detail shows the saved color in the interface language
 
 #### Scenario: Review sets performed to failure
 - **WHEN** two sets prescribed to failure were completed and repetitions were entered for only one
@@ -25,6 +29,10 @@ The app SHALL let users review progress and personal records with explicit load 
 #### Scenario: Compare recorded loads
 - **WHEN** a user reviews records made with different gyms or equipment
 - **THEN** the app keeps those contexts distinct and displays the recorded units
+
+#### Scenario: Review a measured repetition sequence
+- **WHEN** a set contains multiple repetition segments
+- **THEN** the repetition record uses their total when every segment has a measured count and excludes sets with an unspecified count
 
 ### Requirement: Usual prescription change history
 The app SHALL record dated previous and final values when usual weight, sets, repetitions, duration, or exercise selection changes.

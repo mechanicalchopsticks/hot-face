@@ -678,7 +678,15 @@ final class RoutineEditorUITests: XCTestCase {
         press("Done")
         XCTAssertFalse(button("Continue workout", in: app).exists)
         press("History")
-        tap(app.buttons["historySession"].firstMatch)
+        let historyRow = app.buttons["historySession"].firstMatch
+        let label = historyRow.label
+        guard let range = label.range(of: #"[0-9]+:[0-5][0-9]"#, options: .regularExpression) else {
+            XCTFail("Missing elapsed minutes and seconds in \(label)")
+            return
+        }
+        let elapsed = String(label[range])
+        tap(historyRow)
+        XCTAssertTrue(containsText(elapsed).waitForExistence(timeout: 5), app.debugDescription)
         for text in ["Set 1 completed", "12 reps", "Set 2 completed", "To failure · Reps unspecified"] {
             XCTAssertTrue(containsText(text).waitForExistence(timeout: 5), app.debugDescription)
         }

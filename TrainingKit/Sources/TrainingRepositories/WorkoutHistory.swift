@@ -24,10 +24,22 @@ public struct ExerciseProgress: Identifiable, Sendable {
         sets.compactMap(\.performance.load).max { $0.amount < $1.amount }
     }
     public var mostRepetitions: Int? {
-        sets.compactMap { set in
-            guard set.performance.segments.count == 1, case .repetitions(let count) = set.performance.segments[0]
-            else { return nil }
-            return count
+        func countedRepetitions(_ segments: [ExerciseSegment]) -> Int? {
+            guard !segments.isEmpty else { return nil }
+            var total = 0
+            for segment in segments {
+                guard case .repetitions(let count) = segment else { return nil }
+                let (sum, overflow) = total.addingReportingOverflow(count)
+                guard !overflow else { return nil }
+                total = sum
+            }
+            return total
+        }
+        return sets.compactMap { set in
+            let performance = set.performance
+            guard let first = countedRepetitions(performance.segments) else { return nil }
+            guard let second = performance.secondSideSegments else { return first }
+            return countedRepetitions(second).map { max(first, $0) }
         }.max()
     }
     public var longestHold: Int? {

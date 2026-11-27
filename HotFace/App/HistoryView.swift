@@ -73,6 +73,7 @@ struct HistoryView: View {
 }
 
 private struct SessionHeading: View {
+    @Environment(\.locale) private var locale
     let session: WorkoutSummary
     var showsDurationLabel = false
     var body: some View {
@@ -84,12 +85,7 @@ private struct SessionHeading: View {
                 Text(session.partial ? "Partially completed" : "Completed")
                 if session.duration >= 0 {
                     if showsDurationLabel { Text("Total duration") }
-                    let units: Set<Duration.UnitsFormatStyle.Unit> =
-                        session.duration < 60 ? [.seconds] : [.hours, .minutes]
-                    Text(
-                        Duration.seconds(session.duration),
-                        format: .units(
-                            allowed: units, width: .abbreviated))
+                    Text(verbatim: TrainingDisplayFormat.duration(seconds: Int(session.duration), locale: locale))
                 } else {
                     Text("Duration unknown")
                 }
@@ -115,6 +111,9 @@ private struct HistorySessionDetail: View {
                         $0.id == exercise.prescription.equipmentID
                     }) {
                         EquipmentName(equipment: equipment, gymID: session.snapshot.gymID)
+                    }
+                    if let color = exercise.prescription.bandColor {
+                        LabeledContent("Band color") { BandColorLabel(color: color) }
                     }
                     if let effort = exercise.effort { Text(effort == .easy ? "Easy" : "Hard") }
                     let byNumber = Dictionary(grouping: exercise.sets, by: \.number)
