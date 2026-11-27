@@ -11,6 +11,10 @@ The app SHALL show complete and partial sessions, performed sets and values, ski
 - **WHEN** a user opens a session finished before all prescribed work was done
 - **THEN** the history distinguishes performed sets from unperformed work and shows retained ratings
 
+#### Scenario: Review total session duration
+- **WHEN** a user views a complete or partial session in the History list or opens its detail
+- **THEN** both views show the elapsed time from the recorded start to finish, including rests
+
 #### Scenario: Review sets performed to failure
 - **WHEN** two sets prescribed to failure were completed and repetitions were entered for only one
 - **THEN** both appear complete, with the recorded count on one and an unspecified count on the other
