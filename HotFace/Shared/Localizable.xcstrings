@@ -1,6 +1,136 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Unperformed" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin realizar"
+          }
+        }
+      }
+    },
+    "Total duration" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Duración total"
+          }
+        }
+      }
+    },
+    "Duration unknown" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Duración desconocida"
+          }
+        }
+      }
+    },
+    "Progress and records" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Progreso y récords"
+          }
+        }
+      }
+    },
+    "Personal records" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Récords personales"
+          }
+        }
+      }
+    },
+    "Heaviest load" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Carga máxima"
+          }
+        }
+      }
+    },
+    "Most repetitions" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Máximo de repeticiones"
+          }
+        }
+      }
+    },
+    "Longest hold" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mayor duración"
+          }
+        }
+      }
+    },
+    "No measured record" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin récord medido"
+          }
+        }
+      }
+    },
+    "Performed sets" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Series realizadas"
+          }
+        }
+      }
+    },
+    "Workout details" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Detalle del entrenamiento"
+          }
+        }
+      }
+    },
+    "Could not load history. Try again" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo cargar el historial. Reintentar"
+          }
+        }
+      }
+    },
+    "Set %lld partially completed" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serie %lld completada parcialmente"
+          }
+        }
+      }
+    },
     "Could not discard workout" : {
       "localizations" : {
         "es" : {

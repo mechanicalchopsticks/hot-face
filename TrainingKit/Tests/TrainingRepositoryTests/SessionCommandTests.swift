@@ -909,6 +909,9 @@ struct SessionCommandTests {
 
         let store = CoordinatedModelStore(trainingDirectory: directory)
         #expect(try store.apply(command, clock: FixedClock(86400)) == .alreadyApplied)
+        let history = try store.workoutHistory()
+        #expect(history.sessions.map(\.id) == [sessionID])
+        #expect(history.sessions.first?.exercises.first?.sets.first?.performance == actual)
         try store.withContext { context in
             let session = try #require(context.fetch(FetchDescriptor<V1.Session>()).first)
             #expect(session.id == sessionID && session.finishedAt == FixedClock(1000).now)

@@ -669,6 +669,7 @@ final class RoutineEditorUITests: XCTestCase {
         XCTAssertTrue(containsText("Ready").waitForExistence(timeout: 5))
         XCTAssertTrue(button("Complete set", in: app).exists)
         XCTAssertFalse(containsText("Set 2 completed").exists)
+        press("Complete set")
         press("Close")
         press("Finish workout")
         press("Finish workout")
@@ -676,6 +677,12 @@ final class RoutineEditorUITests: XCTestCase {
         XCTAssertTrue(containsText("12 reps").exists)
         press("Done")
         XCTAssertFalse(button("Continue workout", in: app).exists)
+        press("History")
+        tap(app.buttons["historySession"].firstMatch)
+        for text in ["Set 1 completed", "12 reps", "Set 2 completed", "To failure · Reps unspecified"] {
+            XCTAssertTrue(containsText(text).waitForExistence(timeout: 5), app.debugDescription)
+        }
+
     }
 
     func testTimedSetResumesAfterRelaunchAndFinishesEarly() {

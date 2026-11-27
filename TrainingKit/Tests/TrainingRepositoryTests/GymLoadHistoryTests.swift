@@ -16,8 +16,11 @@ struct GymLoadHistoryTests {
         let gym = try #require(store.createGym(name: "A").activeGymID)
         let other = try #require(store.createGym(name: "B").gyms.first { $0.id != gym }?.id)
 
-        func record(in gymID: UUID, name: String, weights: [Decimal?], at time: TimeInterval) throws {
+        func record(in gymID: UUID, name: String, weights: [Decimal?], at time: TimeInterval, equipmentID: UUID? = nil)
+            throws
+        {
             var exercise = ExercisePrescription(name: name, segments: Array(repeating: .repetitions(7), count: 3))
+            exercise.equipmentID = equipmentID
             exercise.instructions = "Slow return"
             exercise.station = "12"
             let day = RoutineDay(name: "A", exercises: [exercise])
@@ -44,7 +47,8 @@ struct GymLoadHistoryTests {
             try apply(.finish, offset: weights.count + 1)
         }
 
-        try record(in: gym, name: "Curl", weights: [25], at: 10)
+        let equipment = try #require(store.gymCatalog().gyms.first { $0.id == gym }?.genericEquipment.first)
+        try record(in: gym, name: "Curl", weights: [25], at: 10, equipmentID: equipment.id)
         try record(in: gym, name: "Curl", weights: [30, 35, nil], at: 20)
         try record(in: gym, name: "Curl", weights: [], at: 30)
         try record(in: gym, name: "Press", weights: [5, 0], at: 40)
@@ -52,6 +56,14 @@ struct GymLoadHistoryTests {
         try record(in: other, name: "Curl", weights: [40], at: 50)
         try record(in: other, name: "Row", weights: [10], at: 60)
 
+        let workouts = try store.workoutHistory()
+        #expect(workouts.sessions.count == 6 && workouts.sessions.allSatisfy(\.partial))
+        #expect(workouts.sessions.first?.duration == 2)
+        let curlGroups = workouts.progress.filter { $0.id.name == "Curl" && $0.id.unit == .kg }
+        #expect(curlGroups.count == 3)
+        #expect(curlGroups.first { $0.id.gymID == gym && $0.id.equipmentID == nil }?.heaviestLoad?.amount == 35)
+        #expect(curlGroups.first { $0.id.equipmentID == equipment.id }?.heaviestLoad?.amount == 25)
+        #expect(curlGroups.first { $0.id.gymID == other }?.heaviestLoad?.amount == 40)
         let history = try CoordinatedModelStore(trainingDirectory: directory).loadHistory(in: gym)
         let curl = try #require(history[" curl "])
         #expect(curl.load.amount == 35 && curl.load.unit == .kg)

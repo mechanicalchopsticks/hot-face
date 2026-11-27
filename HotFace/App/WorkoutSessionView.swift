@@ -439,52 +439,7 @@ struct FinishedWorkoutView: View {
                 ForEach(summary.exercises) { exercise in
                     Section {
                         ForEach(exercise.sets) { set in
-                            VStack(alignment: .leading) {
-                                Label("Set \(set.number) completed", systemImage: "checkmark.circle")
-                                if set.performance.secondSideSegments != nil { Text("First side").font(.caption) }
-                                ForEach(set.performance.segments.indices, id: \.self) { i in
-                                    switch set.performance.segments[i] {
-                                    case .toFailure: Text("To failure · Reps unspecified")
-                                    case .seconds(let seconds):
-                                        if set.performance.perSide && set.performance.secondSideSegments == nil {
-                                            Text(
-                                                "\(TrainingDisplayFormat.duration(seconds: seconds, locale: locale)) per side"
-                                            )
-                                        } else {
-                                            Text(
-                                                verbatim: TrainingDisplayFormat.duration(
-                                                    seconds: seconds, locale: locale))
-                                        }
-                                    case .repetitions(let count):
-                                        if set.performance.perSide {
-                                            Text("\(count) reps per side")
-                                        } else {
-                                            Text("\(count) reps")
-                                        }
-                                    }
-                                }
-                                if let second = set.performance.secondSideSegments {
-                                    Text("Second side").font(.caption)
-                                    ForEach(second.indices, id: \.self) { index in
-                                        if case .seconds(let seconds) = second[index] {
-                                            Text(
-                                                verbatim: TrainingDisplayFormat.duration(
-                                                    seconds: seconds, locale: locale))
-                                        }
-                                    }
-                                }
-                                if let load = set.performance.load {
-                                    Text(verbatim: TrainingDisplayFormat.load(load, locale: locale))
-                                    Text(load.representation.title).font(.caption)
-                                    if load.representation == .perImplement
-                                        || (load.representation == .combined && load.implementCount > 1)
-                                    {
-                                        LabeledContent(
-                                            "Dumbbells used",
-                                            value: load.implementCount.formatted(.number.locale(locale)))
-                                    }
-                                }
-                            }
+                            RecordedSetView(set: set)
                         }
                         if exercise.unperformed > 0 { Text("Unperformed sets: \(exercise.unperformed)") }
                         if let effort = exercise.effort {
@@ -867,5 +822,50 @@ private struct WorkoutExerciseList: View {
             try apply(action)
             dismiss()
         } catch { failed = true }
+    }
+}
+
+struct RecordedSetView: View {
+    let set: WorkoutSummary.RecordedSet
+    @Environment(\.locale) private var locale
+    var body: some View {
+        VStack(alignment: .leading) {
+            if set.performance.isPartial {
+                Label("Set \(set.number) partially completed", systemImage: "circle.lefthalf.filled")
+            } else {
+                Label("Set \(set.number) completed", systemImage: "checkmark.circle")
+            }
+            if set.performance.secondSideSegments != nil { Text("First side").font(.caption) }
+            segments(
+                set.performance.segments, perSide: set.performance.perSide && set.performance.secondSideSegments == nil)
+            if let second = set.performance.secondSideSegments {
+                Text("Second side").font(.caption)
+                segments(second, perSide: false)
+            }
+            if let load = set.performance.load {
+                Text(verbatim: TrainingDisplayFormat.load(load, locale: locale))
+                Text(load.representation.title).font(.caption)
+                if load.representation == .perImplement
+                    || (load.representation == .combined && load.implementCount > 1)
+                {
+                    LabeledContent(
+                        "Dumbbells used",
+                        value: load.implementCount.formatted(.number.locale(locale)))
+                }
+            }
+        }
+    }
+
+    private func segments(_ values: [ExerciseSegment], perSide: Bool) -> some View {
+        ForEach(values.indices, id: \.self) { index in
+            switch values[index] {
+            case .toFailure: Text("To failure · Reps unspecified")
+            case .seconds(let seconds):
+                let duration = TrainingDisplayFormat.duration(seconds: seconds, locale: locale)
+                if perSide { Text("\(duration) per side") } else { Text(verbatim: duration) }
+            case .repetitions(let count):
+                if perSide { Text("\(count) reps per side") } else { Text("\(count) reps") }
+            }
+        }
     }
 }
