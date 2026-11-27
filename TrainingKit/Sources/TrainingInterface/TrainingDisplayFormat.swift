@@ -11,15 +11,19 @@ public enum TrainingDisplayFormat {
     }
 
     public static func prescription(_ exercise: ExercisePrescription, sets: Int, locale: Locale) -> String {
-        let segments = exercise.segments.map { segment in
+        let sequence = segments(exercise.segments, locale: locale)
+        return "\(sets.formatted(.number.locale(locale))) × "
+            + (exercise.segments.count > 1 ? "(\(sequence))" : sequence)
+    }
+
+    public static func segments(_ values: [ExerciseSegment], locale: Locale) -> String {
+        values.map { segment in
             switch segment {
             case .repetitions(let reps): reps.formatted(.number.locale(locale))
             case .seconds(let seconds): duration(seconds: seconds, locale: locale)
             case .toFailure: String(localized: toFailure(locale: locale))
             }
-        }
-        let sequence = segments.joined(separator: "+")
-        return "\(sets.formatted(.number.locale(locale))) × " + (segments.count > 1 ? "(\(sequence))" : sequence)
+        }.joined(separator: "+")
     }
     public static func load(_ load: ExerciseLoad, locale: Locale) -> String {
         let amount = load.amount.formatted(.number.locale(locale))
