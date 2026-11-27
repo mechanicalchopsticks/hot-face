@@ -15,6 +15,7 @@ struct HistoryView: View {
                 if failed {
                     Button("Could not load history. Try again", action: reload)
                 } else if let history {
+                    NavigationLink("Notes") { HistoryNotesView(sessionID: nil) }
                     if !changes.isEmpty {
                         NavigationLink("Usual prescription changes") { PrescriptionChangesView(changes: changes) }
                     }
@@ -84,6 +85,7 @@ private struct HistorySessionDetail: View {
     var body: some View {
         List {
             SessionHeading(session: session, showsDurationLabel: true)
+            NavigationLink("Session notes") { HistoryNotesView(sessionID: session.id) }
             ForEach(session.exercises) { exercise in
                 Section {
                     Text(
