@@ -16,6 +16,10 @@ Puedes ingresar la rutina directamente en la app, sin preparar ni importar un ar
 
 Consulta la [guía de permisos, sonidos y capacidades verificadas](HotFace/WorkoutLockScreen.md).
 
+## Exportar el historial
+
+En **Historial → Exportar CSV**, elige dónde guardar los cinco archivos. Consulta la [guía de columnas, unidades y relaciones](HotFace/HistoryCSV.md).
+
 ## Pruebas
 
 Desde la raíz del repositorio, ejecuta las pruebas de TrainingKit en macOS y el mismo lint que usa CI.
