@@ -16,7 +16,10 @@ struct GymLoadHistoryTests {
         let gym = try #require(store.createGym(name: "A").activeGymID)
         let other = try #require(store.createGym(name: "B").gyms.first { $0.id != gym }?.id)
 
-        func record(in gymID: UUID, name: String, weights: [Decimal?], at time: TimeInterval, equipmentID: UUID? = nil)
+        func record(
+            in gymID: UUID, name: String, weights: [Decimal?], at time: TimeInterval, equipmentID: UUID? = nil,
+            segments: [ExerciseSegment] = [.repetitions(6)]
+        )
             throws
         {
             var exercise = ExercisePrescription(name: name, segments: Array(repeating: .repetitions(7), count: 3))
@@ -41,20 +44,22 @@ struct GymLoadHistoryTests {
                 try apply(
                     .completeSet(
                         exerciseID: exercise.id, number: index + 1,
-                        performance: SetPerformance(segments: [.repetitions(6)], load: load)), offset: index + 1)
+                        performance: SetPerformance(segments: segments, load: load)), offset: index + 1)
             }
             if weights.isEmpty { try apply(.skip(exerciseID: exercise.id)) }
             try apply(.finish, offset: weights.count + 1)
         }
 
         let equipment = try #require(store.gymCatalog().gyms.first { $0.id == gym }?.genericEquipment.first)
-        try record(in: gym, name: "Curl", weights: [25], at: 10, equipmentID: equipment.id)
+        try record(
+            in: gym, name: "Curl", weights: [25], at: 10, equipmentID: equipment.id,
+            segments: Array(repeating: .repetitions(7), count: 3))
         try record(in: gym, name: "Curl", weights: [30, 35, nil], at: 20)
         try record(in: gym, name: "Curl", weights: [], at: 30)
         try record(in: gym, name: "Press", weights: [5, 0], at: 40)
         _ = try store.selectGym(other)
         try record(in: other, name: "Curl", weights: [40], at: 50)
-        try record(in: other, name: "Row", weights: [10], at: 60)
+        try record(in: other, name: "Row", weights: [10], at: 60, segments: [.repetitions(50), .toFailure])
 
         let workouts = try store.workoutHistory()
         #expect(workouts.sessions.count == 6 && workouts.sessions.allSatisfy(\.partial))
@@ -64,6 +69,8 @@ struct GymLoadHistoryTests {
         #expect(curlGroups.first { $0.id.gymID == gym && $0.id.equipmentID == nil }?.heaviestLoad?.amount == 35)
         #expect(curlGroups.first { $0.id.equipmentID == equipment.id }?.heaviestLoad?.amount == 25)
         #expect(curlGroups.first { $0.id.gymID == other }?.heaviestLoad?.amount == 40)
+        #expect(curlGroups.first { $0.id.equipmentID == equipment.id }?.mostRepetitions == 21)
+        #expect(workouts.progress.first { $0.id.name == "Row" }?.mostRepetitions == nil)
         let history = try CoordinatedModelStore(trainingDirectory: directory).loadHistory(in: gym)
         let curl = try #require(history[" curl "])
         #expect(curl.load.amount == 35 && curl.load.unit == .kg)
