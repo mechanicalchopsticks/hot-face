@@ -17,6 +17,7 @@
 		00000000000000000000006E /* TrainingStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000006D /* TrainingStorage.swift */; };
 		00000000000000000000006F /* TrainingStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000006D /* TrainingStorage.swift */; };
 		000000000000000000000068 /* TrainingTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000067 /* TrainingTabView.swift */; };
+		FAB000000000000000000022 /* PrescriptionChangesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAB000000000000000000021 /* PrescriptionChangesView.swift */; };
 		FAB000000000000000000012 /* HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAB000000000000000000011 /* HistoryView.swift */; };
 		00000000000000000000009D /* WorkoutSessionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000009C /* WorkoutSessionView.swift */; };
 		C37892203B6E422BB34FE2F4 /* SupersetEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80D35B8D46EA45DC9A74106C /* SupersetEditor.swift */; };
@@ -93,6 +94,7 @@
 		000000000000000000000076 /* ExerciseLoadEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseLoadEditor.swift; sourceTree = "<group>"; };
 		00000000000000000000006D /* TrainingStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingStorage.swift; sourceTree = "<group>"; };
 		000000000000000000000067 /* TrainingTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingTabView.swift; sourceTree = "<group>"; };
+		FAB000000000000000000021 /* PrescriptionChangesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrescriptionChangesView.swift; sourceTree = "<group>"; };
 		FAB000000000000000000011 /* HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryView.swift; sourceTree = "<group>"; };
 		00000000000000000000009C /* WorkoutSessionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutSessionView.swift; sourceTree = "<group>"; };
 		80D35B8D46EA45DC9A74106C /* SupersetEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupersetEditor.swift; sourceTree = "<group>"; };
@@ -150,6 +152,7 @@
 				B56000000000000000000001 /* HealthWorkoutController.swift */,
 				000000000000000000000004 /* HotFace.swift */,
 				000000000000000000000067 /* TrainingTabView.swift */,
+				FAB000000000000000000021 /* PrescriptionChangesView.swift */,
 				FAB000000000000000000011 /* HistoryView.swift */,
 				00000000000000000000009C /* WorkoutSessionView.swift */,
 				80D35B8D46EA45DC9A74106C /* SupersetEditor.swift */,
@@ -306,6 +309,7 @@
 				B56000000000000000000002 /* HealthWorkoutController.swift in Sources */,
 				00000000000000000000000F /* HotFace.swift in Sources */,
 				000000000000000000000068 /* TrainingTabView.swift in Sources */,
+				FAB000000000000000000022 /* PrescriptionChangesView.swift in Sources */,
 				FAB000000000000000000012 /* HistoryView.swift in Sources */,
 				00000000000000000000009D /* WorkoutSessionView.swift in Sources */,
 				C37892203B6E422BB34FE2F4 /* SupersetEditor.swift in Sources */,

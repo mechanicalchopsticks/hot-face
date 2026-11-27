@@ -250,11 +250,7 @@ struct SessionWriter {
                 adjust(&plan.days[d].exercises[e], count: countChanged ? sets : previous.sets)
                 if previous != plan.days[d].exercises[e] {
                     try plan.days[d].validateSupersets(defaultSets: plan.defaultSets)
-                    try routine.saveUsualPlan(plan, in: context)
-                    context.insert(
-                        try V1.PrescriptionChange(
-                            routineID: routine.id, date: date, origin: "workout", previous: previous,
-                            updated: plan.days[d].exercises[e]))
+                    try routine.saveUsualPlan(plan, at: date, origin: "workout", in: context)
                 }
                 temporaryIDs.remove(id)
             } else {
@@ -399,7 +395,7 @@ struct SessionWriter {
                 throw SessionCommandError.dayUnavailable
             }
             try plan.days[index].apply(edit, defaultSets: plan.defaultSets)
-            try routine.saveUsualPlan(plan, in: context)
+            try routine.saveUsualPlan(plan, at: date, origin: "workout", in: context)
         }
         try updateOrder(snapshot, in: session, at: date, preservingRestUntil: current.rest?.endsAt ?? date)
         try finishIfResolved(session, at: date)
@@ -503,7 +499,8 @@ struct SessionWriter {
                 guard let index = plan.days[d].exercises.firstIndex(where: { $0.id == replacing }) else {
                     throw SessionCommandError.unknownExercise
                 }
-                let old = plan.days[d].exercises[index]
+                var old = plan.days[d].exercises[index]
+                old.sets = plan.setCount(for: old)
                 plan.days[d].removeExercises(withIDs: [replacing])
                 plan.days[d].exercises.insert(newExercise, at: index)
                 context.insert(
@@ -513,7 +510,7 @@ struct SessionWriter {
                 plan.days[d].exercises.append(newExercise)
             }
             plan.days[d].assignGroup(newExercise.group, to: newExercise.id)
-            try routine.saveUsualPlan(plan, in: context)
+            try routine.saveUsualPlan(plan, at: date, origin: "workout", in: context)
             context.insert(V1.Progression(exerciseID: newExercise.id))
         }
         try session.updatePrescription(snapshot)

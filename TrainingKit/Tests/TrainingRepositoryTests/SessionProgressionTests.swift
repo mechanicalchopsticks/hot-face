@@ -22,10 +22,45 @@ struct SessionProgressionTests {
         try fixture.store.withContext { context in
             let change = try #require(try context.fetch(FetchDescriptor<TrainingSchemaV1.PrescriptionChange>()).first)
             #expect(change.origin == "suggestion.higherLoad")
-            #expect(try change.previous == fixture.exercise)
-            #expect(try change.updated == expected)
+            var recordedPrevious = fixture.exercise
+            recordedPrevious.sets = 1
+            var recordedFinal = expected
+            recordedFinal.sets = 1
+            #expect(try change.previous == recordedPrevious)
+            #expect(try change.updated == recordedFinal)
             #expect(try context.fetch(FetchDescriptor<TrainingSchemaV1.Progression>()).first?.balance == 0)
         }
+    }
+
+    @Test func archivedRoutineKeepsDatedChangesAndOriginalSession() throws {
+        let f = try Fixture()
+        defer { try? FileManager.default.removeItem(at: f.directory) }
+        let past = try f.start()
+        try f.apply(.logCurrentSet(exerciseID: f.exercise.id, number: 1), to: past)
+        var routine = try #require(try f.store.routine(id: f.routine.id))
+        let plank = ExercisePrescription(name: "Plank", sets: 2, segments: [.seconds(30)])
+        routine.plan.days.append(.init(name: "Other day", exercises: [plank]))
+        routine.plan.defaultSets = 3
+        routine.plan.days[0].exercises[0].segments = [.seconds(20)]
+        try f.store.saveRoutine(routine, at: Fixture.Clock(200).now)
+        let current = try f.start()
+        let replace = SessionCommand(
+            sessionID: current, action: .insertExercise(sourceID: plank.id, replacing: f.exercise.id, saveAsUsual: true)
+        )
+        #expect(try f.store.apply(replace, clock: Fixture.Clock(300)) == .applied)
+        #expect(try f.store.apply(replace, clock: Fixture.Clock(301)) == .alreadyApplied)
+        try f.apply(.finish, to: current, at: 310)
+        let final = try #require(try f.store.routine(id: routine.id))
+        try f.store.archiveRoutine(final)
+        let changes = try f.store.prescriptionChanges()
+        #expect(changes.map(\.date) == [Fixture.Clock(300).now, Fixture.Clock(200).now])
+        #expect(changes[0].previous.name == "Row" && changes[0].updated.name == "Plank")
+        #expect(changes[0].previous.sets == 3 && changes[0].updated.sets == 2)
+        #expect(changes[1].previous.sets == 1 && changes[1].updated.sets == 3)
+        #expect(changes[1].updated.segments == [.seconds(20)])
+        let history = try f.store.workoutSummary(id: past)
+        #expect(history.exercises[0].prescription.sets == 1)
+        #expect(history.exercises[0].sets[0].performance.segments == [.repetitions(10)])
     }
 
     @Test func modeSwitchRejectsStaleOfferAndPreservesAcceptedBridge() throws {

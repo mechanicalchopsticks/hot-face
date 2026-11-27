@@ -66,7 +66,7 @@ extension CoordinatedModelStore {
         }
     }
 
-    public func saveRoutine(_ draft: ManualRoutine) throws {
+    public func saveRoutine(_ draft: ManualRoutine, at date: Date = .now) throws {
         var plan = draft.plan
         plan.name = plan.name.trimmingCharacters(in: .whitespacesAndNewlines)
         for day in plan.days.indices {
@@ -107,7 +107,7 @@ extension CoordinatedModelStore {
                 for id in addedIDs { context.insert(TrainingSchemaV1.Progression(exerciseID: id)) }
             }
             if let existing {
-                try existing.saveUsualPlan(plan, in: context)
+                try existing.saveUsualPlan(plan, at: date, origin: "routine", in: context)
             } else {
                 context.insert(try TrainingSchemaV1.Routine(id: id, gymID: draft.gymID, plan: plan))
             }

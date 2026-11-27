@@ -1,6 +1,56 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Usual prescription changes" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cambios de prescripción habitual"
+          }
+        }
+      }
+    },
+    "Previous prescription" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prescripción anterior"
+          }
+        }
+      }
+    },
+    "Updated prescription" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prescripción nueva"
+          }
+        }
+      }
+    },
+    "Routine default set count" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Series predeterminadas de la rutina"
+          }
+        }
+      }
+    },
+    "Undefined load" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Carga sin definir"
+          }
+        }
+      }
+    },
     "Unperformed" : {
       "localizations" : {
         "es" : {

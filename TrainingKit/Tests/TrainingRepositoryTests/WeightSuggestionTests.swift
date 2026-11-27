@@ -166,6 +166,11 @@ struct WeightSuggestionTests {
             try reopen().acceptProgressionSuggestion(
                 bridge, load: load(35), repetitions: 11, routineID: routine.id, exerciseID: exercise.id,
                 sessionID: id, clock: SuggestionClock())
+            let changes = try reopen().prescriptionChanges()
+            #expect(changes.count == 1)
+            #expect(changes[0].previous.segments == [.repetitions(startingRepetitions)])
+            #expect(changes[0].updated.segments == [.repetitions(11)])
+            #expect(changes[0].updated.load == .confirmed(load(35)))
             #expect(try reopen().openWorkout()?.nextSet?.exercise.segments == [.repetitions(11)])
             _ = try reopen().apply(
                 .init(sessionID: id, action: .logCurrentSet(exerciseID: exercise.id, number: 1)),

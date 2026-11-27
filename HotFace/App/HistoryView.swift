@@ -6,6 +6,7 @@ import TrainingRepositories
 struct HistoryView: View {
     @Environment(\.scenePhase) private var scenePhase
     @State private var history: WorkoutHistory?
+    @State private var changes: [PrescriptionHistoryEntry] = []
     @State private var failed = false
 
     var body: some View {
@@ -14,6 +15,9 @@ struct HistoryView: View {
                 if failed {
                     Button("Could not load history. Try again", action: reload)
                 } else if let history {
+                    if !changes.isEmpty {
+                        NavigationLink("Usual prescription changes") { PrescriptionChangesView(changes: changes) }
+                    }
                     if history.sessions.isEmpty {
                         ContentUnavailableView(
                             "No workouts yet", systemImage: "clock",
@@ -39,7 +43,9 @@ struct HistoryView: View {
 
     private func reload() {
         do {
-            history = try TrainingStorage.openStore().workoutHistory()
+            let store = try TrainingStorage.openStore()
+            history = try store.workoutHistory()
+            changes = try store.prescriptionChanges()
             failed = false
         } catch { failed = true }
     }
