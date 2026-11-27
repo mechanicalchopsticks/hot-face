@@ -7,7 +7,7 @@ In **History → Export CSV** (**Historial → Exportar CSV**), choose a folder 
 | `sessions.csv` | A finished session, complete or partial | `session_id` |
 | `exercises.csv` | An exercise in that session’s saved prescription | `session_id` + `exercise_id` |
 | `sets.csv` | A numbered set, including omitted work | `session_id` + `exercise_id` + `set_number` |
-| `changes.csv` | One side of a dated change to a usual prescription | Pair `previous` and `final` by `change_id` |
+| `changes.csv` | One side of a dated change to a usual prescription | Group stages by `change_id` |
 | `notes.csv` | A saved note | `note_id`, with optional session and exercise references |
 
 ## File conventions
@@ -42,7 +42,7 @@ Load representations are `perImplement` (each implement), `combined` (all implem
 
 **Exercises** also include `session_id`, the one-based exercise `position`, `equipment_name`, `equipment_station`, the exercise’s `skipped` flag, and optional `effort` (`easy` or `hard`). An exercise skipped after some sets can still have performed rows.
 
-**Changes** also include `change_id`, `routine_id`, `changed_at`, `origin`, and `stage`. Origins include `routine`, `workout`, `replacement`, and `suggestion.<reason>`. A replacement can have different exercise identifiers across the two stages. The final row of an edited suggestion contains the values the user saved.
+**Changes** also include `change_id`, `routine_id`, `changed_at`, `origin`, and `stage`. Origins include `routine`, `workout`, `replacement`, and `suggestion.<reason>`. An explicit replacement pairs the old and new exercise identifiers. The routine editor records an added exercise as a single `final` row and a removed exercise as a single `previous` row, each with its own change identifier. An accepted suggestion has both stages even when the user confirms the current values. Equivalent display conversions produce no entry. The final row of an edited suggestion contains the values the user saved.
 
 ## Sets
 

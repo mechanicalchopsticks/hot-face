@@ -3,7 +3,9 @@ import SwiftData
 import TrainingDomain
 
 extension TrainingSchemaV1.Routine {
-    func saveUsualPlan(_ updated: RoutinePlan, at date: Date, origin: String, in context: ModelContext) throws {
+    func saveUsualPlan(
+        _ updated: RoutinePlan, at date: Date, origin: String, acceptedExerciseID: UUID? = nil, in context: ModelContext
+    ) throws {
         let previous = try plan
         let exercises = Dictionary(
             previous.days.flatMap(\.exercises).map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
@@ -23,7 +25,9 @@ extension TrainingSchemaV1.Routine {
             guard
                 prescriptionChanged || old.name != exercise.name || old.variant != exercise.variant
                     || old.equipmentID != exercise.equipmentID || old.bandColor != exercise.bandColor
-                    || old.load != exercise.load || old.station != exercise.station
+                    || old.load.status != exercise.load.status
+                    || old.load.value?.implementCount != exercise.load.value?.implementCount
+                    || old.station != exercise.station || exercise.id == acceptedExerciseID
             else { continue }
             var before = old
             var after = exercise

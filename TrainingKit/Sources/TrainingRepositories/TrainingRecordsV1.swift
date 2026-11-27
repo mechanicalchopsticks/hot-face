@@ -73,8 +73,9 @@ extension TrainingSchemaV1 {
 
         public init(
             routineID: UUID, date: Date, origin: String,
-            previous: ExercisePrescription, updated: ExercisePrescription
+            previous: ExercisePrescription?, updated: ExercisePrescription?
         ) throws {
+            guard previous != nil || updated != nil else { throw CocoaError(.coderInvalidValue) }
             self.id = UUID()
             self.routineID = routineID
             self.date = date
@@ -83,12 +84,12 @@ extension TrainingSchemaV1 {
             self.updatedData = try JSONEncoder().encode(updated)
         }
 
-        public var previous: ExercisePrescription {
-            get throws { try JSONDecoder().decode(ExercisePrescription.self, from: previousData) }
+        public var previous: ExercisePrescription? {
+            get throws { try JSONDecoder().decode(ExercisePrescription?.self, from: previousData) }
         }
 
-        public var updated: ExercisePrescription {
-            get throws { try JSONDecoder().decode(ExercisePrescription.self, from: updatedData) }
+        public var updated: ExercisePrescription? {
+            get throws { try JSONDecoder().decode(ExercisePrescription?.self, from: updatedData) }
         }
     }
 

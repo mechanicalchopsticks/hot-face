@@ -125,7 +125,9 @@ extension CoordinatedModelStore {
                 try session.updatePrescription(snapshot)
             }
             plan.days[day].exercises[index] = updated
-            try routine.saveUsualPlan(plan, at: date, origin: "suggestion.\(suggestion.reason.rawValue)", in: context)
+            try routine.saveUsualPlan(
+                plan, at: date, origin: "suggestion.\(suggestion.reason.rawValue)", acceptedExerciseID: exerciseID,
+                in: context)
             pending.progression.balance = 0
             let sameWeight = try suggestion.load.addedKilograms(equipment: equipment) == finalWeight
             pending.progression.returnRepetitions =

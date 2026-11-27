@@ -345,17 +345,9 @@ struct GymProfileTests {
                 context.insert(progression)
                 try context.save()
             }
-            try reopen().withContext { context in
-                let routine = try #require(context.fetch(FetchDescriptor<TrainingSchemaV1.Routine>()).first)
-                var plan = try routine.plan
-                guard case .confirmed(let selected) = plan.days[0].exercises[0].load else {
-                    Issue.record("Expected the selected dumbbell load")
-                    return
-                }
-                plan.days[0].exercises[0].load = .confirmed(try selected.displayed(as: .combined))
-                try routine.replacePlan(plan)
-                try context.save()
-            }
+            var draft = try #require(try reopen().activeRoutine())
+            draft.plan.days[0].exercises[0].load = .confirmed(try weight.displayed(as: .combined))
+            try reopen().saveRoutine(draft)
             try reopen().withContext { context in
                 let routine = try #require(context.fetch(FetchDescriptor<TrainingSchemaV1.Routine>()).first)
                 let expected = ExerciseLoad(amount: 20, unit: .kg, representation: .combined, implementCount: 2)

@@ -1,6 +1,46 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Accepted suggestion" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sugerencia aceptada"
+          }
+        }
+      }
+    },
+    "Added exercise" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ejercicio añadido"
+          }
+        }
+      }
+    },
+    "Removed exercise" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ejercicio retirado"
+          }
+        }
+      }
+    },
+    "Removed equipment · %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Equipo retirado · %@"
+          }
+        }
+      }
+    },
     "Export CSV" : {
       "localizations" : {
         "es" : {

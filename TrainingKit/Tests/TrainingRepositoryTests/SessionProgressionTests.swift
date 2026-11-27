@@ -32,6 +32,54 @@ struct SessionProgressionTests {
         }
     }
 
+    @Test func acceptingCurrentValuesRecordsOneDecision() throws {
+        let f = try Fixture()
+        defer { try? FileManager.default.removeItem(at: f.directory) }
+        try f.rateEasy()
+        try f.rateEasy()
+        let offer = try #require(try f.suggestion())
+        let load = try #require(f.exercise.load.value)
+        func accept() throws {
+            try f.store.acceptProgressionSuggestion(
+                offer, load: load, repetitions: 10, routineID: f.routine.id, exerciseID: f.exercise.id,
+                clock: Fixture.Clock(300))
+        }
+        try accept()
+        #expect(try f.suggestion() == nil)
+        #expect(throws: WeightSuggestionError.suggestionChanged) { try accept() }
+        let changes = try f.store.prescriptionChanges()
+        #expect(changes.count == 1)
+        let entry = try #require(changes.first)
+        #expect(entry.previous == entry.updated)
+        #expect(entry.date == Fixture.Clock(300).now && entry.origin == "suggestion.prepareIncrease")
+        let csv = try #require(f.store.exportHistoryCSV().first { $0.name == "changes.csv" })
+        #expect(String(decoding: csv.data, as: UTF8.self).components(separatedBy: entry.id.uuidString).count == 3)
+    }
+
+    @Test func editorRecordsNewAndRemovedExerciseIDs() throws {
+        let f = try Fixture()
+        defer { try? FileManager.default.removeItem(at: f.directory) }
+        var draft = try #require(try f.store.activeRoutine())
+        let newExercise = ExercisePrescription(name: "Press", segments: [.seconds(30)])
+        draft.plan.days[0].exercises = [newExercise]
+        draft.plan.defaultSets = 4
+        try f.store.saveRoutine(draft, at: Fixture.Clock(200).now)
+        let csv = try #require(f.store.exportHistoryCSV().first { $0.name == "changes.csv" })
+        let text = String(decoding: csv.data, as: UTF8.self)
+        #expect(text.contains(",previous,\(f.exercise.id.uuidString),Row,"))
+        #expect(text.contains(",final,\(newExercise.id.uuidString),Press,"))
+        #expect(!text.contains(",final,\(f.exercise.id.uuidString),Row,"))
+        #expect(!text.contains(",previous,\(newExercise.id.uuidString),Press,"))
+        let saved = try #require(try f.store.activeRoutine())
+        try f.store.saveRoutine(saved)
+        let changes = try f.store.prescriptionChanges()
+        #expect(changes.count == 2)
+        let removal = try #require(changes.first { $0.updated == nil })
+        let addition = try #require(changes.first { $0.previous == nil })
+        #expect(removal.previous?.id == f.exercise.id && removal.previous?.sets == 1)
+        #expect(addition.updated?.id == newExercise.id && addition.updated?.sets == 4)
+    }
+
     @Test func archivedRoutineKeepsDatedChangesAndOriginalSession() throws {
         let f = try Fixture()
         defer { try? FileManager.default.removeItem(at: f.directory) }
@@ -53,11 +101,15 @@ struct SessionProgressionTests {
         let final = try #require(try f.store.routine(id: routine.id))
         try f.store.archiveRoutine(final)
         let changes = try f.store.prescriptionChanges()
-        #expect(changes.map(\.date) == [Fixture.Clock(300).now, Fixture.Clock(200).now])
-        #expect(changes[0].previous.name == "Row" && changes[0].updated.name == "Plank")
-        #expect(changes[0].previous.sets == 3 && changes[0].updated.sets == 2)
-        #expect(changes[1].previous.sets == 1 && changes[1].updated.sets == 3)
-        #expect(changes[1].updated.segments == [.seconds(20)])
+        let additions = changes.filter { $0.previous == nil }
+        #expect(additions.count == 1 && additions.first?.updated?.id == plank.id)
+        let paired = changes.filter { $0.previous != nil && $0.updated != nil }
+        try #require(paired.count == 2)
+        #expect(paired.map(\.date) == [Fixture.Clock(300).now, Fixture.Clock(200).now])
+        #expect(paired[0].previous?.name == "Row" && paired[0].updated?.name == "Plank")
+        #expect(paired[0].previous?.sets == 3 && paired[0].updated?.sets == 2)
+        #expect(paired[1].previous?.sets == 1 && paired[1].updated?.sets == 3)
+        #expect(paired[1].updated?.segments == [.seconds(20)])
         let history = try f.store.workoutSummary(id: past)
         #expect(history.exercises[0].prescription.sets == 1)
         #expect(history.exercises[0].sets[0].performance.segments == [.repetitions(10)])
