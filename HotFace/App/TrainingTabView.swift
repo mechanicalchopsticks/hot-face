@@ -18,11 +18,7 @@ struct TrainingTabView: View {
                 RoutinesView(newRoutineGymID: $newRoutineGymID)
             }
             Tab("History", systemImage: "clock", value: .history) {
-                EmptySection(
-                    "History",
-                    heading: "No workouts yet",
-                    systemImage: "clock",
-                    message: "Your finished workouts will appear here.")
+                HistoryView()
             }
             Tab("Settings", systemImage: "gearshape", value: .settings) {
                 GymSettingsView { gymID in
@@ -193,28 +189,6 @@ private struct ActiveRoutineView: View {
         } catch {
             reload()
             startError = "Check your routine and try again."
-        }
-    }
-}
-
-private struct EmptySection: View {
-    let title: LocalizedStringKey
-    let heading: LocalizedStringKey
-    let systemImage: String
-    let message: LocalizedStringKey
-
-    init(_ title: LocalizedStringKey, heading: LocalizedStringKey, systemImage: String, message: LocalizedStringKey) {
-        self.title = title
-        self.heading = heading
-        self.systemImage = systemImage
-        self.message = message
-    }
-
-    var body: some View {
-        NavigationStack {
-            EmptySectionContent(heading: heading, systemImage: systemImage, message: message)
-                .navigationTitle(title)
-                .navigationBarTitleDisplayMode(.inline)
         }
     }
 }
