@@ -100,8 +100,8 @@ extension TrainingSchemaV1 {
         public var sessionID: UUID?
         public var text: String
 
-        public init(date: Date, text: String, exerciseID: UUID? = nil, sessionID: UUID? = nil) {
-            self.id = UUID()
+        public init(id: UUID = UUID(), date: Date, text: String, exerciseID: UUID? = nil, sessionID: UUID? = nil) {
+            self.id = id
             self.date = date
             self.text = text
             self.exerciseID = exerciseID
