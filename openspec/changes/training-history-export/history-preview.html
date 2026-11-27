@@ -1,0 +1,162 @@
+<meta charset="utf-8">
+<style>
+  #history-preview {
+    color-scheme: light dark;
+    padding: 16px 4px;
+    font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    color: light-dark(#17181b, #f6f6f7);
+    --history-secondary: light-dark(#585961, #b5b6c0);
+    --history-sheet: light-dark(#fff, #232327);
+    --history-divider: light-dark(#e4e4e9, #39393f);
+  }
+  #history-preview * { box-sizing: border-box; }
+  #history-preview article {
+    max-width: 410px;
+    margin: auto;
+    padding: 18px;
+    border-radius: 24px;
+    background: light-dark(#f2f2f7, #151517);
+  }
+  #history-preview h2 { margin: 4px 0; font-size: 1.7rem; line-height: 1.2; }
+  #history-preview h3 { margin: 0; font-size: 1.06rem; }
+  #history-preview p { margin: 4px 0; }
+  #history-preview .meta { color: var(--history-secondary); font-size: .9rem; }
+  #history-preview .group {
+    margin-top: 14px;
+    padding: 0 14px;
+    background: var(--history-sheet);
+    border-radius: 14px;
+  }
+  #history-preview .row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 12px 0;
+  }
+  #history-preview .group > * + * { border-top: 1px solid var(--history-divider); }
+  #history-preview button {
+    min-height: 44px;
+    font: inherit;
+    color: inherit;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    text-align: start;
+  }
+  #history-preview .session { width: 100%; }
+  #history-preview .session span { display: block; }
+  #history-preview .session strong { display: block; margin: 4px 0; }
+  #history-preview .back { padding: 0; color: light-dark(#145ea6, #9acaff); }
+  #history-preview .facts { text-align: end; }
+  #history-preview .facts, #history-preview .load { font-variant-numeric: tabular-nums; }
+  #history-preview .group header { padding: 12px 0; }
+  #history-preview .status { font-weight: 600; }
+</style>
+<div id="history-preview" class="viz-dotted-background" lang="es">
+  <article aria-label="Historial de entrenamiento" aria-live="polite"></article>
+</div>
+<script>
+(() => {
+  const root = document.getElementById('history-preview');
+  const screen = root.querySelector('article');
+  const sessions = [
+    {
+      id: 'upper', day: 'Tren superior', date: '24 nov 2026', routine: 'Fuerza A/B',
+      startedAt: '2026-11-24T07:00:00-06:00', finishedAt: '2026-11-24T07:16:00-06:00',
+      gym: 'Gimnasio Central', status: 'Completa',
+      exercises: [
+        { name: 'Remo sentado', equipment: 'Polea baja', target: 'Al fallo', sets: [
+          { status: 'Completada', reps: 12, load: '35 kg' },
+          { status: 'Completada', reps: null, load: '35 kg' }
+        ] }
+      ]
+    },
+    {
+      id: 'lower', day: 'Tren inferior', date: '22 nov 2026', routine: 'Fuerza A/B',
+      startedAt: '2026-11-22T09:00:00-06:00', finishedAt: '2026-11-22T09:08:00-06:00',
+      gym: 'Gimnasio Norte', status: 'Parcial',
+      exercises: [
+        { name: 'Sentadilla', equipment: 'Barra', target: '8 repeticiones', effort: 'Difícil', sets: [
+          { status: 'Completada', reps: 8, load: '95 lb' },
+          { status: 'Sin realizar' }
+        ] },
+        { name: 'Elevación de talones', equipment: 'Máquina de gemelos', target: '12 repeticiones', sets: [
+          { status: 'Omitida' }
+        ] }
+      ]
+    }
+  ];
+
+  function totalDuration(session) {
+    const seconds = Math.floor((Date.parse(session.finishedAt) - Date.parse(session.startedAt)) / 1000);
+    if (!Number.isFinite(seconds) || seconds < 0) return 'Duración desconocida';
+    if (seconds < 60) return `${seconds} s`;
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes} min`;
+    const hours = Math.floor(minutes / 60);
+    return minutes % 60 ? `${hours} h ${minutes % 60} min` : `${hours} h`;
+  }
+
+  function listRow(session) {
+    return `<button type="button" class="row session" data-session="${session.id}">
+      <span><span class="meta">${session.date} · ${totalDuration(session)}</span><strong>${session.day}</strong>
+      <span class="meta">${session.routine} · ${session.gym}</span></span>
+      <span>${session.status} <b aria-hidden="true">›</b></span>
+    </button>`;
+  }
+
+  function setRow(set, index) {
+    let performance = '';
+    if (set.status === 'Completada') {
+      const reps = set.reps === null ? 'Sin conteo' : `${set.reps} rep.`;
+      performance = `<p class="load">${reps} · ${set.load}</p>`;
+    }
+    return `<div class="row">
+      <div>Serie ${index + 1}<p class="meta">${set.status}</p></div>
+      <div class="facts">${performance}</div>
+    </div>`;
+  }
+
+  function exerciseSection(exercise) {
+    return `<section class="group"><header><h3>${exercise.name}</h3>
+      <p class="meta">${exercise.equipment} · ${exercise.target}</p>
+      ${exercise.effort ? `<p class="meta">Esfuerzo · ${exercise.effort}</p>` : ''}</header>
+      ${exercise.sets.map(setRow).join('')}</section>`;
+  }
+
+  function render(id) {
+    const session = sessions.find(item => item.id === id);
+    if (!session) {
+      screen.innerHTML = `<h2>Historial</h2><div class="group">${sessions.map(listRow).join('')}</div>`;
+      return;
+    }
+    screen.innerHTML = `<button type="button" class="back" data-session="">‹ Historial</button>
+      <p class="meta">${session.date} · <span class="status">${session.status}</span></p>
+      <h2>${session.day}</h2><p>${session.routine} · ${session.gym}</p>
+      <p>Duración total · <strong>${totalDuration(session)}</strong></p>
+      ${session.exercises.map(exerciseSection).join('')}`;
+  }
+
+  screen.addEventListener('click', event => {
+    const button = event.target.closest('button[data-session]');
+    if (!button) return;
+    const id = button.dataset.session;
+    const previous = screen.dataset.session;
+    render(id);
+    screen.dataset.session = id;
+    const focusTarget = id ? screen.querySelector('.back') : screen.querySelector(`[data-session="${previous}"]`);
+    focusTarget?.focus();
+    window.openai?.setWidgetState?.({ modelContent: { session: id } })?.catch(() => {});
+  });
+  function restore(state) {
+    const id = sessions.find(item => item.id === state?.modelContent?.session)?.id ?? '';
+    render(id);
+    screen.dataset.session = id;
+  }
+  restore(window.openai?.widgetState);
+  window.addEventListener('openai:set_globals', event => {
+    if (event.detail?.globals?.widgetState) restore(event.detail.globals.widgetState);
+  });
+})();
+</script>
